@@ -67,11 +67,23 @@ try {
     const c = document.querySelector('canvas.lcd').getContext('2d').getImageData(x0, y0, 1, 1).data;
     return [c[0], c[1], c[2], c[3]];
   }, [x, y]);
+  if (!native) {                                          // the unsupported build: ?boot=1 leaves the normal reel on screen
+    const off = await browser.newPage({ reducedMotion: 'reduce' });
+    off.setDefaultTimeout(15_000);
+    off.on('pageerror', error => errors.push(error.message));
+    await off.goto(`${base}/?boot=1`);
+    await off.waitForFunction(() => {                     // the reel paints something (not the opaque black of no screen)
+      const d = document.querySelector('canvas.lcd').getContext('2d').getImageData(0, 0, 240, 240).data;
+      for (let i = 0; i < d.length; i += 4) if (d[i] || d[i + 1] || d[i + 2]) return true;
+      return false;
+    });
+    await off.close();
+  }
   if (native) {
     const boot = await browser.newPage({ reducedMotion: 'reduce' });
     boot.setDefaultTimeout(15_000);
     boot.on('pageerror', error => errors.push(error.message));
-    await boot.route('**/reel.bin.gz', route => route.fulfill({ status: 404 }));   // no reel: black is the baseline
+    await boot.route('**/reel.bin.gz*', route => route.fulfill({ status: 404 }));   // no reel: black is the baseline
     await boot.goto(`${base}/?boot=1`);
     await boot.waitForFunction(() => {                    // reduced motion: READY directly (the red rule at y 124)
       const c = document.querySelector('canvas.lcd').getContext('2d').getImageData(120, 124, 1, 1).data;
