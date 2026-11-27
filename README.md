@@ -11,7 +11,7 @@ GRIND MACHINE builds on [Hortator](https://github.com/DeadActive/hortator) by DE
 [**Pre-releases and downloads**](https://github.com/DaFum/grind-machine/releases) · [**Preview installer**](https://dafum.github.io/grind-machine/webapp/installer/) · [**GRIND controls**](docs/grind/live-pages.md) · [**Changelog**](CHANGELOG.md) · [**User manual**](docs/manual/01-welcome.md)
 
 > [!WARNING]
-> **Development firmware. Install at your own risk.** Published GRIND packages are previews, not hardware-qualified releases. Host tests, WASM and a successful native build do not establish that your physical FM-1 is compatible. Back up your data and prepare a verified recovery route before installing. Some inherited assets have restricted or unresolved rights; see [LICENSING.md](LICENSING.md) and the [asset inventory](assets/grind/manifest.json). No automatic flashing or release approval is implied.
+> **Development firmware. Install at your own risk.** Published GRIND packages are previews, not hardware-qualified releases. Passing host tests, WASM runs or a successful native build do not prove that your FM-1 is compatible. Back up your data and prepare a verified recovery route before installing. Some inherited assets have restricted or unresolved rights; see [LICENSING.md](LICENSING.md) and the [asset inventory](assets/grind/manifest.json).
 
 ## Current development status
 
@@ -24,7 +24,7 @@ GRIND MACHINE builds on [Hortator](https://github.com/DeadActive/hortator) by DE
 | BLAST IGNITION and GRIND DNA ENGINE | Approved design and implementation plans, not implemented firmware |
 | Physical FM-1 qualification | Not established; see [compatibility and recovery](docs/grind/compatibility.md) |
 
-This README describes **main with `GRIND_NATIVE=1`**, including the community expansion merged in [PR #19](https://github.com/DaFum/grind-machine/pull/19). GRIND remains opt-in at build time; the default `GRIND_NATIVE=0` build keeps the underlying drum-machine behavior. The published installer may contain an older commit than main. Read its version label and the package's release notes rather than assuming every feature below is in the download.
+This README describes **main with `GRIND_NATIVE=1`**, including the community expansion merged in [PR #19](https://github.com/DaFum/grind-machine/pull/19). GRIND is opt-in at build time; the default `GRIND_NATIVE=0` build keeps the original drum-machine behavior. The published installer may lag behind main, so check its version label and release notes before assuming a feature below is in the download.
 
 ## What it does
 
@@ -54,19 +54,19 @@ The native STYLE selector contains 22 stable generator algorithms plus the 7/4 M
 | Doom | Sludge, Funeral, Stoner |
 | Mathcore | **MATH / 7/4** (Technical in 3+2+2) |
 
-The generator writes tracks 1–8 as **Kick · Snare · Hi-hat · Ride · Crash · China · High tom · Low tom**. With the same config, seed, mutation and protected base, the portable core generates the same pattern. It uses the existing native sequencer, rather than starting a second timing or audio engine.
+The generator writes tracks 1–8 as **Kick · Snare · Hi-hat · Ride · Crash · China · High tom · Low tom**. Generation is deterministic: the same config, seed, mutation and protected base always produce the same pattern. Patterns play on the existing native sequencer; there is no second timing or audio engine.
 
 ### Mathcore 7/4
 
 ![Mathcore 7/4 anchors: 28 sixteenth-note steps in groups of 12, 8 and 8](docs/superpowers/specs/assets/grind-mathcore-grid.svg)
 
-*Original rhythm schematic of the required anchors; not a screenshot or a complete generated pattern.* One bar is 28 sixteenths, 14 eighths or 56 thirty-seconds. Two bars of sixteenths fit in 56 steps. Other styles do not automatically gain 7/4 rules; incompatible grids are refused instead of silently changing the meter.
+*Original rhythm schematic of the required anchors; not a screenshot or a complete generated pattern.* One bar is 28 sixteenths, 14 eighths or 56 thirty-seconds. Two bars of sixteenths fit in 56 steps. Other styles do not gain 7/4 rules automatically; an incompatible grid is refused rather than silently changing the meter.
 
 The portable core also supports 3/4, 4/4, 5/4, 6/8, 7/8 and 9/8, within its 64-step limit and each style's constraints. See the [core contract](docs/grind/portable-core.md) and [7/4 implementation](firmware/src/grind/rules.c).
 
 ### Five native GRIND pages
 
-Press **ARP**, then **ARP again after GRIDS** to enter GRIND on a supported build. Use the existing page navigation and the four parameter knobs.
+On a GRIND-enabled build, press **ARP** to open GRIDS, then keep pressing **ARP** to reach the GRIND pages. Navigate with the usual page controls and the four parameter knobs.
 
 | Page | KNOB 1 | KNOB 2 | KNOB 3 | KNOB 4 |
 | --- | --- | --- | --- | --- |
@@ -79,15 +79,15 @@ Press **ARP**, then **ARP again after GRIDS** to enter GRIND on a supported buil
 - **AGGR / DENS / CHAOS / HUMAN:** shape accents, optional hits, controlled rhythmic variation and microtiming. A style change restores that style's factory controls.
 - **MUT:** generate another deterministic variation. **WHEN:** apply now when stopped, or at the next STEP / END of the longest pattern during playback; all tracks restart together at the native boundary.
 - **KIT / ROLE:** turn twice to confirm the role sounds while stopped; levels, pans, sends and steps stay intact. This is a sound starting point, not a claim of hardware-tuned acoustic modeling.
-- **KEEP / FREE:** protect complete ON or OFF cells (hold a step key in STEPS/ENV on a GRIND page), or protect/release the selected track; FREE releases all tracks. A protected cell that cannot fit the new grid causes refusal. KEEP is distinct from parameter locks.
-- **UNDO:** toggle the last generated pattern change back and forward (one snapshot of steps/timing). Later manual edits can be replaced by it; this is not a general edit history. Save before experimenting.
+- **KEEP / FREE:** protect complete ON or OFF cells (hold a step key in STEPS/ENV on a GRIND page), or protect/release the selected track; FREE releases all tracks. If a protected cell does not fit the new grid, generation is refused. KEEP is separate from parameter locks.
+- **UNDO:** toggle the last generated pattern change back and forward (one snapshot of steps/timing). It can overwrite later manual edits and is not a general edit history. Save before experimenting.
 - **STYLE browser:** inspect all 23 styles using eight-role, 16-step banks with accents, ratchets and KEEP marks. BANK scrolls long patterns; APPLY commits through the normal STYLE request. Leaving without applying cancels the browse. PREVIEW WAITS / KEEP DOES NOT FIT / NO PREVIEW report an unavailable candidate.
 
-Live edits of steps or timing invalidate a waiting generation; a running SONG refuses generation. STYLE and WHEN are retained in device settings; other GRIND controls, KEEP, and the undo snapshot are not saved as a new recipe format. SAVE stores the actual native pattern. Read the [GRIND page reference](docs/grind/live-pages.md) for exact behavior.
+Live edits of steps or timing invalidate a waiting generation; a running SONG refuses generation. STYLE and WHEN are kept in device settings; the other GRIND controls, KEEP marks and the undo snapshot are not saved. SAVE stores the resulting native pattern. Read the [GRIND page reference](docs/grind/live-pages.md) for exact behavior.
 
 ### VARY — natural hit variation
 
-VARY adds deterministic per-hit velocity variation (up to ±8 at 100%). Unlike HUMAN, it changes playback velocity rather than rewriting timing. It affects ordinary drum steps and their ratchets, including manually programmed and kept steps; manual hits, MIDI-triggered hits and ACID/gated tracks are excluded. At zero the existing sound is unchanged. VARY is not a persisted project parameter.
+VARY adds deterministic per-hit velocity variation (up to ±8 at 100%). Unlike HUMAN, it changes playback velocity rather than rewriting timing. It affects ordinary drum steps and their ratchets, including manually programmed and kept steps; manual hits, MIDI-triggered hits and ACID/gated tracks are excluded. At zero the sound is unchanged. VARY is not saved with projects.
 
 ### LIVE — performance macros
 
@@ -97,7 +97,7 @@ VARY adds deterministic per-hit velocity variation (up to ±8 at 100%). Unlike H
 | **SWELL** | Smoothly increase delay and reverb sends through the existing THROW macro. |
 | **CUT** | Stop the normal transport, drop queued/staged changes and cut track voices; delay/reverb tails ring out. PLAY restarts normally. |
 
-SINK and SWELL at zero preserve the original audio path. These levels are not stored and reset at power-up or TOOLS INIT. CUT is a performance action, **not** a recovery command: an FM-Link follower may continue following its leader and a held MIDI REPEAT STEP can continue, as with ordinary STOP. See [LIVE limits](docs/grind/live-pages.md#live-macros-page-4).
+At zero, SINK and SWELL leave the audio path untouched. Their levels are not saved and reset at power-up or TOOLS INIT. CUT is a performance action, **not** a recovery command: an FM-Link follower may continue following its leader and a held MIDI REPEAT STEP can continue, as with ordinary STOP. See [LIVE limits](docs/grind/live-pages.md#live-macros-page-4).
 
 ## Native drum-machine toolkit
 
@@ -141,17 +141,17 @@ PLAY controls transport; REC alone does not start it. OCT-/OCT+ navigate banks o
 | Shared FX | Delay with ping-pong, room/spring/stereo hall reverb, chorus sends, sidechain compressor with GHOST and master limiter |
 | Playing live | PERFORM buffer/filter effects, REPEAT STEP, persistent performance knobs, immediate or next-bar mute, toggle/momentary solo |
 
-The native voice scheduler sheds voices under heavy load to protect the audio deadline; track PRIO influences which voices go first. This is not a guarantee of unlimited polyphony. See [effects](docs/manual/08-effects.md), [modulation](docs/manual/09-modulation.md), [playing](docs/manual/05-playing.md) and [performance](docs/PERFORMANCE.md).
+Under heavy load the voice scheduler drops voices to keep audio running; track PRIO decides which go first. Polyphony is limited. See [effects](docs/manual/08-effects.md), [modulation](docs/manual/09-modulation.md), [playing](docs/manual/05-playing.md) and [performance](docs/PERFORMANCE.md).
 
 ### Projects and live cue
 
 Four flash project slots (A–D), eight pattern variations per project, native quantized cueing, and SONG chains of up to 16 rows with repeats. Projects hold concrete steps, timing, sound settings, effects, locks and motion. Edits stay in RAM until SAVE; another load may require confirmation. The last saved project can load on boot. Unsupported flash chips use RAM-only saving.
 
-Backup and restore are not interchangeable with undo or KEEP. Preserve your presets, projects and sample data before switching firmware. Some newer project formats cannot be read by older firmware. See [project compatibility](docs/manual/06-projects.md).
+Undo and KEEP are not backups. Back up presets, projects and samples before switching firmware. Some newer project formats cannot be read by older firmware. See [project compatibility](docs/manual/06-projects.md).
 
 ### MIDI and USB audio
 
-The inherited connection options include USB MIDI, TRS MIDI input where built/enabled, MIDI LEARN (up to 32 bindings), MIDI clock input/output and THRU. The non-BLE build supports **2 CH** (stereo master), **10 CH MIX** (eight mono tracks on channels 1–8, stereo master on 9–10) and **10 CH FX** (the same eight tracks, with chorus, delay and reverb returns on channels 9–10 instead of the master). The USB names retain the upstream Hortator/Felucca update conventions; the GRIND package identity is **FM-1_984**, distinct from Hortator's FM-1_900. Do not infer package identity from a cached USB port name.
+Connections include USB MIDI, TRS MIDI input where built/enabled, MIDI LEARN (up to 32 bindings), MIDI clock input/output and THRU. The non-BLE build supports **2 CH** (stereo master), **10 CH MIX** (eight mono tracks on channels 1–8, stereo master on 9–10) and **10 CH FX** (the same eight tracks, with chorus, delay and reverb returns on channels 9–10 instead of the master). USB device names keep the upstream Hortator/Felucca conventions, but the GRIND package identity is **FM-1_984** (Hortator's is FM-1_900). Don't judge the installed package by a cached USB port name.
 
 Read [MIDI](docs/manual/10-midi.md) and [USB audio](docs/manual/11-usb-audio.md). The inherited experimental Bluetooth build offers BLE-MIDI, FM-Link and SMC-Mixer integration, with stereo USB audio only and lower audio headroom; it is not the qualified target of the current GRIND preview. Disconnected saved BLE devices can cause stutter. Bluetooth is off by default unless autostart was configured; see the [Bluetooth manual](docs/manual/12-bluetooth.md).
 
@@ -172,7 +172,7 @@ The USB web editor exposes the device's capabilities via SysEx. Use a Web-MIDI-c
 | Samples | Load, preview, trim, normalize, resample, chop and back up sample sets |
 | **GRIND** | Style (including MATH on current main), AGGR/DENS/CHAOS/HUMAN/MUT/WHEN, role kit, KEEP and undo/redo; pending-commit status |
 
-The new panel-only VARY and LIVE controls and dedicated native style-preview page are not advertised as new editor controls. Older firmware without the GRIND capability keeps the existing tabs. Restores and sample uploads are stopped-only. A canceled sample upload can leave the slot empty; keep the source file. Backups cover saved data, so save edits first. Big transfers while clocking a DAW may introduce clock jitter. The editor yields to updates and does not use Bluetooth as an editor link.
+VARY, the LIVE macros and the style browser are panel-only; the editor does not expose them. With older firmware that lacks GRIND, the editor shows only the existing tabs. Restores and sample uploads are stopped-only. A canceled sample upload can leave the slot empty; keep the source file. Backups cover saved data, so save edits first. Large transfers while sending clock to a DAW can cause jitter. The editor yields to updates and does not use Bluetooth as an editor link.
 
 **Current GRIND site:** the preview workflow publishes the [GRIND USB editor](https://dafum.github.io/grind-machine/webapp/editor/) alongside the [preview installer](https://dafum.github.io/grind-machine/webapp/installer/) and firmware package, but not the simulator. Build the site locally only if you need an editor matching unreleased source changes. The original [Hortator editor](https://deadactive.github.io/hortator/webapp/editor/) and [Hortator manual](https://deadactive.github.io/hortator/manual/) are upstream references, not the current GRIND build. See [editor manual](docs/manual/14-web-editor.md) and [wire protocol](web/EDITOR_PROTOCOL.md).
 
@@ -216,7 +216,7 @@ This is **not** an audio transcription model or the planned GROOVE DNA / RIFF IN
 
 ### Remaining community extensions
 
-Per-style preferences, ANCHOR/RETURN, COMPARE, Scene Morph and UNDERGROUND FX (Tape, AM, Phone) remain unimplemented/deferred; the current native application has limited free RAM. See [community expansion plan](docs/superpowers/plans/2026-11-27-grind-community-feature-expansion.md) and [current native page notes](docs/grind/live-pages.md#not-built-ram). The original [design](docs/superpowers/specs/2026-11-27-grind-machine-design.md) and [implementation roadmap](docs/superpowers/plans/2026-11-27-grind-machine-implementation.md) remain the source of planning scope and the approved community quality policy.
+Per-style preferences, ANCHOR/RETURN, COMPARE, Scene Morph and UNDERGROUND FX (Tape, AM, Phone) are deferred because the native application has little free RAM left. See [community expansion plan](docs/superpowers/plans/2026-11-27-grind-community-feature-expansion.md) and [current native page notes](docs/grind/live-pages.md#not-built-ram). The original [design](docs/superpowers/specs/2026-11-27-grind-machine-design.md) and [implementation roadmap](docs/superpowers/plans/2026-11-27-grind-machine-implementation.md) remain the source of planning scope and the approved community quality policy.
 
 ## Install
 
@@ -234,11 +234,11 @@ The CLI can also install a selected package, but no install command is needed to
 
 ### Back to the official firmware
 
-The inherited **SAFE START** path is entered by powering off, holding SEQ during power-on until SAFE START / NO AUDIO – USB UPDATE READY appears, then releasing. It skips the drum engine and leaves USB update available; power off to exit. Use M-VAVE's official M-UPGRADE and the matching official FM-1 firmware from [M-VAVE downloads](https://www.m-vave.com/download). Follow the [recovery guide](docs/RECOVERY.md) if normal update fails. The documented Mac boot-mode recovery has prerequisites; hardware recovery using an [FM-1 Transporter](https://github.com/kurogedelic/FM-1-transporter) may be needed if the device cannot enter boot mode. Recovery is not guaranteed for every fault.
+To enter **SAFE START**, power off, then hold SEQ while powering on until SAFE START / NO AUDIO – USB UPDATE READY appears, and release. It skips the drum engine and keeps USB update available; power off to exit. Use M-VAVE's official M-UPGRADE and the matching official FM-1 firmware from [M-VAVE downloads](https://www.m-vave.com/download). Follow the [recovery guide](docs/RECOVERY.md) if normal update fails. The documented Mac boot-mode recovery has prerequisites; hardware recovery using an [FM-1 Transporter](https://github.com/kurogedelic/FM-1-transporter) may be needed if the device cannot enter boot mode. Recovery is not guaranteed for every fault.
 
 ## Build and try locally
 
-Start with [BUILDING.md](BUILDING.md), which documents the pinned JieLi Linux toolchain and AC79 SDK. The native device compiler is not your desktop GCC; host tests use the desktop compiler separately. Native compilation runs on Linux x86-64 or with the documented Docker setup. Python 3/Pillow are used for generated headers; Emscripten/Docker and Node are used for the simulator.
+Start with [BUILDING.md](BUILDING.md), which documents the pinned JieLi Linux toolchain and AC79 SDK. Device builds need that toolchain, not your desktop GCC (host tests use the desktop compiler). Native compilation runs on Linux x86-64 or in the documented Docker setup. Generated headers need Python 3 and Pillow; the simulator needs Emscripten (or Docker) and Node.
 
 ```sh
 # Generate headers and run the portable + native-host GRIND suites.
@@ -251,7 +251,7 @@ cd build/sim/preview
 python3 -m http.server 8001
 ```
 
-Open `http://localhost:8001/` for the local simulator. The preview without a package is not a firmware installer. The [simulator guide](docs/SIMULATOR.md) explains the build, existing host tests and WebAssembly UI.
+Open `http://localhost:8001/` for the local simulator. This preview contains no firmware installer. The [simulator guide](docs/SIMULATOR.md) explains the build, existing host tests and WebAssembly UI.
 
 For a native build from the repository root with the required toolchain/SDK installed:
 
@@ -272,7 +272,7 @@ GRIND_WASM=1 sh tests/run_grind_tests.sh all
 GRIND_NATIVE=1 bash tools/build_sim.sh --host-only
 ```
 
-Run with the documented compilers and dependencies; the runner accepts exactly one suite argument (or all). Existing [Foundation CI](https://github.com/DaFum/grind-machine/actions/workflows/grind.yml) covers the portable core/golden vectors, native-host tests, WASM/browser, upstream regressions, performance, target build/packages and asset evidence. The existing [community quality policy](docs/superpowers/plans/2026-11-27-grind-machine-implementation.md#community-quality-policy-user-approved-direction-revision-11) governs the evidence; no new release thresholds are introduced here. Check actual job results and hardware status separately.
+Run these with the documented compilers and dependencies; the runner takes exactly one suite name, or `all`. [Foundation CI](https://github.com/DaFum/grind-machine/actions/workflows/grind.yml) covers the portable core/golden vectors, native-host tests, WASM/browser, upstream regressions, performance, target build/packages and asset evidence. The existing [community quality policy](docs/superpowers/plans/2026-11-27-grind-machine-implementation.md#community-quality-policy-user-approved-direction-revision-11) governs the evidence; no new release thresholds are introduced here. Check actual job results and hardware status separately.
 
 ## Layout and documentation
 
@@ -288,7 +288,7 @@ Run with the documented compilers and dependencies; the runner accepts exactly o
 
 [GRIND integration map](docs/grind/integration-map.md) · [Storage layout](docs/grind/storage-layout.md) · [Device install](docs/DEVICE_INSTALL.md) · [Troubleshooting](docs/manual/17-troubleshooting.md) · [Versioning](docs/VERSIONING.md) · [Agent instructions](AGENTS.md)
 
-The [historical full README](https://github.com/DaFum/grind-machine/blob/5d5975cefe5ee954b3eb5c9b39ea5aa5737e5698/README.md) retains the long-form Hortator-derived control reference. It predates this rewrite and has upstream names and outdated GRIND feature counts. For current GRIND behavior, prefer this README, the linked source and GRIND page notes. The inherited public Hortator site uses [GoatCounter](https://www.goatcounter.com) for visits and completed installs; see the previous README's privacy notes for that deployment. This rewrite adds no analytics.
+The [historical full README](https://github.com/DaFum/grind-machine/blob/5d5975cefe5ee954b3eb5c9b39ea5aa5737e5698/README.md) retains the long-form Hortator-derived control reference. It predates this rewrite, uses upstream names and has outdated GRIND feature counts; for current behavior, rely on this README, the linked source and the GRIND page notes. The inherited public Hortator site uses [GoatCounter](https://www.goatcounter.com) for visits and completed installs; see the previous README's privacy notes for that deployment. This rewrite adds no analytics.
 
 ## Credits
 
