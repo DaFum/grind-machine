@@ -78,6 +78,7 @@ case "${1:-all}" in
     controller) run_test controller "$CORE/controller.c" "$CORE/grid.c" "$CORE/rules.c" "$CORE/core.c" "$CORE/locks.c" \
         "$CORE/rng.c" "$CORE/serialize.c" ;;
     grid) run_test grid "$CORE/grid.c" ;;
+    boot_anim) run_test boot_anim "$CORE/boot_anim.c" ;;
     hit_variation) run_test hit_variation ;;
     rng) run_rng ;;
     codec) run_test codec "$CORE/serialize.c" "$CORE/grid.c" ;;
