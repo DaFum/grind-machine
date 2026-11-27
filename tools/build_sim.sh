@@ -103,6 +103,7 @@ cc "${CFLAGS[@]}" "${DEFS[@]}" -o "$OUT/host/sim_record" "$ROOT/tests/sim_record
 gzip -9 -n -f -k "$OUT/reel.bin"
 # the page's typeface: the firmware's own Terminus as a web font (tests/sim_font.mjs), with its licence
 node "$ROOT/tests/sim_font.mjs" "$ROOT/assets/fonts/ter-u16n.bdf" "$OUT/terminus.woff"
+node "$ROOT/tests/sim_boot_preview.mjs"                          # the ?boot=1 scene preview controller (fake clock)
 cp "$ROOT/assets/fonts/Terminus-LICENSE.txt" "$OUT/terminus-license.txt"
 # the features' reel: each chapter's page with its knobs turned to their ends (tests/sim_feature_reel.c)
 cc "${CFLAGS[@]}" "${DEFS[@]}" -o "$OUT/host/sim_feature_reel" "$ROOT/tests/sim_feature_reel.c" -lm
@@ -118,7 +119,7 @@ if ! docker info >/dev/null 2>&1; then
     for _ in $(seq 60); do docker info >/dev/null 2>&1 && break; sleep 1; done
 fi
 EXPORTS=_sim_init,_sim_render,_sim_frame,_sim_btn,_sim_key,_sim_enc,_sim_master,_sim_leds,_sim_key_leds,_sim_fb,_sim_audio,_sim_flash
-EXPORTS=$EXPORTS,_sim_flash_reset,_sim_flash_dirty,_sim_flash_clean,_sim_playing
+EXPORTS=$EXPORTS,_sim_flash_reset,_sim_flash_dirty,_sim_flash_clean,_sim_playing,_sim_boot_preview
 EXPORTS=$EXPORTS,_lab_reset,_lab_model,_lab_param,_lab_global,_lab_step,_lab_play,_lab_hit,_lab_perf,_lab_watch,_lab_mute,_lab_motion,_lab_knob,_lab_motion_clear,_lab_select,_lab_render_mono
 EXPORTS=$EXPORTS,_lab_note,_lab_voice,_lab_grids,_lab_buf,_lab_probes,_lab_probe_count,_lab_probe_clear,_lab_probe_size
 docker run --rm -v "$PWD":/src -w /src -u "$(id -u):$(id -g)" -e EM_CACHE=/src/$OUT/emcache "$IMG" \

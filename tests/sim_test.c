@@ -369,9 +369,49 @@ static void test_frame_cost(void)                    /* informational: a UI fram
     printf("info  UI frame (full redraw): %.0f us\n", (double)(clock() - t0) * 1e6 / CLOCKS_PER_SEC / 200.0);
 }
 
+static void test_boot_preview(void)                 /* BLAST IGNITION's scene through the export (GRIND_NATIVE only) */
+{
+#if GRIND_NATIVE
+    static const uint32_t at[] = {0u, 60u, 120u, 200u, 340u, 399u};
+    uint32_t i, ok = 1, st0, play0, sm0, dirty0, ui0;
+    uint16_t want[240 * 240];
+    sim_init(1);
+    memset(sim_dirty, 0, sizeof sim_dirty);
+    st0 = gm_boot_ui.clock.state;
+    play0 = sim_playing();
+    sm0 = (uint32_t)sim_samples;
+    dirty0 = 0;
+    ui0 = ui.frame;
+    for (i = 0; i < sizeof at / sizeof at[0]; i++) {
+        memset(fb, 0, sizeof fb);
+        ok &= sim_boot_preview(at[i]) == 1;
+        gm_boot_draw_full(gm_boot_sample(at[i]));      /* the shared renderer, called directly */
+        memcpy(want, fb, sizeof want);
+        memset(fb, 0, sizeof fb);
+        sim_boot_preview(at[i]);
+        ok &= memcmp(want, fb, sizeof want) == 0;
+    }
+    memset(fb, 0, sizeof fb);
+    sim_boot_preview(5000u);                            /* past the end: the READY hold */
+    gm_boot_draw_full(gm_boot_sample(399u));
+    memcpy(want, fb, sizeof want);
+    memset(fb, 0, sizeof fb);
+    sim_boot_preview(5000u);
+    ok &= memcmp(want, fb, sizeof want) == 0;
+    for (i = 0; i < sizeof sim_dirty / sizeof sim_dirty[0]; i++)
+        dirty0 |= sim_dirty[i];
+    ok &= dirty0 == 0u && gm_boot_ui.clock.state == st0 && sim_playing() == play0 && (uint32_t)sim_samples == sm0 &&
+          ui.frame == ui0;                              /* flash, transport, time and the adapter untouched */
+    check("BLAST IGNITION preview: the export is the shared renderer at fixed times and touches nothing else", ok);
+#else
+    check("BLAST IGNITION preview: unsupported (GRIND_NATIVE=0), returns 0", sim_boot_preview(0) == 0);
+#endif
+}
+
 int main(void)
 {
     test_boot_and_input();
+    test_boot_preview();
     test_audio();
     test_leds();
     test_step_tap_hold();

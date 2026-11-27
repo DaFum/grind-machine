@@ -645,3 +645,21 @@ test('lab: the pump under an MD kick: BDTRX keys the compressor, an ACID line (n
   assert.equal(off.gr, 0);
 });
 
+
+// BLAST IGNITION's scene export (sim_core.c sim_boot_preview): present in both builds; supported only when the build is
+// GRIND_NATIVE=1 (GRIND_NATIVE in the environment names the expected mode, default 0). An isolated instance, never booted.
+test('boot preview: the export, the expected mode, the scene, and nothing else touched', async () => {
+  const native = (process.env.GRIND_NATIVE ?? '0') === '1';
+  const sim = await Fm1Sim.create(WASM);
+  assert.equal(typeof sim.x.sim_boot_preview, 'function', 'sim_boot_preview must be exported in both modes');
+  assert.equal(sim.bootPreview(399), native);
+  if (!native) return;
+  const frames = [0, 60, 120, 200, 340, 399].map(ms => { sim.bootPreview(ms); return hash(sim.fb()); });
+  assert.ok(new Set(frames).size > 3, 'the preview changes over its 400 ms');
+  sim.bootPreview(5000);
+  const hold = hash(sim.fb());
+  sim.bootPreview(399);
+  assert.equal(hash(sim.fb()), hold, 'past the end holds READY (399)');
+  assert.equal(sim.playing(), false);
+  assert.equal(sim.takeDirty().length, 0, 'no flash is touched');
+});
