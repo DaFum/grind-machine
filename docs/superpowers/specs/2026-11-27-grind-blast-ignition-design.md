@@ -119,6 +119,8 @@ stateDiagram-v2
 
 `DONE` ist bis zum nächsten echten Start terminal. Menüwechsel, Projektwechsel, Rückkehr aus OTA oder ein erneuter Zeichenbedarf starten die Animation nicht erneut. Simulator und Hosttests erhalten einen ausdrücklichen Reset nur zur Modellierung eines neuen Boots. Zustand und Cache liegen in gewöhnlichem Laufzeitspeicher, nicht in Flash oder `.noinit`.
 
+Den frühen SYSTEM-WAKE-Titel entfernt bereits der unveränderte Bildschirm-Clear in `main.c`. Wird PENDING vor dem ersten aktiven Bild abgebrochen oder durch einen Vorrangzustand übersprungen, fügt die UI-Anbindung keinen zweiten Clear hinzu. Erst tatsächlich in ACTIVE gezeichnete Pixel benötigen beim Abschluss oder Abbruch die eigene Bereinigung vor der nativen Darstellung.
+
 ### 4.2 Bestehende Hooks
 
 | Anker | Geplante Integration |
@@ -158,7 +160,7 @@ Bei `persist_note != 0` entfällt die bewegte Präsentation vollständig. Die be
 
 ### 4.5 Übergabe an die native Oberfläche
 
-Wenn die Präsentation das Display belegt hat, beendet die Übergabe den letzten LCD-Transfer, setzt den Hintergrund auf das native `C_BG`, setzt `ui.force = 1` und läuft im selben `ui_draw()`-Aufruf in die reguläre Darstellung weiter. Die neue Darstellung stellt auch Pixel außerhalb der geänderten Animationsfenster wieder her. Der Animationscache wird ungültig; ein späteres `ui.force` reaktiviert ihn nicht.
+Wenn mindestens ein aktives Animationsbild das Display belegt hat, beendet die Übergabe den letzten LCD-Transfer, setzt den Hintergrund auf das native `C_BG`, setzt `ui.force = 1` und läuft im selben `ui_draw()`-Aufruf in die reguläre Darstellung weiter. Die neue Darstellung stellt auch Pixel außerhalb der geänderten Animationsfenster wieder her. Ein bereits in PENDING erfolgter Abbruch fügt keinen eigenen Clear hinzu, weil `main.c` den frühen Titel schon entfernt hat. Der Animationscache wird ungültig; ein späteres `ui.force` reaktiviert ihn nicht.
 
 Die Startansicht bestimmt weiterhin `drum_boot_init()` mit `home_tracks()` und dem bestehenden Projekt-Autoload. Die Animation implementiert keine Speicherung oder Wiederherstellung einer „zuletzt verwendeten Seite“ und wählt weder eine neue Seite noch ein Projekt. [S5]
 
@@ -174,7 +176,8 @@ Die Startansicht bestimmt weiterhin `drum_boot_init()` mit `home_tracks()` und d
 | Änderung von Logo/Farbe/Angriffsstrichen | Wortzeichenfenster `(20,36,201,84)` |
 | Änderung von Raster/Laufmarke/Trennlinie | Rasterfenster `(24,124,192,70)` |
 | Gleicher gesampelter Bildzustand | Kein weiterer LCD-Transfer |
-| Ende/Abbruch | Einmalige Übergabe an den nativen Vollbild-Zeichenpfad |
+| Ende/Abbruch nach ACTIVE | Einmalige Bereinigung und Übergabe an den nativen Vollbild-Zeichenpfad |
+| Abbruch in PENDING | Reguläre native Darstellung ohne zusätzlichen Clear der UI-Anbindung |
 
 Der erste aktive Aufruf zeichnet neu, weil `main.c` das frühe Titelbild nach seiner vorhandenen Wartezeit schwarz löscht. Danach werden nur veränderte Fenster übertragen. Jedes Fenster wird im Canvas mit seinem Hintergrund und allen darin liegenden Szenenbestandteilen neu aufgebaut; so verschwinden alte Laufmarken und Angriffsstriche ohne Nachbilder.
 
@@ -200,7 +203,7 @@ Der heutige Simulator ruft den nativen Titelhook nicht auf. Seine normale Zeit k
 
 Die Vorschau wird ausdrücklich über `?boot=1` aktiviert und nutzt eine separate `Fm1Sim`-WASM-Instanz ohne `.boot()`. Ein neuer Export `sim_boot_preview(elapsed_ms)` zeichnet mit demselben C-Sampler und Renderer in deren bestehende Host-LCD-Fläche. Er initialisiert keine Projekte, startet kein Audio und verändert keine Flash-Sektoren. JavaScript liefert nur die verstrichene Vorschauzeit und die Anzeige über den vorhandenen RGB565-Pfad.
 
-Die Vorschau spielt die bewegten 400 ms einmal ab und hält anschließend das READY-Bild. Bei `prefers-reduced-motion: reduce` erscheint direkt dieses Standbild. Escape oder Einschalten beendet die Vorschau; Einschalten führt unmittelbar in den vorhandenen AudioWorklet-Start. Solange die Vorschau ihr Display besitzt, darf `reelTick()` sie nicht überschreiben. Nach Abbruch gilt wieder der vorhandene Demo-Reel-/Live-Pfad. Der Loader verwirft verspätet fertiggeladene Vorschauinstanzen nach einem Abbruch.
+Die Vorschau spielt die bewegten 400 ms einmal ab und hält anschließend das READY-Bild. Bei `prefers-reduced-motion: reduce` erscheint direkt dieses Standbild. Escape oder Einschalten beendet die Vorschau; Einschalten führt unmittelbar in den vorhandenen AudioWorklet-Start. Solange die Vorschau ihr Display besitzt, darf `reelTick()` sie nicht überschreiben. Nach Abbruch gilt wieder der vorhandene Demo-Reel-/Live-Pfad. Die letzte Vorschaugrafik wird spätestens beim nächsten Paint ersetzt: durch einen schon wartenden normalen Frame, den verfügbaren Reel oder – solange noch kein Live-Frame vorhanden ist – die bestehende dunkle Anzeige mit ausgeschalteten visuellen LEDs. Auch ohne geladenen Reel darf kein Vorschau-Standbild zurückbleiben. Ein unveränderter Reel-Zielindex erlaubt das erneute Zeichnen seines vorhandenen Bildes, ohne Encoderbewegungen erneut abzuspielen. Escape nach Übernahme durch die Live-Ansicht verändert diese nicht. Der Loader verwirft verspätet fertiggeladene Vorschauinstanzen nach einem Abbruch.
 
 Ohne `?boot=1` bleiben `sim_init()`, AudioWorklet, Demo, Flashspeicherung und normales Startverhalten unverändert. Ein Build ohne GRIND meldet die Vorschaufunktion als nicht verfügbar und nutzt seinen vorhandenen Reel. Browser-Vorschau und Host-Screenshots belegen Geometrie und Funktionszustände, keine SPI-Laufzeit, Bootguard- oder Audiohardwarefunktion.
 
@@ -213,7 +216,7 @@ Ohne `?boot=1` bleiben `sim_init()`, AudioWorklet, Demo, Flashspeicherung und no
 | Eingaben | PLAY, Notentaste, Regler sowie HOME/REC-Tap/Hold werden nach Abbruch genau einmal nativ verarbeitet | BA03, BA04 |
 | Boot-Sonderfälle | SAFE START, Kalibrierung, Autoload-Erfolg/-Fehler, Verlust-/Migrationshinweise und neue Nachricht während ACTIVE | BA04 |
 | Update und Anzeige | Update-Hush trotz bereits gelöschtem Request, Restore, Rückkehr zur nativen Oberfläche, keine Wiederaufnahme | BA04 |
-| Simulator | Derselbe C-Bildzustand, Default unverändert, fehlendes Audio, Reduced Motion, Abbruch während Laden, Reel-Vorrang | BA05 |
+| Simulator | Derselbe C-Bildzustand, Default unverändert, Browser-Smoke in beiden Buildmodi, Reduced Motion, Abbruch während Laden/ohne Reel, unveränderte Encoderbewegung beim Reel-Neuzeichnen und Live-Vorrang | BA05 |
 | Integration | Vorhandene Host-/WASM-/native Prüfungen, Ressourcenbericht und unveränderte Recovery-Quellen; tatsächliche Gerätebefunde separat | BA06 |
 
 Diese Tabelle ordnet die Umsetzung den bestehenden Testwegen zu. Sie richtet keine zusätzliche Freigabeinstanz ein. Optional nicht verfügbare Instrumentierung bleibt SKIPPED, ein nicht erfolgter Gerätetest wird nicht als bestanden bezeichnet. Ein reiner Dokumentations-PR benötigt keine erfundenen Firmware-Testläufe.

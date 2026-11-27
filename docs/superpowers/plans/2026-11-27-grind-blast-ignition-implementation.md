@@ -22,6 +22,8 @@ The user's approval covers this design and implementation plan. It does not need
 
 Read the pinned source links in specification section 8 before execution. Recheck the current branch because other GRIND work may change the UI or simulator. Preserve that work and integrate at function anchors, not historical line numbers.
 
+Before any BA01 edits or commits, capture the chosen implementation base once with `GM_BOOT_BASE=$(git rev-parse HEAD)` and record its full SHA in the implementation evidence. The inspected source for this plan is `67be119a59b11d0ae154217d9248becefca59190`; a later implementation must record its actual starting commit. Restore `GM_BOOT_BASE` from that recorded SHA in a new execution session. Do not recompute it from a moving `HEAD` or `main` during BA06.
+
 Key source constraints:
 
 - `main.c` calls the title before timers/input/audio, then performs its existing 30 ms wait, possible calibration, 400 ms wait and black fill. Motion starts **after** that sequence in the regular UI. Do not replace, wrap or macro-substitute `fm1_delay_ms`, move protected code into an exempt function, render from an IRQ or widen the checker exclusions.
@@ -52,6 +54,7 @@ Key source constraints:
 | `tests/sim_core.c`, `tests/sim_test.c`, `tests/sim_glue.mjs` | Shared scene preview export and native/WASM equivalence |
 | `tools/build_sim.sh` | Explicit preview export and preview-controller test registration |
 | `web/sim/engine.js`, `app.js`; new `web/sim/boot-preview.js`, `tests/sim_boot_preview.mjs` | Thin WASM wrapper and cancelable opt-in presentation controller |
+| `tests/grind/browser_smoke.mjs` | Assert the actual build mode and rendered preview handoff using the existing browser fixture |
 | `docs/manual/15-simulator.md`, `docs/grind/acceptance.md`, `CHANGELOG.md` | Describe implemented behavior and record actual evidence in BA06 |
 
 Firmware include order is `ui.c → ui_draw.c → ui_menu.c → ui_input.c → project.c → editor.c → main.c`. Put guarded static declarations in `ui.c`, definitions in the late `boot_ui.c`. This permits reading `persist_note`, UI state and, in the OTA build, `ed.hush`. `boot_draw.c` must not depend on the `rg_*` helpers or future UI declarations.
@@ -337,7 +340,7 @@ static int gm_boot_ui_draw(uint32_t now_ms);
 static struct {
     gm_boot_clock clock;
     gm_boot_frame previous;
-    uint8_t has_pixels, previous_valid, deferred_loaded;
+    uint8_t has_pixels, previous_valid, deferred_loaded; /* has_pixels: active UI-loop scene only */
 } gm_boot_ui;
 static void gm_boot_ui_reset(void)
 {
@@ -379,8 +382,8 @@ static void gm_boot_ui_title(void)
         return;
     gm_boot_arm(&gm_boot_ui.clock);
     gm_boot_draw_full(wake);
-    gm_boot_ui.has_pixels = 1;
-    gm_boot_ui.previous_valid = 0; /* main.c later clears the early title */
+    gm_boot_ui.has_pixels = 0; /* main.c clears this early WAKE before any ordinary UI call */
+    gm_boot_ui.previous_valid = 0;
 }
 static void gm_boot_ui_input(uint32_t pressed, uint32_t notes)
 {
@@ -419,6 +422,8 @@ static int gm_boot_ui_draw(uint32_t now_ms)
 
 Call the blocker only while pending/active or about to hand off; a later implementation may short-circuit terminal states to avoid unnecessary reads. It remains read-only. A running UI remains responsive because the adapter never waits for elapsed time, consumes an event, changes a project, or invokes audio/USB services itself.
 
+The early title and active scene have different cleanup owners: the unchanged `main.c` clears SYSTEM WAKE; the adapter clears only pixels it subsequently painted during ACTIVE. Cancelling or blocking PENDING must not add another full-screen fill before the first native dialog or input result. ACTIVE completion/cancellation still synchronizes and clears once before the native redraw.
+
 - [ ] Add these guarded hooks at their exact function anchors:
 
 | Function | Code insertion |
@@ -456,9 +461,9 @@ return steps;
 This catches a step arriving after the initial peek but consumed by a later native handler in the same UI pass. It does not read or drain the encoder twice. Preserve `host_enc_late` semantics; the peek must not advance that injected-late-step fixture.
 
 - [ ] Add `#if GRIND_NATIVE` / `#include "grind/boot_ui.c"` / `#endif` in `felucca.c` after the optional editor/console/BT-API definitions and before the `main.c` include. Add the corresponding relative include after project inclusion in `tests/ui_host.h` and `tests/sim_host.h`. In `ui_host.h`, allow `GM_BOOT_UI_DEFER_INCLUDE` to defer this include for the editor fixture in BA04. Add a guarded `gm_boot_ui_reset()` call in `ui_host_init()` so independent tests cannot inherit terminal state. Remove BA02's temporary direct includes from the renderer fixture.
-- [ ] Drive `fm1_ms` explicitly in the new fixtures and reset it for each modeled boot. Existing `ui_frame()`/`render_mix()` do not advance this clock; `host_ticks` is separate. For example, after the first draw at `fm1_ms = 1000u`, set it to `1120u`, `1280u` and `1400u` before the next modeled draws. Use explicit wrapped values for the wraparound case. Do not change global host-clock behavior to make these tests pass.
+- [ ] Drive `fm1_ms` explicitly in the new fixtures and reset it for each modeled boot. Existing `ui_frame()`/`render_mix()` do not advance this clock; `host_ticks` is separate. For example, after the first draw at `fm1_ms = 1000u`, set it to `1120u`, `1280u` and `1400u` before the next modeled draws. Use explicit wrapped values for the wraparound case. Model the existing `main.c` black fill after the title/calibration sequence and before the first ordinary UI call. Do not change global host-clock behavior to make these tests pass.
 - [ ] Run focused fixtures green. Check a complete natural run, cancellation before the first active draw, skipped frames, and a millisecond wrap. Compare input outcomes with an otherwise identical unarmed baseline: `transport_req`/PLAY, selected track after one note, parameter delta for one encoder step, HOME/REC tap and hold effects. Run the same event sequence twice only in independently reset fixtures, never compare two samples of the animation as the sole oracle. Verify first input is processed once and not postponed to release; verify normal `ui_leds()` is still called.
-- [ ] Confirm completion/cancellation restores the full native framebuffer, leaves `ui.page`, `ui.home`, selected project, theme and pattern unchanged, and cannot restart on another `ui.force`. Run `sh tests/run_grind_tests.sh boot_ui`, `sh tests/run_grind_tests.sh boot_draw`, and the relevant existing UI/encoder tests through the existing host runner. Commit `feat(grind): integrate interruptible boot presentation` with only BA03 paths.
+- [ ] Confirm completion/cancellation restores the full native framebuffer, leaves `ui.page`, `ui.home`, selected project, theme and pattern unchanged, and cannot restart on another `ui.force`. Measure the adapter separately from the following native draw: cancelling/blocking PENDING after the modeled main clear adds zero LCD fills/blits, while cancellation after an ACTIVE frame performs one cleanup and the next native redraw matches the unarmed baseline. Include failed autoload and input before the first active draw. Run `sh tests/run_grind_tests.sh boot_ui`, `sh tests/run_grind_tests.sh boot_draw`, and the relevant existing UI/encoder tests through the existing host runner. Commit `feat(grind): integrate interruptible boot presentation` with only BA03 paths.
 
 ## 6. BA04 — Preserve boot notices, calibration and update priority
 
@@ -475,13 +480,13 @@ gm_boot_ui_defer_loaded();
 
 Do not change `proj_load()`, the failed-load dialog, `persist_note_show()` or flash data. A message created while PENDING is evaluated at start; cancelling all PENDING messages inside `ui_say()` would make the typed LOADED hook too late.
 
-- [ ] Extend the existing real boot fixture under `GRIND_NATIVE` to reset the new adapter and invoke the existing title after settings initialization in its modeled boot sequence. Reuse its flash setup and boot cases; add assertions to the cases below. These host fixtures model boot behavior and do not execute native `fm1_cstart()` or prove physical recovery.
+- [ ] Extend the existing real boot fixture under `GRIND_NATIVE` to reset the new adapter, invoke the existing title after settings initialization, and model the unchanged main black fill before ordinary UI service. Reuse its flash setup and boot cases; add assertions to the cases below. These host fixtures model boot behavior and do not execute native `fm1_cstart()` or prove physical recovery.
 
 | Fixture setup | Required observation |
 |---|---|
 | No remembered project, no errors | Presentation runs once; native boot state unchanged |
 | Valid remembered project | Existing successful LOADED deferred, then shown with full lifetime |
-| Failed remembered project | `ui.confirm == 5`; normal failure dialog, no active presentation |
+| Failed remembered project | `ui.confirm == 5`; normal failure dialog, no active presentation or extra adapter clear |
 | SEQ held at power-on | SAFE START, stopped state and existing recovery screen; no animation |
 | Any `persist_note` loss/migration/clamp flag | No active presentation; existing note order/text unchanged |
 | Enter calibration from PENDING or ACTIVE | Terminal cancellation before the first calibration paint; success/cancel/timeout never resumes animation |
@@ -530,7 +535,7 @@ Expected: functional assertions pass in the affected fixtures. Existing optional
 
 ## 7. BA05 — Add the opt-in shared-C simulator preview
 
-**Files:** `tests/sim_core.c`, `tests/sim_test.c`, `tests/sim_glue.mjs`, `tools/build_sim.sh`, `web/sim/engine.js`, `web/sim/app.js`; create `web/sim/boot-preview.js`, `tests/sim_boot_preview.mjs`.
+**Files:** `tests/sim_core.c`, `tests/sim_test.c`, `tests/sim_glue.mjs`, `tests/grind/browser_smoke.mjs`, `tools/build_sim.sh`, `web/sim/engine.js`, `web/sim/app.js`; create `web/sim/boot-preview.js`, `tests/sim_boot_preview.mjs`.
 
 - [ ] Write C and JS tests before the export. A fresh isolated simulator instance may render the scene without `sim_init()`. Snapshot flash dirty bits, transport, sample count and native boot state; preview rendering must leave them unchanged. Compare fixed-time preview pixels to the shared renderer at 0/60/120/200/340/399. The default `sim_init()` tests must remain responsive as before.
 - [ ] Add this export after the simulator's normal declarations, and append `_sim_boot_preview` to `tools/build_sim.sh`'s `EXPORTS` list in both build modes:
@@ -598,9 +603,11 @@ export function createBootPreview(load, emit) {
 
 The controller owns presentation only. The injected `load` creates a fresh `Fm1Sim` from the already fetched `wasmBytes` and never calls `.boot()`. `emit` sets the existing `frame` to `{fb, leds: 0, keyLeds: 0}` while the physical device is only a pre-power preview. It does not send LED or audio commands to a running simulator.
 
-- [ ] In `app.js`, import `Fm1Sim` and `createBootPreview`; construct the controller after the existing frame state is available. Start it only when `new URLSearchParams(location.search).get('boot') === '1'`, after the existing `still` media query has been initialized. Catch a preview-load rejection and leave the normal reel available. At the start of `paint(now)`, use `if (!bootPreview.tick(now)) reelTick(now);` before the unchanged frame painting. Call `bootPreview.cancel()` at the beginning of `powerOn()`, before its first `await`, and on Escape. Clear a queued preview frame on cancellation before the next reel/live frame; do not clear later live Worklet frames. Listen for a change to reduced motion and call `.reduce()` when enabled. Turning it off does not replay the introduction automatically.
+- [ ] In `app.js`, import `Fm1Sim` and `createBootPreview`; construct the controller after the existing frame state is available. Start it only when `new URLSearchParams(location.search).get('boot') === '1'`, after the existing `still` media query has been initialized. Catch a preview-load rejection and leave the normal reel available. At the start of `paint(now)`, use `if (!bootPreview.tick(now)) reelTick(now);` before normal frame painting. Listen for a change to reduced motion and call `.reduce()` when enabled. Turning it off does not replay the introduction automatically.
+- [ ] Add one app-level cancellation helper called at the beginning of `powerOn()`, before its first `await`, and on Escape. Call `bootPreview.cancel()` to invalidate pending loads. Track the owner of queued frames and of the last painted LCD image (`boot`, `reel`, or `live`); discard only a queued `boot` frame. If the LCD still belongs to `boot`, hand it back by the next paint: use a queued normal frame first, otherwise refresh the available pre-power reel, otherwise fill the existing canvas black and clear its visual LED classes, matching the existing no-reel/off baseline. Dropping a queued frame alone does not erase an already painted canvas. Once a live frame owns the LCD, Escape must neither blank it nor discard a queued Worklet frame. Cancelling a pending load that never painted must leave the current normal screen alone. Do not allocate another framebuffer for this handoff.
+- [ ] Make a requested reel refresh work even when its target equals `reelPos`: retain the last reel LED/key-LED metadata and repaint the existing `reelFb` without replaying `reel.apply()` or encoder `spin()` side effects. A later target still follows the existing incremental path. Do not reset `reelPos` to force reconstruction, since this would replay historical encoder deltas. Consume the refresh request once; the ordinary URL and subsequent normal paint loop retain their existing behavior.
 - [ ] Add `tests/sim_boot_preview.mjs` using `node:assert/strict` with a fake clock and deferred loader. Test these exact sequences: 0→60→400 holds READY; reduced mode draws READY once; power-on/Escape cancellation while load is pending prevents a late frame; unsupported export returns false and leaves the reel available; canceled controller never emits again; reducing during playback or loading ends on READY; default URL creates no preview instance. The loading-pending `.reduce()` test catches stale use of the initial function argument: read the current `reduced` variable after `await`, as the controller does.
-- [ ] Register `node tests/sim_boot_preview.mjs` alongside the existing `node tests/sim_font.mjs` in `tools/build_sim.sh`, before its `--host-only` exit. Extend the real WASM `tests/sim_glue.mjs` to verify the C export in both configurations; fake-controller tests do not establish C rendering correctness. Test app-level precedence/cancel wiring in the existing browser smoke fixture `tests/grind/browser_smoke.mjs`, using the current Playwright setup rather than a new browser test stack.
+- [ ] Register `node tests/sim_boot_preview.mjs` alongside the existing `node tests/sim_font.mjs` in `tools/build_sim.sh`, before its `--host-only` exit. Extend the real WASM `tests/sim_glue.mjs` to verify the C export in both configurations; fake-controller tests do not establish C rendering correctness. Extend `tests/grind/browser_smoke.mjs` using its current Playwright setup. Read the expected build mode from `GRIND_NATIVE` (default `0`), assert that the served WASM exports `sim_boot_preview` in both modes, and check its supported/unsupported return on an isolated instance against that mode before selecting cases. Missing or unsupported functionality must fail the GRIND-on run, not silently skip it. The off run covers fallback/default behavior. The on run covers visible `?boot=1` playback, reduced-motion READY, reel priority, Escape with the reel response deliberately failed, cancellation at an unchanged reel target without extra encoder spins, power-on during load/motion, and Escape after a live frame. For the no-reel regression, request READY through reduced motion, make `reel.bin.gz` return 404, confirm the scene, then assert opaque-black canvas pixels and cleared visual LED classes after Escape by the next paint. Assert rendered canvas/LED behavior as well as cancellation of future emissions.
 - [ ] Run:
 
 ```sh
@@ -608,10 +615,12 @@ node tests/sim_boot_preview.mjs
 GRIND_NATIVE=0 bash tools/build_sim.sh --host-only
 GRIND_NATIVE=1 bash tools/build_sim.sh --host-only
 GRIND_NATIVE=0 bash tools/build_sim.sh --preview
+GRIND_NATIVE=0 node tests/grind/browser_smoke.mjs
 GRIND_NATIVE=1 bash tools/build_sim.sh --preview
+GRIND_NATIVE=1 node tests/grind/browser_smoke.mjs
 ```
 
-The host-only script still requires Node for its existing font checks. The preview builds require the repository's configured Emscripten/Docker environment. In the browser inspect `?boot=1`, ordinary URL, reduced motion, Escape, power-on during load and power-on during motion. Label the result as a scene preview, not a measurement of actual boot timing. Commit `feat(sim): preview BLAST IGNITION through the shared C renderer`.
+The host-only script still requires Node for its existing font checks. The preview builds require the repository's configured Emscripten/Docker environment. Run each browser smoke immediately after its matching preview build because both modes write `build/sim/preview`; use the existing Chromium/Playwright environment with `GRIND_CHROMIUM` set as in the current WASM lane. The default lane alone exercises an off build and cannot establish enabled-preview coverage. Inspect `?boot=1` and the ordinary URL in the browser, and label the result as a scene preview, not a measurement of actual boot timing. Commit `feat(sim): preview BLAST IGNITION through the shared C renderer`.
 
 ## 8. BA06 — Integrate existing checks and document actual results
 
@@ -629,7 +638,22 @@ GRIND_NATIVE=1 bash tools/grind/run_ci.sh native
 
 These commands are the repository's current lanes, not a new requirement to run unavailable toolchains locally. The native lane needs its pinned vendor archive and SDK supplied as already documented in `.github/workflows/grind.yml`. The normal WASM/web lane may use the default build, so retain BA05's explicit GRIND-on preview evidence as well. Use existing resource reports for actual image/RAM/pool changes; preserve the inherited pool floor. Do not reuse historical image sizes as measurements of this implementation.
 
-- [ ] On a full checkout with the approved Hortator ancestor available, run `python3 tools/check_untouched.py --available-reference`. Also inspect `git diff -- firmware/src/main.c firmware/hal firmware/loader tools/check_untouched.py tools/frozen_base.txt`: it must be empty for this feature. Keep historical comparison and optional performance statuses governed by the existing policy; never manufacture a missing tag, disable an old check or convert unavailable measurements to PASS.
+- [ ] On a full checkout with the approved Hortator ancestor available, run `python3 tools/check_untouched.py --available-reference`. Inspect the same protected paths, including the checker and its pin, against the full implementation base recorded before BA01. All three comparisons below must be empty; checking only an unqualified `git diff` would miss committed and staged changes. The separate index comparison also detects a staged edit hidden by a restored working copy.
+
+```sh
+: "${GM_BOOT_BASE:?Use the full pre-implementation SHA recorded in section 1}"
+git diff --exit-code "$GM_BOOT_BASE" HEAD -- \
+    firmware/src/main.c firmware/hal firmware/loader \
+    tools/check_untouched.py tools/frozen_base.txt
+git diff --cached --exit-code "$GM_BOOT_BASE" -- \
+    firmware/src/main.c firmware/hal firmware/loader \
+    tools/check_untouched.py tools/frozen_base.txt
+git diff --exit-code "$GM_BOOT_BASE" -- \
+    firmware/src/main.c firmware/hal firmware/loader \
+    tools/check_untouched.py tools/frozen_base.txt
+```
+
+This corrects the existing scope inspection; it adds no workflow or approval criterion. Keep historical comparison and optional performance statuses governed by the existing policy; never manufacture a missing tag, disable an old check or convert unavailable measurements to PASS.
 - [ ] Verify native-off behavior via the old title fixture and both simulator build modes; native-on via the new host cases and actual target link. Preserve the `ui_draw` attribute, native USB identity and package names. A new allocation must fit the existing target check, not a newly invented animation percentage or byte reserve.
 - [ ] During the project's already authorized device validation, observe the title, unoperated sequence, first PLAY/note/encoder action, SAFE START and calibration return; verify ordinary update/recovery through the existing procedure. Record tested hardware, commit and observed behavior only after those actions occur. This plan does not flash a device or make missing device evidence a prerequisite for merging these planning documents.
 - [ ] Update the manual with the real timing distinction (static title during initialization, 400 ms interruptible presentation afterward), pass-through input, LOADED deferral and `?boot=1` scene preview. Record source commit, completed tests, skipped/unavailable instrumentation and actual native resources in the existing evidence documents. A statement such as “native animation tested on hardware” requires a real device result.
@@ -650,4 +674,4 @@ These commands are the repository's current lanes, not a new requirement to run 
 
 BA01 is independent portable work. BA02 follows its sample contract. BA03 integrates their implementation; BA04 completes the real boot/update behavior before the feature is considered integrated. BA05 can proceed after the renderer contract stabilizes, with one integrator for shared include/test files. BA06 records actual integrated results. None of these tasks depends on merging the separate DNA ENGINE or community expansion PR.
 
-The planning PR contains this plan, its specification and storyboard only. It changes no executable firmware, CI configuration or release criterion. Implementation remains a subsequent code change following these six tasks.
+The planning PR contains this plan, its specification, storyboard and the storyboard's entry in the existing asset-license inventory. It changes no executable firmware, CI configuration or release criterion. Implementation remains a subsequent code change following these six tasks.
