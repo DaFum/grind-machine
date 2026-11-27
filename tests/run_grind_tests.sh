@@ -90,6 +90,7 @@ case "${1:-all}" in
     grid) run_test grid "$CORE/grid.c" ;;
     boot_anim) run_test boot_anim "$CORE/boot_anim.c" ;;
     boot_draw) run_boot_native boot_draw ;;
+    boot_ui) run_boot_native boot_ui ;;
     hit_variation) run_test hit_variation ;;
     rng) run_rng ;;
     codec) run_test codec "$CORE/serialize.c" "$CORE/grid.c" ;;
@@ -117,6 +118,7 @@ case "${1:-all}" in
         run_native persist
         run_native menu
         run_boot_native boot_draw
+        run_boot_native boot_ui
         run_grind_editor
         ;;
     *) echo "unknown suite: $1" >&2; exit 2 ;;

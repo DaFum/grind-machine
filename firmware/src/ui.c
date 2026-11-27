@@ -164,9 +164,21 @@ static uint32_t page_first(uint32_t fam)
     return 0;
 }
 
+#if GRIND_NATIVE
+static void gm_boot_ui_reset(void); /* host new-boot fixtures only; native BSS supplies reset */
+static void gm_boot_ui_title(void);
+static void gm_boot_ui_cancel(void);
+static void gm_boot_ui_notice_changed(void);
+static void gm_boot_ui_defer_loaded(void);
+static void gm_boot_ui_input(uint32_t pressed, uint32_t notes);
+static int gm_boot_ui_draw(uint32_t now_ms);
+#endif
 static void ui_say(const char *a, const char *b)     /* transient message in the top bar: a + b */
 {
     uint32_t n;
+#if GRIND_NATIVE
+    gm_boot_ui_notice_changed();
+#endif
     str_cpy(ui.msg, a, sizeof ui.msg);
     n = str_len(ui.msg);
     str_cpy(ui.msg + n, b, sizeof ui.msg - n);

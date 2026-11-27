@@ -83,6 +83,11 @@ static void enc_frame(void)
     enc_st.frames = fr + 1u;
 }
 
+#if GRIND_NATIVE
+/* BLAST IGNITION: is a step waiting? (does not consume it) */
+static int enc_pending(uint32_t e) { return enc_st.total[e] != enc_seen[e]; }
+#endif
+
 /* detent steps of encoder e turned since the last call, + = clockwise (main loop) */
 static int32_t enc_take(uint32_t e)
 {

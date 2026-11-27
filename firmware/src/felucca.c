@@ -211,7 +211,10 @@ static void ota_commit(const uint8_t *parm)
 #if __has_include("editor_sample.c")
 #include "editor_sample.c"           /* SMP_INFO .. SMP_RENAME: the user sample slots */
 #endif
-#include "editor.c"                  /* framing, INFO .. WATCH, TEXT, pushes, the update-silence rule */
+#include "editor.c"                   /* framing, INFO .. WATCH, TEXT, pushes, the update-silence rule */
+#endif
+#if GRIND_NATIVE
+#include "grind/boot_ui.c"           /* BLAST IGNITION: the interruptible title presentation (after UI, project and editor) */
 #endif
 #if FELUCCA_CDC
 #include "console.c"

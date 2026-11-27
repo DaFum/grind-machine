@@ -3,10 +3,6 @@
 #undef NDEBUG
 #include <assert.h>
 #include "../ui_host.h"
-#if GRIND_NATIVE
-#include "boot_anim.c"
-#include "boot_draw.c"
-#endif
 
 static int fails;
 static int check(const char *what, int ok)
