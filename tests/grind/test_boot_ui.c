@@ -63,11 +63,13 @@ static void natural_run(void)
 
 static void input_cancels_and_counts_once(void)
 {
-    uint32_t ok = 1, before, shown_base, shown_armed;
+    uint32_t ok = 1, before, pressed_home, shown_base, shown_armed;
     model_boot(0);
     before = ui.home;
     press(B_EDIT);
     at(1000u);
+    pressed_home = ui.home;                            /* EDIT acts on the press pass itself */
+    ok &= pressed_home != before;
     release_all();
     at(1010u);
     shown_base = ui.home;                              /* EDIT leaves HOME: observable, once */
@@ -78,6 +80,7 @@ static void input_cancels_and_counts_once(void)
     press(B_EDIT);
     at(1010u);
     ok &= gm_boot_ui.clock.state == GM_BOOT_DONE;      /* the first input ends it ... */
+    ok &= ui.home == pressed_home;                     /* ... and the press acts in that same pass, once */
     release_all();
     at(1020u);
     shown_armed = ui.home;
@@ -86,7 +89,7 @@ static void input_cancels_and_counts_once(void)
     ok &= gm_boot_ui.clock.state == GM_BOOT_PENDING;
     press(B_EDIT);
     at(1000u);
-    ok &= gm_boot_ui.clock.state == GM_BOOT_DONE && PX(25, 138) != 0x30C3;
+    ok &= gm_boot_ui.clock.state == GM_BOOT_DONE && PX(25, 138) != 0x30C3 && ui.home == pressed_home;
     release_all();
     at(1010u);
     ok &= ui.home == shown_base;                       /* the same single action */

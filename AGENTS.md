@@ -17,7 +17,7 @@
 ## Testing
 - New behaviour needs a test that fails first. A check that compares a value with itself passes for the wrong reason; record the value before the action and require it to change.
 - With `GRIND_NATIVE=1` the start screen is BLAST IGNITION, so legacy HORTATOR title checks (`tests/ui_test.c`) run only with `GRIND_NATIVE=0`.
-- In host UI tests a button acts on release (`press`, frame, `release_all`, frame), and `transport_req` is consumed by audio rendering: assert on a state that survives, such as `ui.home` or `song.playing`.
+- In host UI tests some buttons act on press and others on release (PLAY): run `press`, frame, `release_all`, frame and check the state after each step, and `transport_req` is consumed by audio rendering: assert on a state that survives, such as `ui.home` or `song.playing`.
 - Host tests that fake a running song (`chain.running = 1`) must not run frames while it is faked.
 
 ## Gotchas
