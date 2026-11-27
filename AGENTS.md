@@ -2,8 +2,8 @@
 
 ## Critical Commands
 - Generated headers must exist first: `python tools/build.py --gen-only` (tests include `build/gen`).
-- GRIND tests: `sh tests/run_grind_tests.sh <suite>` (suites: grid rules codec locks morph properties golden controller adapter cue ui persist menu editor hit_variation vary master_fx). Set `CC` if `cc` is missing, e.g. `CC="python -m ziglang cc -Wno-date-time"`.
-- Upstream firmware tests: for each of `tests/boot_test.c`, `tests/ui_test.c`, `tests/editor_pattern_test.c`, compile once with `-DGRIND_NATIVE=0` and once with `-DGRIND_NATIVE=1` using `$CC -std=gnu11 -O1 -Wno-unused-function -Wno-int-to-pointer-cast -Wno-macro-redefined -fno-sanitize=shift-base -UNDEBUG -DGRIND_NATIVE=<0|1> -Ibuild/gen -Ifirmware/src -Itests -Ifirmware/src/grind tests/<name>.c -o <out> -lm`, run each binary, and require exit code 0 for all six runs.
+- GRIND tests: `sh tests/run_grind_tests.sh <suite>` (suites: rng grid rules codec locks morph properties golden controller adapter cue ui persist menu editor hit_variation vary master_fx; no argument or `all` runs them). Set `CC` if `cc` is missing, e.g. `CC="python -m ziglang cc -Wno-date-time"`.
+- Upstream firmware tests (they write screenshots and crash if the folders are missing: create the `build/ui_shots/*` directories named on the `mkdir -p` line of `tests/run_drum_tests.sh` first): for each of `tests/boot_test.c`, `tests/ui_test.c`, `tests/editor_pattern_test.c`, compile once with `-DGRIND_NATIVE=0` and once with `-DGRIND_NATIVE=1` using `$CC -std=gnu11 -O1 -Wno-unused-function -Wno-int-to-pointer-cast -Wno-macro-redefined -fno-sanitize=shift-base -UNDEBUG -DGRIND_NATIVE=<0|1> -Ibuild/gen -Ifirmware/src -Itests -Ifirmware/src/grind tests/<name>.c -o <out> -lm`, run each binary, and require exit code 0 for all six runs.
 - `golden` fails on a Windows checkout with CRLF line endings. That is not a regression.
 
 ## Architecture Constraints
@@ -19,7 +19,7 @@
 
 ## Gotchas
 - App RAM is at 95,160 of 98,304 B on the native build. Check CI's `RAM .data+.bss` line before adding static state. If a change would push it above 98,304 B, stop, report the measured total and ask the user; do not shrink the voice cap or pool floor. Features that need more than ~3 KB (ANCHOR, Tape) were deferred for that reason.
-- The native build needs the pinned JieLi toolchain and SDK; only CI builds it. Host tests do not.
-- `.vscode/` and local `compile_commands.json` are git-ignored; do not commit them.
+- The native firmware build needs the pinned JieLi toolchain and SDK (`BUILDING.md`; CI's native lane is the reference for the RAM figures). Host tests do not need them.
+- `.vscode/`, `compile_commands.json` and `.clangd` are git-ignored; do not commit them.
 - Before opening or merging a PR, check its base branch (`gh pr view N --json baseRefName`). A PR whose base is another feature branch merges into that branch, not main.
 - Do not merge, release, or write to a connected FM-1 without the user's explicit instruction.

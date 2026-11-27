@@ -6,3 +6,5 @@ docs/manual/index.html
 docs/terminus.woff
 .vscode/
 CLAUDE.local.md
+compile_commands.json
+.clangd
