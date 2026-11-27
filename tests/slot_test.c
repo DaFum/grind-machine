@@ -594,12 +594,11 @@ static void t_user_start(void)
         x = y;
     }
     check("a user slot: START 96 from the main loop's states, exactly",
-          trk[0].v[0].sv.ph[0] == pos + 1u && smp_seek_at((uint32_t)trk[0].v[0].sv.s[4], 96, &(int32_t){0}, &(int32_t){0}) &&
-              (smp_seek_at((uint32_t)trk[0].v[0].sv.s[4], 96, &p, &x), 1));
+          trk[0].v[0].sv.ph[0] == pos + 1u && smp_seek_at((uint32_t)trk[0].v[0].sv.s[4], 96, &(int32_t){0}, &(int32_t){0}));
     {
-        int32_t sp, sx;
-        smp_seek_at((uint32_t)trk[0].v[0].sv.s[4], 96, &sp, &sx);
-        check("a user slot's START state = the decoder's", sp == p && sx == x);
+        int32_t sp = 0, sx = 0;
+        int got = smp_seek_at((uint32_t)trk[0].v[0].sv.s[4], 96, &sp, &sx);
+        check("a user slot's START state = the decoder's", got && sp == p && sx == x);
     }
     smp_user_gen++;                                 /* an upload changed it: the states stale until the main loop */
     check("stale states (a slot just changed) are not used", !smp_seek_at((uint32_t)trk[0].v[0].sv.s[4], 96, &p, &x));
