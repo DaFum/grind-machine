@@ -5,3 +5,4 @@ __pycache__/
 docs/manual/index.html
 docs/terminus.woff
 .vscode/
+CLAUDE.local.md
