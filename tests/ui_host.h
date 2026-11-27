@@ -7,7 +7,9 @@
 #ifndef FELUCCA_FLASH
 #define FELUCCA_FLASH 0
 #endif
+#undef FELUCCA_OTA                                  /* (set by the includer's config first: this host build is without both) */
 #define FELUCCA_OTA 0
+#undef FELUCCA_CDC
 #define FELUCCA_CDC 0
 /* ---- LCD: framebuffer (RGB565, native order) */
 static uint16_t fb[240 * 240];

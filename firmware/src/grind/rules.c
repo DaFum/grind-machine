@@ -181,8 +181,10 @@ gm_result gm_rules_build(const gm_config *c, gm_rule_masks *out)
         return GM_UNSUPPORTED;
     if (c->grid.division == 8u && (c->algorithm == 3u || c->algorithm == 4u))
         return GM_UNSUPPORTED;
-    uint8_t length;
-    (void)gm_grid_length(c->grid, &length);
+    uint8_t length = 0;
+    result = gm_grid_length(c->grid, &length);      /* (a validated grid has a length: checked, so none is read unset) */
+    if (result != GM_OK)
+        return result;
     if (c->grid.den == 4u && c->grid.num == 7u)
         return rules_seven_four(c, length, out);
     const unsigned bar_steps = length / c->grid.bars;

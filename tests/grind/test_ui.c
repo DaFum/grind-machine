@@ -122,8 +122,8 @@ static void style_stopped(void)
     turn(EN_K1, 3);                                  /* STYLE, three detents on */
     frames(3);
     ok &= gm_v[GU_STYLE] > 0 && sig() != before;
-    gm_ui_config(&c);
-    ok &= c.algorithm == (uint8_t)(gm_v[GU_STYLE] + 1) && live_is(&c, &base);
+    ok &= gm_ui_config(&c) == GM_OK;                 /* (c is read below only when it was made) */
+    ok &= ok && c.algorithm == (uint8_t)(gm_v[GU_STYLE] + 1) && live_is(&c, &base);
     ok &= gm_runtime_commits() == 1u && str_eq(ui.msg, gm_style_name((uint8_t)(gm_v[GU_STYLE] + 1)));   /* the style said */
     check("ui: a STYLE turn while stopped publishes the style's pattern at once, the core's own result", ok);
     if (!ok)
@@ -604,8 +604,8 @@ static void browser_confirm_stopped(void)
     turn(EN_K3, 1);                                  /* APPLY */
     frames(3);
     ok &= gm_runtime_commits() == 1u && gm_v[GU_STYLE] == 6 && gm_v[GU_OK] == 0;
-    gm_ui_config(&c);
-    ok &= c.algorithm == 7u && live_is(&c, &base);   /* the preview's pattern, now live */
+    ok &= gm_ui_config(&c) == GM_OK;
+    ok &= ok && c.algorithm == 7u && live_is(&c, &base);   /* the preview's pattern, now live */
     ok &= preview_equals_core(6);
     check("ui: APPLY while stopped publishes the browsed style once and makes it the committed one", ok);
 }
