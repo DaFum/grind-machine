@@ -634,18 +634,6 @@
       ]
     },
     {
-      "path": "docs/superpowers/specs/assets/grind-mathcore-grid.svg",
-      "kind": "tracked",
-      "origin": "Original GRIND MACHINE documentation schematic; reference anchors from firmware/src/grind/rules.c at 5d5975cefe5ee954b3eb5c9b39ea5aa5737e5698, no imported artwork or fonts",
-      "license": "GPL-3.0-only",
-      "sha256": "8ea1730cd67144d61cbc09ef4794996791471a76be3f421d01aa55595cb06a56",
-      "status": "cleared",
-      "notices": [
-        "LICENSE",
-        "LICENSING.md"
-      ]
-    },
-    {
       "path": "docs/superpowers/specs/assets/grind-blast-ignition-storyboard.svg",
       "kind": "tracked",
       "origin": "Original GRIND MACHINE BLAST IGNITION documentation illustration; MD_F3 glyph paths derived from assets/fonts/md_font.txt at 67be119a59b11d0ae154217d9248becefca59190 (Copyright (C) 2026 DEADACTIVE); provenance and construction details embedded in the SVG metadata",
