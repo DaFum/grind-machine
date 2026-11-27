@@ -63,7 +63,7 @@ static void natural_run(void)
 
 static void input_cancels_and_counts_once(void)
 {
-    uint32_t ok = 1, fills, before, shown_base, shown_armed;
+    uint32_t ok = 1, before, shown_base, shown_armed;
     model_boot(0);
     before = ui.home;
     press(B_EDIT);
@@ -73,15 +73,15 @@ static void input_cancels_and_counts_once(void)
     shown_base = ui.home;                              /* EDIT leaves HOME: observable, once */
     ok &= shown_base != before;
     model_boot(1);
-    fills = host_fill_px + host_blit_px;
+    at(1000u);                                         /* the scene is on screen: ACTIVE, not PENDING */
+    ok &= gm_boot_ui.clock.state == GM_BOOT_ACTIVE && PX(25, 138) == 0x30C3;
     press(B_EDIT);
-    at(1000u);
+    at(1010u);
     ok &= gm_boot_ui.clock.state == GM_BOOT_DONE;      /* the first input ends it ... */
     release_all();
-    at(1010u);
+    at(1020u);
     shown_armed = ui.home;
     ok &= shown_armed == shown_base;                   /* ... and acts exactly once, as without the presentation */
-    ok &= host_blit_px + host_fill_px >= fills;
     check("the first button press cancels the presentation and plays as without it", ok);
 
     model_boot(0);

@@ -24,8 +24,6 @@ static void clear_fb(void) { memset(fb, 0, sizeof fb); }
 static void full_at(uint32_t t)
 {
     gm_boot_frame f = gm_boot_sample(t > 399u ? 399u : t);
-    if (t == 0u && 0)
-        f.phase = GM_BOOT_WAKE;
     gm_boot_draw_full(f);
 }
 static void wake_full(void)
