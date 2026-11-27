@@ -72,11 +72,18 @@ try {
     off.setDefaultTimeout(15_000);
     off.on('pageerror', error => errors.push(error.message));
     await off.goto(`${base}/?boot=1`);
-    await off.waitForFunction(() => {                     // the reel paints something (not the opaque black of no screen)
-      const d = document.querySelector('canvas.lcd').getContext('2d').getImageData(0, 0, 240, 240).data;
-      for (let i = 0; i < d.length; i += 4) if (d[i] || d[i + 1] || d[i + 2]) return true;
-      return false;
-    });
+    const seen = new Set();                               // the reel keeps playing: a frozen preview scene would show one image
+    for (let i = 0; i < 20 && seen.size < 2; i++) {
+      seen.add(await off.evaluate(() => {
+        const d = document.querySelector('canvas.lcd').getContext('2d').getImageData(0, 0, 240, 240).data;
+        let h = 2166136261, lit = 0;
+        for (let k = 0; k < d.length; k += 4) { h = Math.imul(h ^ (d[k] | d[k + 1] << 8 | d[k + 2] << 16), 16777619) >>> 0; lit |= d[k] | d[k + 1] | d[k + 2]; }
+        return lit ? h : 0;
+      }));
+      await off.waitForTimeout(300);
+    }
+    seen.delete(0);
+    assert.ok(seen.size >= 2, '?boot=1 on a build without the preview must leave the moving demo reel on screen');
     await off.close();
   }
   if (native) {
