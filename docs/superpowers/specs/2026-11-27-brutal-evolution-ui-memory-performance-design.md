@@ -125,9 +125,11 @@ Die neue Beschreibungsschicht folgt demselben Besitzmodell:
 1. ACTIVE bleibt während der Generierung lesbar. Audio liest keinen gerade bearbeiteten Entwurf.
 2. WRITING/STAGED besitzt ein unveränderliches Rezept mit Basis- und Auftragsrevision.
 3. LATEST-PENDING darf eine neuere Bedienabsicht enthalten, ohne den Worker-Snapshot zu überschreiben.
-4. UNDO hält den vorherigen aktiven Zustand bis zum nächsten erfolgreichen Publish oder bis ein Slot-, Variations- oder Projektwechsel den zugehörigen Kontext beendet. Native Undo-Daten und neue Undo-Metadaten werden gemeinsam invalidiert.
+4. UNDO/REDO hält genau einen vorherigen aktiven Zustand. Der nächste erfolgreiche, tatsächlich verändernde Publish ersetzt ihn; Slot-, Variations- oder Projektwechsel sowie zwischenzeitliche unabhängige manuelle Edits oder Schutzänderungen invalidieren ihn gemäß DNA-Vertrag. Dazu gehören native Step-/Timing-Edits, KEEP/Layer-Locks, relevante PLOCK-/MOTION-Edits sowie manuelle Änderungen an den vom Snapshot wiederhergestellten Rezept-, Basis- oder Performance-Daten. Native Undo-Daten und neue Undo-Metadaten werden gemeinsam mit dem Edit invalidiert; UNDO darf danach nicht mehr tauschen. Interne Revisionserhöhungen durch den Undo-/Redo-Tausch selbst dürfen dessen Snapshot nicht löschen. Gewöhnliches STOP, Ablehnung und NO CHANGE erhalten ihn. [DNA-Undo-Vertrag][dna]
 
 Pattern, Timing, gültige Rezeptidentität und zugehörige Metadaten werden gemeinsam übernommen. Das vorhandene exakte Pattern-Undo wird um passende Metadaten erweitert. Es wird nicht durch bloßes erneutes Generieren aus einem Seed ersetzt: manuelle Edits und KEEP lassen sich dadurch nicht allgemein rekonstruieren. [Aktuelles Commit/Undo][runtime-undo]
+
+**Native Erhaltung bei Layer-Mutation:** `gm_native_export` exportiert nur Steps innerhalb LEN und setzt die übrigen Core-Zellen auf null; `gm_runtime_commit` überschreibt dagegen sämtliche 64 nativen Steps je Track. Eine unveränderte Export-/Publish-Rundreise ist deshalb für die neue selektive Mutation unzulässig. TIMBRE-only veröffentlicht ausschließlich neue Klangmetadaten an der geprüften Commit-Grenze; alle nativen Steps (auch jenseits LEN), Timingwerte und anderen Tracks bleiben bytegenau unverändert. Für RHY/TIME-Mutationen wird nach Ende der Core-Base-Lebensdauer die vorhandene native Stage aus dem vollständigen nativen Ausgangszustand derselben Revision aufgebaut; nur ausdrücklich freigegebene Felder spielbarer Steps des gewählten Tracks und zulässige Timingfelder werden ersetzt. Dormante Steps, unbeteiligte Tracks, KEEP und PLOCK-/MOTION-Daten bleiben unverändert. Lässt sich ein Schutzkonflikt (auch KEEP jenseits LEN) nicht darstellen, wird abgelehnt, nicht stillschweigend geleert. Die Revisionsprüfung vor READY und Consume stellt sicher, dass die erhaltenen Daten noch zur aktiven Basis gehören. Kein zusätzlicher vollständiger Pattern-Puffer; der bisherige Legacy-Generierungspfad bleibt unverändert. [Native Export][native-export] · [Native Commit][native-commit]
 
 Eine Änderung von KEEP, Layer-Locks, relevanten PLOCK-/MOTION-Daten oder des Basiskontexts invalidiert betroffene Kandidaten und Previews. Ein vor dem Setzen einer Sperre berechneter Kandidat darf danach nicht unbemerkt veröffentlicht werden. Vor READY und vor Übernahme wird die Revision geprüft.
 
@@ -192,11 +194,11 @@ Die anfängliche Zielmaske ist konkret:
 | --- | --- |
 | Generisches FM | TUNE, DECAY, INDEX, MDEC, SWEEP und FBK |
 | Gemeinsamer Track-Mix | LEVEL und PAN; nur vorhandene Modulation, nicht der Grundpegel |
-| Resonator | Fine-Tune, DECAY, MIX, TONE, STRUCTURE, POSITION |
-| Filter und Effekte | CUTOFF, RESONANCE, SRR, DIST, CHORUS-/DELAY-/REVERB-Sends sowie INSERT MIX/A/B/C |
+| Resonator | Fine-Tune, DECAY, MIX, TONE, POSITION; STRUCTURE nur bei STRNG, PIPE und MODAL, ausdrücklich nicht bei CHORD |
+| Filter und Effekte | CUTOFF, RESONANCE, SRR, DIST, CHORUS-/DELAY-/REVERB-Sends sowie INSERT MIX; INSERT A/B/C nur bei explizit zugelassenen stetigen Funktionen des wirksamen Typs: SOFT/HARD/FOLD/FUZZ und PHASR/FLANG/CHOR; bei CRUSH ausschließlich C (LPF), nicht A (BITS) oder B (RATE); bei SINE nur nach Prüfung der neuen Parameterbeschreibungen |
 | Neue TIMBRE DNA | Auslenkung von INDEX, MDEC oder FBK |
 
-RATIO, VEL, Modellnummern, Sample-Auswahl, diskrete Wellenformen und andere noch nicht freigegebene Modellparameter werden nicht über MOVE skaliert. Ihre vorhandenen LFO-Routings behalten ihr bisheriges Verhalten. Die Zielmaske wird später modellweise erweitert; ein Parameterindex allein ist keine Freigabe. Die gemeinsame Zuordnung der heute vorhandenen Ziele ist im LFO-Dispatcher sichtbar. [LFO-Ziele][lfo-dest]
+RATIO, VEL, Modellnummern, Sample-Auswahl, diskrete Wellenformen und andere noch nicht freigegebene Modellparameter werden nicht über MOVE skaliert. Ihre vorhandenen LFO-Routings behalten ihr bisheriges Verhalten, auch bei MOVE=0 %. Die Zielmaske ist eine positive, modell-/typabhängige Allowlist: Vor der Skalierung werden der aktuelle Modus und die effektive Parameterbeschreibung (`track_desc`/`ins_desc`, einschließlich diskreter Auswahltabellen in `names`) sowie die tatsächliche DSP-Semantik geprüft. Ein numerischer Bereich 0..127 oder F_INT beweist keine Stetigkeit. CRUSH A/B wählen je 16 Stufen, CHORD STRUCTURE wählt eine Akkordtabelle; diese Ziele bleiben ausdrücklich außerhalb der MOVE-Skalierung. Bei einem Typübergang mit mehrdeutiger A/B/C-Bedeutung wird nicht skaliert, bis der wirksame Typ eindeutig freigegeben ist. Die Zielmaske wird später modellweise erweitert; ein Parameterindex allein ist keine Freigabe. [LFO-Ziele][lfo-dest] · [Modusabhängige Parameter][mode-desc]
 
 Bei 0 % laufen die aufgrund ihrer Routings aktiven LFOs einschließlich ihrer Zufallsfolgen weiter. Andernfalls würde das Herunterdrehen den späteren Verlauf verändern. Gespeicherte Depth-Werte bleiben unverändert. LFO-Anzeige, Spezialpfade und tatsächlich gerenderte Auslenkung verwenden denselben Faktor. INIT und alte Projekte ohne neues Feld erhalten 100 %, nicht 0 %.
 
@@ -252,7 +254,7 @@ Ein vollständiger per-Step-Klangcache wäre teuer: bereits 8 Tracks × 64 Steps
 | Globale Zustandsdaten | angenommene 32 B | 32 |
 | **Ein Snapshot** | | **544** |
 
-Die angenommenen 20 Byte eines Endpunkts bestehen aus acht 16-Bit-Parametern plus je einem Byte für Modell, BRUTAL-Modus, BRUTAL-Intensität und Flags; die Schema-Version steht im gemeinsamen Header. Die genaue Feldbelegung ist erst bei der Implementierung festzulegen. Der 24-Byte-Rezeptansatz ist ebenfalls ein Planungswert.
+Die angenommenen 20 Byte eines Endpunkts bestehen aus acht 16-Bit-Parametern plus je einem Byte für Modell, BRUTAL-Modus, BRUTAL-Intensität und Flags; die Schema-Version steht im gemeinsamen Header. Die genaue Feldbelegung ist erst bei der Implementierung festzulegen. Der 24-Byte-Rezeptansatz ist ebenfalls ein Planungswert; die je Track benötigten Morph-Felder POS und ON müssen darin nachweislich Platz finden oder als zusätzlicher Bedarf in der Ressourcenrechnung ausgewiesen werden.
 
 | Gleichzeitig benötigte Zustände | Angenommener Bruttobedarf |
 | --- | ---: |
@@ -305,7 +307,7 @@ Die vorhandene DNA-Spezifikation sieht zunächst externe Rezeptdateien und einen
 
 Native SAVE sichert weiterhin die vom vorhandenen Format unterstützten Pattern- und Parameterdaten. Daraus folgt keine automatische Speicherung zusätzlicher Timbre-Rezepte, Endpunkte oder MOVEMENT-Einstellungen. Ein gespeicherter Rhythmus kann nach einem Neustart wieder spielbar sein, obwohl die zusätzliche Klangentwicklung ohne erneut geladenes Rezept fehlt. Die neuen Seiten kennzeichnen diesen Zustand sichtbar.
 
-Ein vollständiger externer Export muss Basisprojekt beziehungsweise benötigte Basisparameter, Version, wirksame Schlüssel, Layer-Locks, Timbre-Rezepte, A/B-Endpunkte, BRUTAL-Einstellungen und MOVE enthalten. Nur tatsächlich implementierte Export-/Importfunktionen dürfen als Produktfähigkeit beworben werden. Die spätere Firmware-Integration muss diesen Export oder eine nachgewiesene native Speicherung bereitstellen, bevor ein vollständiger Performance-Roundtrip zugesagt wird.
+Ein vollständiger externer Export muss Basisprojekt beziehungsweise benötigte Basisparameter, Version, wirksame Schlüssel, Layer-Locks, Timbre-Rezepte, A/B-Endpunkte einschließlich ihrer Gültigkeit, die aktuelle Morph-Position POS (0..100) und den Aktivierungszustand ON (OFF/ON) je Track, BRUTAL-Einstellungen und MOVE enthalten. POS und ON werden auch bei deaktiviertem MORPH exportiert; zwei gleiche Endpunkte allein bestimmen nicht den aktiven Klang. Der Import prüft vor jeder Übernahme die Version, Feldgrenzen, Modell-/Moduskompatibilität sowie die Endpunktgültigkeit (ON nur bei zwei gültigen kompatiblen Endpunkten). Nach erfolgreicher expliziter Übernahme stellt er POS und ON zusammen mit A/B und dem zugehörigen Rezept wieder her; ein ungültiges Paket wird ohne Teiländerung abgelehnt. Nur tatsächlich implementierte Export-/Importfunktionen dürfen als Produktfähigkeit beworben werden. Die spätere Firmware-Integration muss diesen Export oder eine nachgewiesene native Speicherung bereitstellen, bevor ein vollständiger Performance-Roundtrip zugesagt wird.
 
 Projekt-/Slotwechsel, Restore oder inkompatibler Modellwechsel invalidieren betroffene Endpunkte und Rezeptidentitäten; MOVE erhält beim definierten Reset den neutralen Wert. SOUND-Capture und Lock-Umschaltung erzeugen keine automatischen Flash-Schreibvorgänge.
 
@@ -316,18 +318,18 @@ Alte Projekte müssen in der neuen Firmware mit neutralen Defaults weiterlaufen.
 | Schritt | Konkretes Ergebnis | Wesentlicher Nachweis |
 | --- | --- | --- |
 | BE00 – Ressourcenbasis | Native Map und RAM/Pool/Flash/Stack-/Audiowerte für einen festen Commit; Zustandsinventar | Gemessener Ausgangspunkt, keine mehrfach gezählten Reserven |
-| BE01 – LOCKS | Feldgenaue Sperren je Track; Revisionsinvalidierung; kohärentes Undo | Nur die gewählte Ebene verändert sich; geschützte OFF-Zellen bleiben OFF |
-| BE02 – TIMBRE DNA | Feste Rezeptgröße, deterministische Konturen, Ziel-Kompatibilität | Gleiches Rezept/Basis/Version ergibt gleiche Hitwerte; AMT=0 neutral |
+| BE01 – LOCKS | Feldgenaue Sperren je Track; Revisionsinvalidierung; kohärentes Undo | Nur die gewählte Ebene verändert sich; geschützte OFF-Zellen bleiben OFF; dormante Steps bleiben vollständig erhalten; fremder manueller Edit invalidiert UNDO/REDO |
+| BE02 – TIMBRE DNA | Feste Rezeptgröße, deterministische Konturen, Ziel-Kompatibilität | Gleiches Rezept/Basis/Version ergibt gleiche Hitwerte; AMT=0 neutral; TIMBRE-only verändert keine nativen Step-/Timing-Bytes (alle 8 × 64 Steps) |
 | BE03 – BRUTAL PERC | MODE/BRUT und klar zugeordnete Stimmenfelder | OFF/0 entspricht alter FM; Pegel, DC, Überläufe und vollständiges Abklingen |
 | BE04 – SINE FOLDER | Neuer Typ mit Dispatch, Beschreibungen, Graph und vorhandenen Fades | Trockener Bypass; schnelle Wechsel und Stille ohne alten Zustand |
-| BE05 – SOUND MORPH | Kompatibilitätsmatrix, A/B-Capture, hitweiser Morph | Exakte Endpunkte; diskrete Konflikte sichtbar; PLOCK/MOTION/LFO unverändert gültig |
-| BE06 – MOVEMENT | Globaler Beitragsfaktor inklusive Anzeige und Sonderpfaden | 100 % exakt neutral; 0 % verändert keine LFO-Phase oder Zufallsfolge |
+| BE05 – SOUND MORPH | Kompatibilitätsmatrix, A/B-Capture, hitweiser Morph | Exakte Endpunkte; diskrete Konflikte sichtbar; PLOCK/MOTION/LFO unverändert gültig; bei bereitgestelltem Export/Import Roundtrip mit POS und ON, auch OFF |
+| BE06 – MOVEMENT | Globaler Beitragsfaktor inklusive Anzeige und Sonderpfaden | 100 % exakt neutral; 0 % verändert keine LFO-Phase oder Zufallsfolge; CRUSH BITS/RATE und CHORD STRUCTURE behalten bei 0/100/200 % ihren Legacy-LFO-Beitrag, erlaubte stetige Ziele skalieren |
 
 BE05 hängt von der Parameterauflösung und den Schutzregeln ab, nicht grundsätzlich von SINE. MOVEMENT kann parallel vorbereitet werden, sobald die einbezogenen Beiträge feststehen. Die Nummerierung beschreibt eine sinnvolle Lieferfolge, keine unnötig starre Abhängigkeit.
 
 Die Umsetzung verwendet die bestehenden Host-, WASM-, Native- und Performance-Prüfungen. Neue Tests richten sich auf die konkreten Risiken: Zustandsbesitz, Lock-Isolation, unveränderte Legacy-Ausgabe, Endpunktgenauigkeit, Bias/DC, Integergrenzen, Typwechsel und Ressourcenänderungen. Host-Ergebnisse belegen keine auf Hardware gemessenen Audiofristen. [Projektvorgaben][agents]
 
-**Abnahmeszenario:** Einen Blastbeat erzeugen; Rhythmus und Timing sperren; ausschließlich TIMBRE mutieren; am nativen END erscheint der neue Klangverlauf, ohne Schlagpositionen zu verändern. Danach MORPH bewegen, MOVE auf 0 und wieder 100 % stellen, Undo auslösen und einen Slotwechsel durchführen. Pattern, wirksames Rezept, Statusanzeige und gespeicherte Automation müssen dabei konsistent bleiben.
+**Abnahmeszenario:** Einen Blastbeat mit belegten Steps jenseits der später verkürzten Tracklänge vorbereiten; native Step- und Timingdaten aller Tracks vorab sichern. Rhythmus und Timing sperren; ausschließlich TIMBRE mutieren; am nativen END erscheint der neue Klangverlauf ohne Änderung eines nativen Steps oder Timingfelds. UNDO und REDO unmittelbar danach prüfen (Pattern und Rezeptidentität kohärent). Track wieder verlängern: die zuvor dormanten Noten einschließlich ihrer Attribute sind unverändert vorhanden. Nach einer weiteren Mutation einen manuellen Step-Edit durchführen: UNDO/REDO ist nicht mehr verfügbar und der Edit bleibt erhalten. MORPH bewegen, MOVE auf 0 und wieder 100 % stellen und einen Slotwechsel durchführen. Bei bereitgestelltem Performance-Export zusätzlich gleiche A/B mit POS=37 und ON sowie OFF separat exportieren/importieren; der jeweilige Hitwert und die Bedienanzeige müssen wiederhergestellt werden, ungültiges ON ohne zwei kompatible Endpunkte wird ohne Teiländerung abgelehnt. Pattern, wirksames Rezept, Statusanzeige und gespeicherte Automation müssen dabei konsistent bleiben.
 
 ## 10. Offene technische Nachweise
 
@@ -392,3 +394,6 @@ Alle GRIND-Dateilinks beziehen sich auf denselben oben genannten Commit. Bei his
 [generator]: https://github.com/DaFum/grind-machine/blob/7b45e8197c45e5c718d670ffa42481724811c76e/firmware/src/grind/core.c#L127-L158
 [audio-constants]: https://github.com/DaFum/grind-machine/blob/7b45e8197c45e5c718d670ffa42481724811c76e/firmware/src/core.h#L35-L40
 [lfo-dest]: https://github.com/DaFum/grind-machine/blob/7b45e8197c45e5c718d670ffa42481724811c76e/firmware/src/lfo.c#L37-L47
+[native-export]: https://github.com/DaFum/grind-machine/blob/7b45e8197c45e5c718d670ffa42481724811c76e/firmware/src/grind/seq_adapter.c#L75-L90
+[native-commit]: https://github.com/DaFum/grind-machine/blob/7b45e8197c45e5c718d670ffa42481724811c76e/firmware/src/grind/runtime.c#L86-L105
+[mode-desc]: https://github.com/DaFum/grind-machine/blob/7b45e8197c45e5c718d670ffa42481724811c76e/firmware/src/params.c#L182-L209
