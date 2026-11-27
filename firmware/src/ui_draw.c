@@ -3081,6 +3081,10 @@ __attribute__((always_inline)) static inline void ui_draw(void)
         }
         return;
     }
+#if GRIND_NATIVE
+    if (gm_boot_ui_draw(fm1_ms))
+        return;
+#endif
     ui.frame++;
     if (ui.menu) {
         draw_menu();

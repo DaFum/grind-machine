@@ -11,6 +11,9 @@
 static uint8_t hflash[0x100000];
 #define SMP_USER_XIP(k) ((const uint8_t *)hflash + 0xA0000u + (k) * 0x14000u)
 #define VAR_XIP(off) ((const void *)(hflash + (off)))
+#if GRIND_NATIVE
+#define GM_BOOT_UI_DEFER_INCLUDE                      /* boot_ui.c after the real editor.c: ed.hush is the OTA branch */
+#endif
 #include "ui_host.h"
 #undef FELUCCA_OTA
 #define FELUCCA_OTA 1
@@ -31,6 +34,9 @@ static uint32_t ota_now_ms(void) { return fm1_ms; }
 static void ota_idle(void) { usb_host_take(); }
 #include "../firmware/src/editor_proto.h"
 #include "../firmware/src/editor.c"
+#if GRIND_NATIVE
+#include "../firmware/src/grind/boot_ui.c"
+#endif
 
 static int fails;
 static int check(const char *what, int ok)
@@ -933,6 +939,49 @@ static void t_grind(void)
 }
 #endif
 
+#if GRIND_NATIVE
+/* BLAST IGNITION yields to update traffic (ed.hush, usb.ota_req): terminal, never restarted once the silence ends */
+static void ig_arm(void)
+{
+    ed.hush = 0;
+    gm_boot_ui_reset();
+    fm1_ms += 1000u;
+    draw_boot_title();
+    lcd_fill(0, 0, 240, 240, C_BG);
+}
+static void t_boot_update_priority(void)
+{
+    uint32_t ok, t;
+    ig_arm();                                          /* PENDING, the upgrade command arrives */
+    ok = gm_boot_ui.clock.state == GM_BOOT_PENDING;
+    usb.ota_req = 1;
+    pass();
+    usb.ota_req = 0;                                   /* main.c clears the request; the silence (ed.hush) stays */
+    ui_frame();
+    ok &= ed.hush && gm_boot_ui.clock.state == GM_BOOT_DONE;
+    ed.hush = 0;
+    fm1_ms += 50u;
+    ui_frame();
+    ok &= gm_boot_ui.clock.state == GM_BOOT_DONE;
+    ig_arm();                                          /* ACTIVE, then recognized update traffic */
+    fm1_ms += 10u;
+    ui_frame();
+    ok &= gm_boot_ui.clock.state == GM_BOOT_ACTIVE;
+    usb.ota_req = 1;
+    pass();
+    usb.ota_req = 0;
+    fm1_ms += 10u;
+    ui_frame();
+    ok &= gm_boot_ui.clock.state == GM_BOOT_DONE;
+    t = fm1_ms;
+    ed.hush = 0;
+    fm1_ms = t + 20u;
+    ui_frame();
+    ok &= gm_boot_ui.clock.state == GM_BOOT_DONE;      /* clearing hush does not restart it */
+    check("ignition: update traffic (ota_req / ed.hush) cancels PENDING and ACTIVE, and it never restarts", (int)ok);
+}
+#endif
+
 int main(int argc, char **argv)
 {
     if (argc > 1 && !(dump = fopen(argv[1], "w")))
@@ -946,6 +995,9 @@ int main(int argc, char **argv)
     t_dup();
     t_watch();
     t_silence();
+#if GRIND_NATIVE
+    t_boot_update_priority();
+#endif
     t_clock_pause();
     t_grind();
     if (dump)

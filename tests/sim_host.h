@@ -51,6 +51,9 @@ static uint8_t fm1__tick_col;                         /* (hal/fm1_input.h: the c
 static void fm1__led_lines(uint32_t rowmask) { (void)rowmask; }   /* (hal/fm1_input.h: the LED lines; led_dim.c's glow) */
 static int32_t enc_take(uint32_t e) { int32_t s = sim_enc_acc[e % 7u]; sim_enc_acc[e % 7u] = 0; return s; }   /* (enc.c) */
 static void enc_frame(void) {}                         /* (enc.c, left out: the scan's decoder; the page feeds steps) */
+#if GRIND_NATIVE
+static int enc_pending(uint32_t e) { return sim_enc_acc[e % 7u] != 0; }   /* (enc.c: a waiting step, not consumed) */
+#endif
 static uint32_t fm1_input_edges(uint32_t *released)
 {
     uint32_t p = fm1_in.pressed;
@@ -193,4 +196,7 @@ static int st_prog(uint32_t off, const void *src, uint32_t n)
 }
 #include "../firmware/src/storage.c"
 #include "../firmware/src/project.c"
+#if GRIND_NATIVE
+#include "../firmware/src/grind/boot_ui.c"          /* BLAST IGNITION: the UI hooks resolve (after UI and project) */
+#endif
 #undef __attribute__

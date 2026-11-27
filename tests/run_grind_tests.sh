@@ -58,6 +58,26 @@ run_native() {
     "$OUT/test_$suite"
 }
 
+run_boot_native() {
+    suite=$1
+    [ "$WASM" = 1 ] && { echo "$suite: native fixture is host-only"; return 0; }
+    "${PYTHON:-python3}" tools/build.py --gen-only > /dev/null
+    for native in 0 1; do
+        $CC -std=gnu11 -O1 -g -Wall -Wno-unused-function -Wno-int-to-pointer-cast -Wno-macro-redefined -Wno-date-time ${GRIND_SAN_FLAGS:+${GRIND_SAN_FLAGS} -fno-sanitize=shift-base} -UNDEBUG -DGRIND_NATIVE="$native" -DGRIND_BOOT_LCD_ASSERT=1 -Ibuild/gen -Ifirmware/src -Itests -I"$CORE" "tests/grind/test_$suite.c" -o "$OUT/test_${suite}_$native" -lm
+        "$OUT/test_${suite}_$native"
+    done
+}
+
+run_boot_existing() {
+    suite=$1
+    boot_source=$2
+    [ "$WASM" = 1 ] && { echo "$suite: native fixture is host-only"; return 0; }
+    "${PYTHON:-python3}" tools/build.py --gen-only > /dev/null
+    mkdir -p build/ui_shots/fixes build/ui_shots/themes   # (the upstream fixtures write screenshots)
+    $CC -std=gnu11 -O1 -g -Wall -Wno-unused-function -Wno-int-to-pointer-cast         -Wno-macro-redefined -Wno-date-time         ${GRIND_SAN_FLAGS:+${GRIND_SAN_FLAGS} -fno-sanitize=shift-base}         -UNDEBUG -DGRIND_NATIVE=1 -Ibuild/gen -Ifirmware/src -Itests -I"$CORE"         "$boot_source" -o "$OUT/test_$suite" -lm
+    "$OUT/test_$suite"
+}
+
 run_grind_editor() {
     [ "$WASM" = 1 ] && return 0
     "${PYTHON:-python3}" tools/build.py --gen-only > /dev/null
@@ -78,6 +98,11 @@ case "${1:-all}" in
     controller) run_test controller "$CORE/controller.c" "$CORE/grid.c" "$CORE/rules.c" "$CORE/core.c" "$CORE/locks.c" \
         "$CORE/rng.c" "$CORE/serialize.c" ;;
     grid) run_test grid "$CORE/grid.c" ;;
+    boot_anim) run_test boot_anim "$CORE/boot_anim.c" ;;
+    boot_draw) run_boot_native boot_draw ;;
+    boot_ui) run_boot_native boot_ui ;;
+    boot_recovery) run_boot_existing boot_recovery tests/boot_test.c ;;
+    boot_restore) run_boot_existing boot_restore tests/editor_backup_test.c ;;
     hit_variation) run_test hit_variation ;;
     rng) run_rng ;;
     codec) run_test codec "$CORE/serialize.c" "$CORE/grid.c" ;;
@@ -87,6 +112,7 @@ case "${1:-all}" in
     golden) run_golden ;;
     all)
         run_test grid "$CORE/grid.c"
+        run_test boot_anim "$CORE/boot_anim.c"
         run_test hit_variation
         run_rng
         run_test codec "$CORE/serialize.c" "$CORE/grid.c"
@@ -104,6 +130,10 @@ case "${1:-all}" in
         run_native master_fx
         run_native persist
         run_native menu
+        run_boot_native boot_draw
+        run_boot_native boot_ui
+        run_boot_existing boot_recovery tests/boot_test.c
+        run_boot_existing boot_restore tests/editor_backup_test.c
         run_grind_editor
         ;;
     *) echo "unknown suite: $1" >&2; exit 2 ;;

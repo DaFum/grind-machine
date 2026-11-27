@@ -1226,6 +1226,9 @@ static void ui_input(void)
     pressed = fm1_input_edges(0);
     notes = fm1_input_note_edges();
     now = fm1_ticks();
+#if GRIND_NATIVE
+    gm_boot_ui_input(pressed, notes);
+#endif
     fam = cur_fam();
     uint32_t home = btn_hold(&ui.home_t0, B_HOME, now, 1);
     uint32_t rec = btn_hold(&ui.rec_t0, B_REC, now, !ui.menu && fam == FAM_SEQ), acts;
@@ -1273,6 +1276,10 @@ static void ui_input(void)
     }
     acts = ml_drain(&dt);                               /* .. learned buttons pressed: PLAY and REC as their taps,
                                                          * NEXT / PREV TRACK as ALGORITHM (each where the button acts) */
+#if GRIND_NATIVE
+    if (acts || dt)
+        gm_boot_ui_cancel();                            /* a learned action is input: the boot presentation ends */
+#endif
     if (acts & 1u)
         pressed |= 1u << panel.btn[B_PLAY];
     if ((acts & 2u) && rec == BT_NONE)
@@ -1618,6 +1625,9 @@ static void panel_setup(void)
 {
     uint32_t i, used = 0, t0 = fm1_ms;
     const panel_t old = panel;
+#if GRIND_NATIVE
+    gm_boot_ui_cancel();
+#endif
     lcd_fill(0, 0, 240, 240, C_BG);
     draw_text_box(0, 10, 240, &FONT_S, "HARDWARE CALIBRATION", C_INK, 1);
     draw_text_box(0, 30, 240, &FONT_S, "TEACH EACH BUTTON AND KNOB", C_INK, 1);

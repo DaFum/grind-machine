@@ -7,6 +7,8 @@ import { BTN, ENC, KEYS, HeldSet, keyEvent, keyHint, contextMenuLatches } from '
 import { FlashStore, openFlashDb } from './store.js';
 import { needsResume, playbackSession } from './audio.js';
 import { parseReel } from './reel.js';
+import { Fm1Sim } from './engine.js';
+import { createBootPreview } from './boot-preview.js';
 import { initFeatures } from './features.js';
 import { initManual } from './manual.js';
 import { buildMini } from './mini.js';
@@ -268,6 +270,8 @@ function bindEncoder(id, el) {
 
 // ---- frames from the worklet
 let frame = null;
+let frameOwner = 'live', paintedOwner = null;         // who made the queued frame / the LCD's image: 'boot' | 'reel' | 'live'
+let bootPreview = null, handBack = false;             // BLAST IGNITION's ?boot=1 scene preview (boot-preview.js)
 const img = lcdCtx.createImageData(240, 240);
 const px = new Uint32Array(img.data.buffer);
 function rgb565(fb, out) {                         // the LCD's RGB565 -> canvas RGBA
@@ -277,11 +281,26 @@ function rgb565(fb, out) {                         // the LCD's RGB565 -> canvas
     out[i] = 0xff000000 | (b << 16) | (g << 8) | r;
   }
 }
+function blankLcd() {                              // the no-reel / off baseline: opaque black, no LED lit
+  lcdCtx.fillStyle = '#000';
+  lcdCtx.fillRect(0, 0, 240, 240);
+  for (let b = 0; b < 14; b++) els.ctl[`btn:${b}`].classList.remove('lit');
+  for (let n = 0; n < 27; n++) els.ctl[`key:${n}`].classList.remove('lit');
+  paintedOwner = null;
+  document.documentElement.dataset.lcdOwner = '';
+}
 function paint(now) {
-  reelTick(now);
+  if (!(bootPreview && bootPreview.tick(now))) reelTick(now);
+  if (handBack && !frame) {                         // the preview was cancelled while it owned the LCD
+    handBack = false;
+    if (paintedOwner === 'boot') blankLcd();        // (a queued normal frame or the reel refresh has painted over it)
+  }
   if (frame) {
     const { fb, leds, keyLeds } = frame;
+    paintedOwner = frameOwner;
+    document.documentElement.dataset.lcdOwner = paintedOwner;      // 'boot' | 'reel' | 'live' (the smoke test reads it)
     frame = null;
+    handBack = false;
     rgb565(fb, px);
     lcdCtx.putImageData(img, 0, 0);
     for (let b = 0; b < 14; b++) els.ctl[`btn:${b}`].classList.toggle('lit', ((leds >>> b) & 1) === 1);
@@ -315,7 +334,17 @@ async function powerSwitch() {                     // the first flip starts the 
   if (poweredOff) { releaseAll(); await ctx.suspend(); }
   else await ctx.resume();
 }
+function cancelBoot() {                            // power-on and Escape: the scene preview ends, the LCD is handed back
+  if (!bootPreview) return;
+  bootPreview.cancel();
+  if (frame && frameOwner === 'boot') frame = null;  // only a queued preview frame is dropped, never a live one
+  if (paintedOwner === 'boot') {
+    handBack = true;                                  // the next paint: a queued frame, else the reel, else black
+    reelRefresh = true;
+  }
+}
 async function powerOn() {
+  cancelBoot();
   const btn = els.power, pnote = document.getElementById('power-note');
   btn.disabled = true;
   btn.classList.remove('ready');
@@ -331,7 +360,7 @@ async function powerOn() {
     node = new AudioWorkletNode(ctx, 'fm1', { numberOfInputs: 0, outputChannelCount: [2], processorOptions: { wasm, sectors } });
     node.port.onmessage = e => {
       const m = e.data;
-      if (m.t === 'frame') frame = m;
+      if (m.t === 'frame') { frame = m; frameOwner = 'live'; }
       else if (m.t === 'flash') store.put(m.sectors);
       else if (m.t === 'error') note.textContent = `The firmware failed to start: ${m.message}`;
     };
@@ -379,7 +408,7 @@ function bindPage() {
   document.addEventListener('pointerdown', e => {   // the pop-over closes on a click elsewhere, or Esc
     if (!confirm.hidden && !e.target.closest('#reset-confirm, #reset')) confirm.hidden = true;
   });
-  document.addEventListener('keydown', e => { if (e.key === 'Escape') confirm.hidden = true; });
+  document.addEventListener('keydown', e => { if (e.key === 'Escape') { confirm.hidden = true; cancelBoot(); } });
   for (const b of document.querySelectorAll('.bar-btn, #power-on'))   // a mouse click leaves no focus behind,
     b.addEventListener('mousedown', e => e.preventDefault());         // so the next Space plays, not this button
   document.getElementById('reset-yes').addEventListener('click', async () => {
@@ -393,7 +422,7 @@ function bindPage() {
 }
 
 // ---- the reel: recorded pages (tests/sim_record.c) on the screen, LEDs and knobs until the firmware is switched on
-let reel = null, reelPos = -1, reelT0 = 0;
+let reel = null, reelPos = -1, reelT0 = 0, reelMeta = null, reelRefresh = false;
 const reelFb = new Uint16Array(240 * 240);
 if (window.DecompressionStream)
   fetch('reel.bin.gz')
@@ -403,14 +432,20 @@ if (window.DecompressionStream)
 function reelTick(now) {
   if (!reel || node) return;
   const target = Math.floor((now - reelT0) / 1000 * reel.fps) % reel.frames;
-  if (target === reelPos) return;
+  if (target === reelPos) {                         // a requested refresh at an unchanged target: repaint the image, replay nothing
+    if (reelRefresh && reelMeta) { reelRefresh = false; frame = { fb: reelFb, ...reelMeta }; frameOwner = 'reel'; }
+    return;
+  }
   if (target < reelPos) reelPos = -1;               // looped: frame 0 is a whole screen
   let f;
   while (reelPos < target) {
     f = reel.apply(++reelPos, reelFb);
     for (let k = 0; k < 7; k++) if (f.enc[k]) spin(String(k), f.enc[k]);
   }
-  frame = { fb: reelFb, leds: f.leds, keyLeds: f.keyLeds };
+  reelMeta = { leds: f.leds, keyLeds: f.keyLeds };
+  reelRefresh = false;
+  frame = { fb: reelFb, ...reelMeta };
+  frameOwner = 'reel';
 }
 
 // ---- the hero: the scroll through #hero moves p 0 .. 1 (layout.js heroPose: far back, tilted and blurred ..
@@ -418,6 +453,14 @@ function reelTick(now) {
 const hero = document.getElementById('hero'), stage = document.getElementById('stage');
 const tilt = document.getElementById('tilt'), scene = document.getElementById('scene');
 const still = window.matchMedia('(prefers-reduced-motion: reduce)');
+if (new URLSearchParams(location.search).get('boot') === '1') {   // opt-in scene preview; the ordinary URL is unchanged
+  bootPreview = createBootPreview(
+    async () => Fm1Sim.create(await wasmBytes),                    // a fresh instance: never booted, no audio, no flash
+    fb => { frame = { fb, leds: 0, keyLeds: 0 }; frameOwner = 'boot'; });
+  bootPreview.begin(still.matches).catch(() => { bootPreview = null; })     // a load failure leaves the normal reel
+    .finally(() => { document.documentElement.dataset.bootPreview = 'settled'; });   // (the smoke test waits for this)
+  still.addEventListener?.('change', () => { if (still.matches) bootPreview?.reduce(); });
+}
 let arrived = false, heroQueued = false, lastFilter = '';
 function heroFrame() {
   heroQueued = false;

@@ -56,9 +56,17 @@ static uint32_t panel_btn_of(uint32_t matrix_id)        /* label of a matrix but
 static void panel_led(uint32_t label, int on) { fm1_led_key(panel.btn[label], on); }
 
 /* steps of a role, + = clockwise */
+#if GRIND_NATIVE
+static void gm_boot_ui_cancel(void);
+#endif
 static int32_t panel_enc(uint32_t role)
 {
-    return enc_take(panel.enc[role]) * panel.dir[role];   /* (enc.c: not the HAL's fm1_enc_take, #126) */
+    int32_t steps = enc_take(panel.enc[role]) * panel.dir[role];   /* (enc.c: not the HAL's fm1_enc_take, #126) */
+#if GRIND_NATIVE
+    if (steps)
+        gm_boot_ui_cancel();                      /* a step a later handler in this pass consumed */
+#endif
+    return steps;
 }
 
 /* user settings that survive a reset (mutebar: TRACKS mutes wait for the next bar). 32 B as in drum-v0.15.0: .noinit's

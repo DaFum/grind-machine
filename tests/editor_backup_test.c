@@ -1018,6 +1018,34 @@ static void t_backup_cost(int print_only, int measure)
               nfirst && max_rest * 4u < first / nfirst);
 }
 
+#if GRIND_NATIVE
+/* BLAST IGNITION never paints over the web editor's RESTORING (ui.c ui_locked asks ed_restoring) */
+static void t_boot_restore_priority(void)
+{
+    robj_t o;
+    uint32_t ok;
+    fresh();
+    make_project(0, 5);
+    o = backup_project(0, B);
+    make_project(1, 8);
+    gm_boot_ui_reset();
+    fm1_ms = 900u;
+    draw_boot_title();                                /* the title arms: PENDING */
+    lcd_fill(0, 0, 240, 240, C_BG);
+    ok = gm_boot_ui.clock.state == GM_BOOT_PENDING;
+    ok &= restore(ED_RK_PROJECT, 1, &o, 3, 0) == ED_OK && ed_restoring();
+    fm1_ms = 1000u;
+    ui_frame();
+    ok &= gm_boot_ui.clock.state == GM_BOOT_DONE && fb[138u * 240u + 25u] != 0x30C3 && ed_restoring() &&
+          str_eq(ui.msg, "RESTORING");
+    ok &= rs_op(ED_RS_ABORT) == ED_OK && !ed_restoring();
+    fm1_ms = 1100u;
+    ui_frame();
+    ok &= gm_boot_ui.clock.state == GM_BOOT_DONE;      /* a finished restore does not start it */
+    check("boot restore: RESTORING cancels BLAST IGNITION, normal restore behaviour, no restart after ABORT", (int)ok);
+}
+#endif
+
 int main(int argc, char **argv)
 {
     int measure = instr_available("editor backup cost");
@@ -1032,6 +1060,9 @@ int main(int argc, char **argv)
     t_restore_refusals();
     t_abort_timeout_drop();
     t_restoring_lock();
+#if GRIND_NATIVE
+    t_boot_restore_priority();
+#endif
     t_other_slot_plays();
     t_power_cut();
     t_presets();

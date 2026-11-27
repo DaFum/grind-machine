@@ -54,6 +54,79 @@ try {
   assert.equal(await power.getAttribute('aria-checked'), 'true');
   assert.doesNotMatch(await page.locator('#note').textContent(), /firmware failed/i);
 
+  // BLAST IGNITION's scene preview (?boot=1): the expected mode comes from GRIND_NATIVE (default 0)
+  const native = (process.env.GRIND_NATIVE ?? '0') === '1';
+  const supported = await page.evaluate(async () => {
+    const { Fm1Sim } = await import('/engine.js');
+    const sim = await Fm1Sim.create(await (await fetch('/fm1sim.wasm')).arrayBuffer());
+    return typeof sim.x.sim_boot_preview === 'function' ? sim.bootPreview(399) : null;
+  });
+  assert.notEqual(supported, null, 'the served WASM must export sim_boot_preview in both modes');
+  assert.equal(supported, native, 'sim_boot_preview supported only when GRIND_NATIVE=1');
+  const lcdPixel = (p, x, y) => p.evaluate(([x0, y0]) => {
+    const c = document.querySelector('canvas.lcd').getContext('2d').getImageData(x0, y0, 1, 1).data;
+    return [c[0], c[1], c[2], c[3]];
+  }, [x, y]);
+  if (!native) {                                          // the unsupported build: ?boot=1 leaves the normal reel on screen
+    const off = await browser.newPage({ reducedMotion: 'reduce' });
+    off.setDefaultTimeout(15_000);
+    off.on('pageerror', error => errors.push(error.message));
+    await off.goto(`${base}/?boot=1`);
+    await off.waitForFunction(() => document.documentElement.dataset.bootPreview === 'settled');   // the preview's load is over
+    const owners = new Set(), frames = new Set();         // who painted the LCD, and the reel's images
+    for (let i = 0; i < 40 && !(owners.has('reel') && frames.size >= 2); i++) {
+      const [owner, hash] = await off.evaluate(() => {
+        const d = document.querySelector('canvas.lcd').getContext('2d').getImageData(0, 0, 240, 240).data;
+        let h = 2166136261;
+        for (let k = 0; k < d.length; k += 4) h = Math.imul(h ^ (d[k] | d[k + 1] << 8 | d[k + 2] << 16), 16777619) >>> 0;
+        return [document.documentElement.dataset.lcdOwner ?? '', h];
+      });
+      owners.add(owner);
+      if (owner === 'reel') frames.add(hash);              // only frames the reel painted count as moving
+      await off.waitForTimeout(200);
+    }
+    const first = frames.size;                            // the observation continues: still the reel, still moving
+    for (let i = 0; i < 20 && frames.size < first + 2; i++) {
+      const [owner, hash] = await off.evaluate(() => {
+        const d = document.querySelector('canvas.lcd').getContext('2d').getImageData(0, 0, 240, 240).data;
+        let h = 2166136261;
+        for (let k = 0; k < d.length; k += 4) h = Math.imul(h ^ (d[k] | d[k + 1] << 8 | d[k + 2] << 16), 16777619) >>> 0;
+        return [document.documentElement.dataset.lcdOwner ?? '', h];
+      });
+      owners.add(owner);
+      if (owner === 'reel') frames.add(hash);
+      await off.waitForTimeout(200);
+    }
+    assert.ok(frames.size >= first + 1, 'the demo reel must still be changing the LCD after its first images');
+    assert.ok(!owners.has('boot'), '?boot=1 on a build without the preview must never paint a preview frame');
+    assert.ok(owners.has('reel'), '?boot=1 on a build without the preview must leave the demo reel on screen');
+    assert.ok(frames.size >= 2, 'the demo reel must keep playing (the LCD image changes), not freeze after one frame');
+    await off.close();
+  }
+  if (native) {
+    const boot = await browser.newPage({ reducedMotion: 'reduce' });
+    boot.setDefaultTimeout(15_000);
+    boot.on('pageerror', error => errors.push(error.message));
+    await boot.route('**/reel.bin.gz*', route => route.fulfill({ status: 404 }));   // no reel: black is the baseline
+    await boot.goto(`${base}/?boot=1`);
+    await boot.waitForFunction(() => document.documentElement.dataset.bootPreview === 'settled');
+    await boot.waitForFunction(() => {                    // reduced motion: READY directly (the red rule at y 124)
+      const c = document.querySelector('canvas.lcd').getContext('2d').getImageData(120, 124, 1, 1).data;
+      return c[0] > 150 && c[1] < 80 && c[3] === 255;
+    });
+    await boot.keyboard.press('Escape');                   // handed back: no reel here, so opaque black, no lit LED
+    await boot.waitForFunction(() => {
+      const c = document.querySelector('canvas.lcd').getContext('2d').getImageData(120, 124, 1, 1).data;
+      return c[0] < 40 && c[3] === 255;
+    });
+    assert.equal(await boot.locator('.lit').count(), 0, 'no LED stays lit after the hand-back');
+    await boot.close();
+    const plain = await browser.newPage({ reducedMotion: 'reduce' });      // the ordinary URL is unchanged
+    await plain.goto(base);
+    await plain.waitForFunction(() => document.documentElement.dataset.lcdOwner === 'reel');   // the reel (not the opaque black start) has painted
+    assert.notDeepEqual((await lcdPixel(plain, 120, 124)).slice(0, 3), [188, 37, 45]);
+    await plain.close();
+  }
   await page.goto(`${base}/editor-source/editor.html?mock=auto`);
   const projects = page.getByRole('tab', { name: 'Projects' });
   await projects.click();

@@ -127,9 +127,11 @@ jobs:
           path: |
             build/grind-evidence/grind-core-wasm.log
             build/grind-evidence/wasm-preview.log
+            build/grind-evidence/wasm-preview-native*.log
             build/grind-evidence/web-regression.log
             build/grind-evidence/web-editor.log
             build/grind-evidence/browser-smoke.log
+            build/grind-evidence/browser-smoke-native*.log
 
   native:
     name: Native firmware and packages

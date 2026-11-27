@@ -4227,8 +4227,10 @@ static void test_theme_sheet(void)
     sheet_stray = 0;
     for (sheet_t = 0; sheet_t < NTHEMES; sheet_t++) {
         sheet_open();
+#if !GRIND_NATIVE          /* GRIND_NATIVE=1 shows BLAST IGNITION (its own palette; tests/grind/test_boot_draw.c) instead */
         draw_boot_title();
         shot("build/ui_shots/themes/boot.ppm");
+#endif
         sheet_snap("00_home");
         sheet_open();
         tap(B_EDIT);
@@ -10778,7 +10780,9 @@ int main(void)
     test_backlight_leds();
     test_backlight_beats_everywhere();
     test_backlight_menu();
+#if !GRIND_NATIVE          /* the native build's title is BLAST IGNITION: tests/grind/test_boot_draw.c, test_boot_ui.c */
     test_boot_title();
+#endif
     test_theme_list();
     test_theme_stored();
     test_theme_menu();

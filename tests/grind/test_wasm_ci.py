@@ -44,7 +44,8 @@ class WasmCiTests(unittest.TestCase):
         self.assertEqual(result.returncode, 1, result.stdout + result.stderr)
         self.assertEqual(status, 'status=FAIL')
         self.assertNotIn('tests/grind/browser_smoke.mjs', invoked)
-        self.assertIn('BLOCKED: browser smoke requires successful WASM preview build', result.stdout)
+        for native in (0, 1):
+            self.assertIn(f'BLOCKED: browser smoke (GRIND_NATIVE={native}) requires successful WASM preview build', result.stdout)
 
 
 if __name__ == '__main__':

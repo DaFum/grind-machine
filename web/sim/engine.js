@@ -64,6 +64,7 @@ export class Fm1Sim {
   leds() { return this.x.sim_leds() >>> 0; }      // bit b = button label b
   keyLeds() { return this.x.sim_key_leds() >>> 0; }   // bit n = note key n
   playing() { return this.x.sim_playing() !== 0; }
+  bootPreview(ms) { return this.x.sim_boot_preview(ms) !== 0; }   // BLAST IGNITION's scene at ms (0..399); false: not in this build
 
   takeDirty() {                                    // -> [{ off, bytes }] written since the last call
     const bits = this.view(Uint32Array, this.x.sim_flash_dirty(), FLASH_SIZE / SECTOR / 32);

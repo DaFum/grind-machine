@@ -5,6 +5,12 @@ released yet are listed under Unreleased.
 
 ## Unreleased
 
+- **BLAST IGNITION (GRIND startup)**: with `GRIND_NATIVE=1` the start screen is a static SYSTEM WAKE during the
+  firmware's initialisation, followed by a 400 ms moving presentation (ignition, attack, ready) on the first normal
+  screen. Any button, key or encoder step, a dialog, a message, SAFE START, a persistent-data note, calibration or update
+  traffic ends it at once and the normal action happens as usual; the boot's own LOADED note keeps its full lifetime. It
+  runs once per power-on and stores nothing. The `GRIND_NATIVE=0` start screen is unchanged. The web simulator can
+  show the scene with `?boot=1` (a scene preview, not a timing measurement). See docs/grind/acceptance.md.
 - **GRIND style browser**: a fifth GRIND page (STYLE, BANK, APPLY) shows any of the 23 styles as eight roles over a 16-step bank before
   anything changes; APPLY is a normal STYLE turn, leaving the page cancels. See docs/grind/live-pages.md.
 - **VARY (GRIND, page 3)**: a deterministic velocity swing per generated hit (up to +-8), 0 = unchanged sound. Not stored.

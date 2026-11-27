@@ -318,6 +318,9 @@ static void menu_close(void)
  * downbeat frame, HORTATOR under it, in the stored theme; two bands of 120 rows (the canvas holds 124) */
 static void draw_boot_title(void)
 {
+#if GRIND_NATIVE
+    gm_boot_ui_title();
+#else
     uint32_t pass;
     for (pass = 0; pass < 2u; pass++) {
         cv_begin_at(240, 120, pass * 120u, C_BG);
@@ -328,6 +331,7 @@ static void draw_boot_title(void)
         cv_oy = 0;
         cv_blit(0, pass * 120u);
     }
+#endif
 }
 
 /* menu: SELECT moves, OCT+ confirms, OCT- cancels (ABOUT -> list -> close) */

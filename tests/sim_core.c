@@ -159,6 +159,19 @@ uint32_t sim_key_leds(void)                               /* bit n = note key n 
 
 uint32_t sim_playing(void) { return song.playing != 0u; }
 uint16_t *sim_fb(void) { return fb; }
+/* BLAST IGNITION's scene at a fixed elapsed time (the page's ?boot=1 preview): the shared renderer into this instance's
+ * framebuffer, nothing else: no UI adapter, no firmware time, no flash, no audio. 0 when GRIND_NATIVE is off. */
+int sim_boot_preview(uint32_t elapsed_ms)
+{
+#if GRIND_NATIVE
+    gm_boot_frame f = gm_boot_sample(elapsed_ms < GM_BOOT_DURATION_MS ? elapsed_ms : 399u);
+    gm_boot_draw_full(f);
+    return 1;
+#else
+    (void)elapsed_ms;
+    return 0;
+#endif
+}
 float *sim_audio(void) { return sim_out; }
 uint8_t *sim_flash(void) { return hflash; }
 uint32_t *sim_flash_dirty(void) { return sim_dirty; }

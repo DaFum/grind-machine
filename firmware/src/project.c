@@ -1783,6 +1783,9 @@ static void project_boot(void)
         return;
     if (proj_load(lastp.slot, 0)) {
         song.g[G_SLOT] = (int16_t)(lastp.slot + 1u);
+#if GRIND_NATIVE
+        gm_boot_ui_defer_loaded();                      /* the boot's LOADED note keeps BLAST IGNITION */
+#endif
         return;
     }
     ui.confirm = 5;

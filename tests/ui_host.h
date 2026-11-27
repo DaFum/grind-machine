@@ -32,6 +32,11 @@ static uint32_t host_blit_px;                        /* pixels sent to the LCD b
 static void lcd_blit(uint32_t x, uint32_t y, uint32_t w, uint32_t h, const uint16_t *px)
 {
     uint32_t i, j;
+#ifdef GRIND_BOOT_LCD_ASSERT
+    if (w && h) {                                   /* (a zero-size blit is legal on the device: lcd.c) */
+        assert(x < 240u && y < 240u && w <= 240u - x && h <= 240u - y && w * h <= 240u * 124u);
+    }
+#endif
     if (y < 181u && y + h > 61u)
         host_graph_blits++;
     host_blit_px += w * h;
@@ -62,6 +67,9 @@ static uint32_t fm1_ticks(void) { return host_ticks += 24u * 1000u; }   /* 1 ms 
 static int32_t host_enc_late[7];                      /* detents that come in after a pass's first read of the encoder
                                                        * (the scan ISR runs while ui_input does: the next read has them) */
 static void enc_frame(void) {}                         /* (enc.c: the scan's decoder) */
+#if GRIND_NATIVE
+static int enc_pending(uint32_t e) { return host_enc[e % 7u] != 0; }   /* (enc.c: a waiting step, not consumed) */
+#endif
 static int32_t enc_take(uint32_t e)                   /* (enc.c) */
 {
     int32_t s = host_enc[e % 7u];
@@ -107,12 +115,18 @@ static void settings_save(void) {}
 #else
 #include "../firmware/src/project.c"
 #endif
+#if GRIND_NATIVE && !defined(GM_BOOT_UI_DEFER_INCLUDE)
+#include "../firmware/src/grind/boot_ui.c"
+#endif
 
 static void ui_host_init(void)
 {
     host_init();
     memset(&ui, 0, sizeof ui);
     memset(fb, 0, sizeof fb);
+#if GRIND_NATIVE && !defined(GM_BOOT_UI_DEFER_INCLUDE)
+    gm_boot_ui_reset();                              /* independent tests do not inherit a terminal state */
+#endif
     panel = PANEL_DEFAULT;
     settings.magic = 0;
     settings_init();

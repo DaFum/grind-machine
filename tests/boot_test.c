@@ -2770,6 +2770,133 @@ static int usr3_clamp_fail_blocks_banks(void)
     return (int)ok;
 }
 
+#if GRIND_NATIVE
+/* BLAST IGNITION (docs/grind/blast-ignition): main.c's order with the title hook and the black fill; host fixtures model
+ * the boot, they do not run fm1_cstart() */
+#define BX(x, y) fb[(y) * 240u + (x)]
+static uint32_t power_on_ignition(int seq)
+{
+    uint32_t irq;
+    gm_boot_ui_reset();
+    fm1_ms = 900u;
+    memset(&ui, 0, sizeof ui);
+    draw_boot_title();                               /* felucca's order: the title right after lcd_init() */
+    irq = power_on(seq);
+    lcd_fill(0, 0, 240, 240, C_BG);                  /* main.c: the black fill before the UI loop */
+    return irq;
+}
+static void ig_at(uint32_t ms)
+{
+    fm1_ms = ms;
+    ui_frame();
+}
+static int ignition_after_loaded_project(void)
+{
+    uint32_t ok, t0;
+    fresh_flash();
+    trk[3].p[P_E1] = 11;
+    project_save(3);
+    ok = power_on_ignition(0) == 0u && str_eq(ui.msg, "LOADED") && ui.msg_t == 40u && !ui.confirm;
+    ok &= gm_boot_ui.clock.state == GM_BOOT_PENDING;
+    ig_at(1000u);
+    ok &= gm_boot_ui.clock.state == GM_BOOT_ACTIVE && BX(25, 138) == 0x30C3 && ui.msg_t == 40u;
+    ig_at(1280u);
+    ok &= gm_boot_ui.clock.state == GM_BOOT_ACTIVE && ui.msg_t == 40u;       /* the note keeps its whole lifetime */
+    ig_at(1400u);
+    ig_at(1410u);
+    t0 = ui.msg_t;
+    ig_at(1420u);
+    ok &= gm_boot_ui.clock.state == GM_BOOT_DONE && str_eq(ui.msg, "LOADED") && t0 <= 40u && ui.msg_t < 40u;
+    return (int)ok;
+}
+static int ignition_new_message_cancels(void)
+{
+    uint32_t ok;
+    fresh_flash();
+    project_save(1);
+    ok = power_on_ignition(0) == 0u && gm_boot_ui.clock.state == GM_BOOT_PENDING;
+    ig_at(1000u);
+    ok &= gm_boot_ui.clock.state == GM_BOOT_ACTIVE;
+    ui_say("SAVED", "");
+    ig_at(1010u);
+    ok &= gm_boot_ui.clock.state == GM_BOOT_DONE && str_eq(ui.msg, "SAVED") && BX(25, 138) != 0x30C3;
+    return (int)ok;
+}
+static int ignition_no_project_runs_once(void)
+{
+    uint32_t ok;
+    fresh_flash();
+    ok = power_on_ignition(0) == 0u && !ui.msg_t && !ui.confirm && gm_boot_ui.clock.state == GM_BOOT_PENDING;
+    ig_at(1000u);
+    ok &= gm_boot_ui.clock.state == GM_BOOT_ACTIVE;
+    ig_at(1400u);
+    ig_at(1410u);
+    ok &= gm_boot_ui.clock.state == GM_BOOT_DONE;
+    ig_at(1500u);
+    ok &= gm_boot_ui.clock.state == GM_BOOT_DONE;    /* once */
+    return (int)ok;
+}
+static int ignition_failed_project_keeps_dialog(void)
+{
+    project_t c;
+    uint32_t ok;
+    fresh_flash();
+    project_save(2);
+    c = proj_slot[2];
+    c.sum ^= 0x10u;
+    st_save(OBJ_PROJECT0 + 2u, &c, sizeof c);
+    ok = power_on_ignition(0) == 0u && ui.confirm == 5u;
+    ig_at(1000u);
+    ok &= ui.confirm == 5u && gm_boot_ui.clock.state == GM_BOOT_DONE && BX(25, 138) != 0x30C3;
+    return (int)ok;
+}
+static int ignition_safe_start_keeps_recovery(void)
+{
+    uint32_t ok;
+    fresh_flash();
+    project_save(0);
+    power_on_ignition(1);
+    ok = safe_start && gm_boot_ui.clock.state == GM_BOOT_PENDING;
+    ig_at(1000u);
+    ok &= safe_start && gm_boot_ui.clock.state == GM_BOOT_DONE && BX(25, 138) != 0x30C3;
+    return (int)ok;
+}
+static int ignition_persist_note_keeps_notes(void)
+{
+    uint32_t ok;
+    fresh_flash();
+    power_on_ignition(0);
+    persist_note = 1u;
+    ig_at(1000u);
+    ok = gm_boot_ui.clock.state == GM_BOOT_DONE && BX(25, 138) != 0x30C3;
+    persist_note = 0;
+    return (int)ok;
+}
+static uint32_t ig_done;
+static uint32_t ignition_press_sig(int armed)
+{
+    fresh_flash();
+    power_on_ignition(0);
+    if (!armed)
+        gm_boot_ui.clock.state = GM_BOOT_DONE;
+    ig_at(1000u);
+    press(B_EDIT);
+    ig_at(1010u);
+    release_all();
+    ig_at(1020u);
+    ig_done = gm_boot_ui.clock.state == GM_BOOT_DONE;
+    return (uint32_t)ui.home | (uint32_t)ui.page << 8 | (uint32_t)ui.menu << 16 | (uint32_t)transport_req << 24;
+}
+static int ignition_input_acts_once(void)
+{
+    uint32_t base = ignition_press_sig(0), armed = ignition_press_sig(1), done = ig_done, start;
+    fresh_flash();
+    power_on_ignition(0);
+    start = (uint32_t)ui.home | (uint32_t)ui.page << 8 | (uint32_t)ui.menu << 16 | (uint32_t)transport_req << 24;
+    return armed == base && base != start && done;   /* the action happened, as without */
+}
+#endif
+
 int main(void)
 {
     char what[96];
@@ -2853,6 +2980,16 @@ int main(void)
           last_project_empty());
     check("last project: an unreadable slot asks the same", last_project_corrupt());
     check("last project: safe start loads nothing and asks nothing", last_project_safe_start());
+#if GRIND_NATIVE
+    check("ignition: a remembered project's LOADED note is kept through ACTIVE and shown whole afterwards",
+          ignition_after_loaded_project());
+    check("ignition: a new message during ACTIVE cancels it", ignition_new_message_cancels());
+    check("ignition: no remembered project: runs once, native boot state unchanged", ignition_no_project_runs_once());
+    check("ignition: a failed remembered project keeps the dialog, no animation", ignition_failed_project_keeps_dialog());
+    check("ignition: SEQ at power-on keeps SAFE START, no animation", ignition_safe_start_keeps_recovery());
+    check("ignition: a persist note keeps the notes, no animation", ignition_persist_note_keeps_notes());
+    check("ignition: input during ACTIVE cancels it and acts once", ignition_input_acts_once());
+#endif
     check("last project: an older record boots the power-on kit; a RAM-only save remembers nothing",
           last_project_old_record_no_flash());
     check("last project: lowcut's bits keep SPEAKER EQ, the slot and the Bluetooth bytes", last_project_bits());
