@@ -1276,6 +1276,10 @@ static void ui_input(void)
     }
     acts = ml_drain(&dt);                               /* .. learned buttons pressed: PLAY and REC as their taps,
                                                          * NEXT / PREV TRACK as ALGORITHM (each where the button acts) */
+#if GRIND_NATIVE
+    if (acts || dt)
+        gm_boot_ui_cancel();                            /* a learned action is input: the boot presentation ends */
+#endif
     if (acts & 1u)
         pressed |= 1u << panel.btn[B_PLAY];
     if ((acts & 2u) && rec == BT_NONE)

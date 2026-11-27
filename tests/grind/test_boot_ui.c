@@ -96,17 +96,33 @@ static void input_cancels_and_counts_once(void)
     check("the first button press cancels the presentation and plays as without it", ok);
 
     model_boot(0);
-    turn(EN_K1, 1);
-    at(1000u);
     {
-        int16_t base_g[G_COUNT];
-        memcpy(base_g, song.g, sizeof base_g);
-        model_boot(1);
-        turn(EN_K1, 1);
+        static uint8_t before_trk[sizeof trk], base_trk[sizeof trk];
+        memcpy(before_trk, trk, sizeof trk);
+        turn(EN_K1 + 1, 3);
         at(1000u);
-        ok = gm_boot_ui.clock.state == GM_BOOT_DONE && memcmp(base_g, song.g, sizeof base_g) == 0;
+        memcpy(base_trk, trk, sizeof trk);
+        ok = memcmp(before_trk, base_trk, sizeof trk) != 0;      /* the unarmed turn really edits the project */
+        model_boot(1);
+        turn(EN_K1 + 1, 3);
+        at(1000u);
+        ok &= gm_boot_ui.clock.state == GM_BOOT_DONE && memcmp(base_trk, trk, sizeof trk) == 0;
     }
     check("an encoder step cancels it and is applied once, as without it", ok);
+}
+
+static void learned_midi_cancels(void)
+{
+    uint32_t ok = 1, w;
+    model_boot(1);
+    at(1000u);
+    ok &= gm_boot_ui.clock.state == GM_BOOT_ACTIVE;
+    w = ml_qw;
+    ml_q[w % ML_QN] = ML_A_NEXT;                       /* a MIDI-learned NEXT TRACK press */
+    ml_qw = w + 1u;
+    at(1010u);
+    ok &= gm_boot_ui.clock.state == GM_BOOT_DONE;
+    check("a MIDI-learned action is input: it cancels the presentation", ok);
 }
 
 static void boot_loaded_note_keeps_it(void)
@@ -189,6 +205,7 @@ int main(void)
 #if GRIND_NATIVE
     natural_run();
     input_cancels_and_counts_once();
+    learned_midi_cancels();
     boot_loaded_note_keeps_it();
     pending_cancel_adds_no_pixels();
     skipped_frames_and_wrap();

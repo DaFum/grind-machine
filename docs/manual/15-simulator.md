@@ -11,7 +11,7 @@ The page also has a short guide for each area, and interactive pieces that run t
 
 Adding `?boot=1` to the page address plays the 400 ms BLAST IGNITION scene on the screen before power-on: the same C
 renderer the firmware uses, drawn into a separate instance, so it starts no firmware, sound or save. With reduced motion
-set it shows the final READY frame. Escape or the power switch ends it and hands the screen back to the demo reel. It is a
+set it shows the final READY frame. Escape ends it and hands the screen back to the demo reel; the power switch is the normal power-on (it ends the preview and starts the firmware). It is a
 scene preview, not a measurement of the device's boot timing: on the device the static title shows during initialisation
 and the 400 ms presentation follows on the first normal screen, where any input cancels it and acts normally, and the
 boot's LOADED note is kept for its full time. Only a simulator built with the GRIND engine has it; otherwise the page
