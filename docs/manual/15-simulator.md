@@ -7,6 +7,16 @@ The landing page at [deadactive.github.io/hortator](https://deadactive.github.io
 
 The page also has a short guide for each area, and interactive pieces that run the firmware's own DSP: voices, resonators, the compressor, LFOs, the sequencer's chance and live hands, Grids, effects and PERFORM.
 
+## Start screen preview (GRIND builds)
+
+Adding `?boot=1` to the page address plays the 400 ms BLAST IGNITION scene on the screen before power-on: the same C
+renderer the firmware uses, drawn into a separate instance, so it starts no firmware, sound or save. With reduced motion
+set it shows the final READY frame. Escape or the power switch ends it and hands the screen back to the demo reel. It is a
+scene preview, not a measurement of the device's boot timing: on the device the static title shows during initialisation
+and the 400 ms presentation follows on the first normal screen, where any input cancels it and acts normally, and the
+boot's LOADED note is kept for its full time. Only a simulator built with the GRIND engine has it; otherwise the page
+ignores the parameter.
+
 ## Storage
 
 The simulator's flash lives in your browser (IndexedDB). Anything you save with SAVE stays there; as on the device, the last project saved loads at power-on. With no project remembered the demos are loaded into the slots. **Reset to demos** on the page clears the store. A browser that blocks storage still runs the simulator, with saves lasting only for the session.
