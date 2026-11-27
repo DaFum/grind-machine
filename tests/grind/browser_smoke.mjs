@@ -73,17 +73,21 @@ try {
     off.on('pageerror', error => errors.push(error.message));
     await off.goto(`${base}/?boot=1`);
     await off.waitForFunction(() => document.documentElement.dataset.bootPreview === 'settled');   // the preview's load is over
-    const owners = new Set();                             // who painted the LCD: never the preview here, the reel at some point
-    for (let i = 0; i < 25 && !owners.has('reel'); i++) {
-      owners.add(await off.evaluate(() => document.documentElement.dataset.lcdOwner ?? ''));
+    const owners = new Set(), frames = new Set();         // who painted the LCD, and the reel's images
+    for (let i = 0; i < 40 && !(owners.has('reel') && frames.size >= 2); i++) {
+      const [owner, hash] = await off.evaluate(() => {
+        const d = document.querySelector('canvas.lcd').getContext('2d').getImageData(0, 0, 240, 240).data;
+        let h = 2166136261;
+        for (let k = 0; k < d.length; k += 4) h = Math.imul(h ^ (d[k] | d[k + 1] << 8 | d[k + 2] << 16), 16777619) >>> 0;
+        return [document.documentElement.dataset.lcdOwner ?? '', h];
+      });
+      owners.add(owner);
+      if (owner === 'reel') frames.add(hash);              // only frames the reel painted count as moving
       await off.waitForTimeout(200);
-    }
-    for (let i = 0; i < 5; i++) {                         // and it stays that way after the reel has started
-      owners.add(await off.evaluate(() => document.documentElement.dataset.lcdOwner ?? ''));
-      await off.waitForTimeout(100);
     }
     assert.ok(!owners.has('boot'), '?boot=1 on a build without the preview must never paint a preview frame');
     assert.ok(owners.has('reel'), '?boot=1 on a build without the preview must leave the demo reel on screen');
+    assert.ok(frames.size >= 2, 'the demo reel must keep playing (the LCD image changes), not freeze after one frame');
     await off.close();
   }
   if (native) {
