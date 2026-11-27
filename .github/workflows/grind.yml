@@ -155,10 +155,19 @@ jobs:
           python3 -m venv .venv
           .venv/bin/pip install Pillow==13.0.0
           echo "$PWD/.venv/bin" >> "$GITHUB_PATH"
-      - id: checks
-        name: Verify inputs and build on the ephemeral runner
-        env:
-          GRIND_NATIVE: '1'   # link the Grind engine and its GRIND pages: this lane measures their RAM, flash and ISR cost
+      # The two pinned vendor inputs are cached before the build touches them. A restored copy is not trusted: the build
+      # step still checks its digests (tools/grind/native_inputs.py). A miss downloads them as before.
+      - id: vendor_cache
+        name: Restore the pinned vendor inputs
+        uses: actions/cache/restore@0400d5f644dc74513175e3cd8d07132dd4860809 # v4.2.4
+        with:
+          path: |
+            ${{ runner.temp }}/jieli-linux-toolchains-20260730.1.tar.xz
+            ${{ runner.temp }}/grind-ac79-sdk
+          key: grind-vendor-jieli-20260730.1-ac79nn-sdk-v1.2.1-2023-12-13
+      - id: vendor
+        name: Download the pinned vendor inputs (cache miss only)
+        if: steps.vendor_cache.outputs.cache-hit != 'true'
         run: |
           archive="$RUNNER_TEMP/jieli-linux-toolchains-20260730.1.tar.xz"
           sdk="$RUNNER_TEMP/grind-ac79-sdk"
@@ -167,6 +176,26 @@ jobs:
             ! git clone --depth 1 --branch AC79NN_SDK_V1.2.1_2023-12-13 \
               https://gitee.com/Jieli-Tech/fw-AC79_AIoT_SDK.git "$sdk"; then
             echo 'BLOCKED: pinned vendor inputs could not be downloaded' | tee -a "$GITHUB_STEP_SUMMARY"
+            echo 'blocked=1' >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+      - name: Save the pinned vendor inputs
+        if: steps.vendor_cache.outputs.cache-hit != 'true' && steps.vendor.outputs.blocked != '1'
+        uses: actions/cache/save@0400d5f644dc74513175e3cd8d07132dd4860809 # v4.2.4
+        with:
+          path: |
+            ${{ runner.temp }}/jieli-linux-toolchains-20260730.1.tar.xz
+            ${{ runner.temp }}/grind-ac79-sdk
+          key: grind-vendor-jieli-20260730.1-ac79nn-sdk-v1.2.1-2023-12-13
+      - id: checks
+        name: Verify inputs and build on the ephemeral runner
+        env:
+          GRIND_NATIVE: '1'   # link the Grind engine and its GRIND pages: this lane measures their RAM, flash and ISR cost
+          VENDOR_BLOCKED: ${{ steps.vendor.outputs.blocked }}
+        run: |
+          archive="$RUNNER_TEMP/jieli-linux-toolchains-20260730.1.tar.xz"
+          sdk="$RUNNER_TEMP/grind-ac79-sdk"
+          if [ "$VENDOR_BLOCKED" = 1 ]; then
             echo 'status=BLOCKED' >> "$GITHUB_OUTPUT"
             exit 2
           fi
