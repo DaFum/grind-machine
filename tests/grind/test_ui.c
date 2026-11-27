@@ -767,7 +767,7 @@ static void browser_redraws_on_change(void)
 
 static void browser_follows_undo(void)
 {
-    uint32_t ok = 1;
+    uint32_t ok = 1, rev;
     fresh();
     open_grind(0);
     turn(EN_K1, 3);                                  /* a change: undoable */
@@ -775,7 +775,9 @@ static void browser_follows_undo(void)
     open_grind(3);
     frames(4);
     ok &= gm_pv.state == PV_READY;
+    rev = gmrt.ctl.native_revision;
     ok &= gm_runtime_undo() == 1;
+    ok &= gmrt.ctl.native_revision != rev;           /* the restored pattern is a new revision: a cached preview is stale */
     frames(4);
     ok &= gm_pv.state == PV_READY && gm_pv.rev == gmrt.ctl.native_revision;   /* made again from the restored pattern */
     check("ui: UNDO invalidates the browser's preview", ok);
@@ -841,6 +843,26 @@ static void browser_bank_follows_length(void)
     check("ui: the browser's bank follows the previewed length (clamped to its banks)", ok);
 }
 
+static void apply_refused_during_a_song(void)
+{
+    uint32_t ok = 1;
+    int16_t style, aggr;
+    fresh();
+    open_grind(3);
+    frames(4);
+    style = gm_v[GU_STYLE];
+    aggr = gm_v[GU_AGGR];
+    turn(EN_K1, 4);
+    frames(4);
+    ok &= gm_pv.state == PV_READY;
+    chain.running = 1;                                /* (no frames while it is faked: the song's rows are not set up) */
+    gm_v[GU_OK] = 1;
+    gm_ui_changed(GU_OK);                             /* what edit_param calls for APPLY */
+    chain.running = 0;
+    ok &= gm_v[GU_STYLE] == style && gm_v[GU_AGGR] == aggr && str_eq(ui.msg, "STOP THE SONG");
+    check("ui: APPLY during a song changes no control", ok);
+}
+
 static void not_stored(void)
 {
     uint32_t ok = 1, i;
@@ -889,6 +911,7 @@ int main(void)
     init_clears_macros();
     cut_drops_a_pending_change();
     browser_bank_follows_length();
+    apply_refused_during_a_song();
     browser_redraws_on_change();
     browser_follows_undo();
     browser_apply_refused_keeps_controls();

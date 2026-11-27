@@ -130,6 +130,7 @@ static int gm_runtime_undo(void)
         t8 = (uint8_t)trk[k].p[P_SRC]; trk[k].p[P_SRC] = gmrt.undo.src[k]; gmrt.undo.src[k] = t8;
     }
     gmrt.undo_was_undo ^= 1u;
+    gm_touch_isr();                                   /* the live pattern is another one: a revision (the browser's cached preview, a stage) */
     fm1_irq_on();
     return 1;
 }

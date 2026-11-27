@@ -248,6 +248,10 @@ static void gm_ui_changed(uint32_t id)
         if (!gm_v[GU_OK])
             return;
         gm_v[GU_OK] = 0;
+        if (chain.running) {                           /* a song refuses every GRIND request: no control changes for one that cannot go out */
+            ui_message("STOP THE SONG");
+            return;
+        }
         if (gm_pv.state != PV_READY || gm_pv.idx != (uint32_t)gm_v[GU_BROWSE] || gm_pv.rev != gmrt.ctl.native_revision) {                 /* nothing was shown that APPLY could publish: no control changes */
             ui_message(gm_pv.state == PV_FAIL ? "KEEP DOES NOT FIT" : "WAIT");
             return;
