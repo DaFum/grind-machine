@@ -1,0 +1,848 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- SPDX-License-Identifier: GPL-3.0-only -->
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="1640" viewBox="0 0 640 820" role="img" aria-labelledby="storyboard-title storyboard-desc" shape-rendering="crispEdges">
+  <title id="storyboard-title">BLAST IGNITION startup storyboard: four illustrative 240 by 240 pixel panels</title>
+  <desc id="storyboard-desc">Static documentation illustration, not a device capture. Four panels read left to right, top to bottom: SYSTEM WAKE before motion, RHYTHM IGNITION at 60 milliseconds, BLAST ATTACK at 200 milliseconds, and MACHINE READY at 340 milliseconds. All native lettering uses the repository MD_F3 pixel glyphs at exact integer scales. The specified palette is quantized to RGB565 and expanded with the simulator color conversion. Grid bit zero is the leftmost column. The attack sample shows dim shards with no strike. These are still snapshots; the diagram specifies no blinking animation.</desc>
+  <metadata>{
+  "SPDX-License-Identifier": "GPL-3.0-only",
+  "kind": "Illustrative documentation storyboard; not a device capture or timing measurement",
+  "source_repository": "DaFum/grind-machine",
+  "source_commit": "67be119a59b11d0ae154217d9248becefca59190",
+  "font": {
+    "name": "MD_F3",
+    "source": "https://github.com/DaFum/grind-machine/blob/67be119a59b11d0ae154217d9248becefca59190/assets/fonts/md_font.txt",
+    "parser": "https://github.com/DaFum/grind-machine/blob/67be119a59b11d0ae154217d9248becefca59190/tools/gen_font.py",
+    "copyright": "Copyright (C) 2026 DEADACTIVE",
+    "license": "GPL-3.0-only",
+    "method": "Lit MD_F3 source bits are expanded at exact integer scales; adjacent pixels are merged into one same-color path per label. No external font."
+  },
+  "palette_requested_srgb": {
+    "bg": "#080809",
+    "dim": "#311A1D",
+    "red": "#BC252D",
+    "hot": "#F44C51",
+    "paper": "#F6F0EF"
+  },
+  "palette_rgb565": {
+    "bg": "0x0841",
+    "dim": "0x30C3",
+    "red": "0xB925",
+    "hot": "0xF26A",
+    "paper": "0xF79D"
+  },
+  "palette_expanded_srgb": {
+    "bg": "#080808",
+    "dim": "#311819",
+    "red": "#BD2429",
+    "hot": "#F74D52",
+    "paper": "#F7F3EF"
+  },
+  "palette_expansion": "web/sim/app.js::rgb565 at 67be119a59b11d0ae154217d9248becefca59190",
+  "native_panel_size": [
+    240,
+    240
+  ],
+  "row_masks_bit_zero_left": [
+    "0x5555",
+    "0xAAAA",
+    "0x5555",
+    "0x8888",
+    "0x0800",
+    "0x2000",
+    "0x8000",
+    "0x8001"
+  ],
+  "samples": [
+    "SYSTEM WAKE: static",
+    "RHYTHM IGNITION: 60 ms",
+    "BLAST ATTACK: 200 ms",
+    "MACHINE READY: 340 ms"
+  ],
+  "rail": "DIM in SYSTEM WAKE, RHYTHM IGNITION, and BLAST ATTACK; RED only in MACHINE READY",
+  "motion": "None: static SVG panels only",
+  "scanner": "Only set-mask cells in the scanner column are HOT; off-mask cells remain DIM. The marker is HOT."
+}</metadata>
+  <rect x="0" y="0" width="640" height="820" fill="#F1EDE7" />
+  <rect x="40" y="26" width="560" height="2" fill="#BD2429" />
+  <g data-font="MD_F3" data-text="BLAST IGNITION" data-scale="4">
+    <title>BLAST IGNITION</title>
+    <path fill="#211C1D" d="M40 42h8v4H40z M56 42h4v4H56z M72 42h12v4H72z M88 42h12v4H88z M104 42h12v4H104z M136 42h12v4H136z M152 42h12v4H152z M168 42h8v4H168z M184 42h12v4H184z M200 42h12v4H200z M216 42h12v4H216z M232 42h12v4H232z M248 42h8v4H248z M40 46h4v4H40z M48 46h4v4H48z M56 46h4v4H56z M72 46h4v4H72z M80 46h4v4H80z M88 46h4v4H88z M108 46h4v4H108z M140 46h4v4H140z M152 46h4v4H152z M168 46h4v4H168z M176 46h4v4H176z M188 46h4v4H188z M204 46h4v4H204z M220 46h4v4H220z M232 46h4v4H232z M240 46h4v4H240z M248 46h4v4H248z M256 46h4v4H256z M40 50h8v4H40z M56 50h4v4H56z M72 50h12v4H72z M88 50h12v4H88z M108 50h4v4H108z M140 50h4v4H140z M152 50h4v4H152z M160 50h4v4H160z M168 50h4v4H168z M176 50h4v4H176z M188 50h4v4H188z M204 50h4v4H204z M220 50h4v4H220z M232 50h4v4H232z M240 50h4v4H240z M248 50h4v4H248z M256 50h4v4H256z M40 54h4v4H40z M48 54h4v4H48z M56 54h4v4H56z M72 54h4v4H72z M80 54h4v4H80z M96 54h4v4H96z M108 54h4v4H108z M140 54h4v4H140z M152 54h4v4H152z M160 54h4v4H160z M168 54h4v4H168z M176 54h4v4H176z M188 54h4v4H188z M204 54h4v4H204z M220 54h4v4H220z M232 54h4v4H232z M240 54h4v4H240z M248 54h4v4H248z M256 54h4v4H256z M40 58h8v4H40z M56 58h12v4H56z M72 58h4v4H72z M80 58h4v4H80z M88 58h12v4H88z M108 58h4v4H108z M136 58h12v4H136z M152 58h12v4H152z M168 58h4v4H168z M176 58h4v4H176z M184 58h12v4H184z M204 58h4v4H204z M216 58h12v4H216z M232 58h12v4H232z M248 58h4v4H248z M256 58h4v4H256z" />
+  </g>
+  <g data-font="MD_F3" data-text="STARTUP STORYBOARD" data-scale="2">
+    <title>STARTUP STORYBOARD</title>
+    <path fill="#635758" d="M40 76h6v2H40z M48 76h6v2H48z M56 76h6v2H56z M64 76h6v2H64z M72 76h6v2H72z M80 76h2v2H80z M84 76h2v2H84z M88 76h6v2H88z M104 76h6v2H104z M112 76h6v2H112z M120 76h6v2H120z M128 76h6v2H128z M136 76h2v2H136z M140 76h2v2H140z M144 76h4v2H144z M152 76h6v2H152z M160 76h6v2H160z M168 76h6v2H168z M176 76h4v2H176z M40 78h2v2H40z M50 78h2v2H50z M56 78h2v2H56z M60 78h2v2H60z M64 78h2v2H64z M68 78h2v2H68z M74 78h2v2H74z M80 78h2v2H80z M84 78h2v2H84z M88 78h2v2H88z M92 78h2v2H92z M104 78h2v2H104z M114 78h2v2H114z M120 78h2v2H120z M124 78h2v2H124z M128 78h2v2H128z M132 78h2v2H132z M136 78h2v2H136z M140 78h2v2H140z M144 78h2v2H144z M148 78h2v2H148z M152 78h2v2H152z M156 78h2v2H156z M160 78h2v2H160z M164 78h2v2H164z M168 78h2v2H168z M172 78h2v2H172z M176 78h2v2H176z M180 78h2v2H180z M40 80h6v2H40z M50 80h2v2H50z M56 80h6v2H56z M64 80h4v2H64z M74 80h2v2H74z M80 80h2v2H80z M84 80h2v2H84z M88 80h6v2H88z M104 80h6v2H104z M114 80h2v2H114z M120 80h2v2H120z M124 80h2v2H124z M128 80h4v2H128z M136 80h6v2H136z M144 80h4v2H144z M152 80h2v2H152z M156 80h2v2H156z M160 80h6v2H160z M168 80h4v2H168z M176 80h2v2H176z M180 80h2v2H180z M44 82h2v2H44z M50 82h2v2H50z M56 82h2v2H56z M60 82h2v2H60z M64 82h2v2H64z M68 82h2v2H68z M74 82h2v2H74z M80 82h2v2H80z M84 82h2v2H84z M88 82h2v2H88z M108 82h2v2H108z M114 82h2v2H114z M120 82h2v2H120z M124 82h2v2H124z M128 82h2v2H128z M132 82h2v2H132z M138 82h2v2H138z M144 82h2v2H144z M148 82h2v2H148z M152 82h2v2H152z M156 82h2v2H156z M160 82h2v2H160z M164 82h2v2H164z M168 82h2v2H168z M172 82h2v2H172z M176 82h2v2H176z M180 82h2v2H180z M40 84h6v2H40z M50 84h2v2H50z M56 84h2v2H56z M60 84h2v2H60z M64 84h2v2H64z M68 84h2v2H68z M74 84h2v2H74z M80 84h6v2H80z M88 84h2v2H88z M104 84h6v2H104z M114 84h2v2H114z M120 84h6v2H120z M128 84h2v2H128z M132 84h2v2H132z M138 84h2v2H138z M144 84h4v2H144z M152 84h6v2H152z M160 84h2v2H160z M164 84h2v2H164z M168 84h2v2H168z M172 84h2v2H172z M176 84h4v2H176z" />
+  </g>
+  <g data-font="MD_F3" data-text="240X240" data-scale="2">
+    <title>240X240</title>
+    <path fill="#635758" d="M492 46h6v2H492z M500 46h2v2H500z M504 46h2v2H504z M508 46h6v2H508z M516 46h2v2H516z M520 46h2v2H520z M524 46h6v2H524z M532 46h2v2H532z M536 46h2v2H536z M540 46h6v2H540z M496 48h2v2H496z M500 48h2v2H500z M504 48h2v2H504z M508 48h2v2H508z M512 48h2v2H512z M516 48h2v2H516z M520 48h2v2H520z M528 48h2v2H528z M532 48h2v2H532z M536 48h2v2H536z M540 48h2v2H540z M544 48h2v2H544z M492 50h6v2H492z M500 50h6v2H500z M508 50h2v2H508z M512 50h2v2H512z M518 50h2v2H518z M524 50h6v2H524z M532 50h6v2H532z M540 50h2v2H540z M544 50h2v2H544z M492 52h2v2H492z M504 52h2v2H504z M508 52h2v2H508z M512 52h2v2H512z M516 52h2v2H516z M520 52h2v2H520z M524 52h2v2H524z M536 52h2v2H536z M540 52h2v2H540z M544 52h2v2H544z M492 54h6v2H492z M504 54h2v2H504z M508 54h6v2H508z M516 54h2v2H516z M520 54h2v2H520z M524 54h6v2H524z M536 54h2v2H536z M540 54h6v2H540z" />
+  </g>
+  <g data-font="MD_F3" data-text="NATIVE PIXELS" data-scale="1">
+    <title>NATIVE PIXELS</title>
+    <path fill="#635758" d="M549 64h2v1H549z M553 64h3v1H553z M557 64h3v1H557z M561 64h3v1H561z M565 64h1v1H565z M567 64h1v1H567z M569 64h3v1H569z M577 64h3v1H577z M581 64h3v1H581z M585 64h1v1H585z M587 64h1v1H587z M589 64h3v1H589z M593 64h1v1H593z M597 64h3v1H597z M549 65h1v1H549z M551 65h1v1H551z M553 65h1v1H553z M555 65h1v1H555z M558 65h1v1H558z M562 65h1v1H562z M565 65h1v1H565z M567 65h1v1H567z M569 65h1v1H569z M577 65h1v1H577z M579 65h1v1H579z M582 65h1v1H582z M585 65h1v1H585z M587 65h1v1H587z M589 65h1v1H589z M593 65h1v1H593z M597 65h1v1H597z M549 66h1v1H549z M551 66h1v1H551z M553 66h3v1H553z M558 66h1v1H558z M562 66h1v1H562z M565 66h1v1H565z M567 66h1v1H567z M569 66h3v1H569z M577 66h3v1H577z M582 66h1v1H582z M586 66h1v1H586z M589 66h3v1H589z M593 66h1v1H593z M597 66h3v1H597z M549 67h1v1H549z M551 67h1v1H551z M553 67h1v1H553z M555 67h1v1H555z M558 67h1v1H558z M562 67h1v1H562z M565 67h1v1H565z M567 67h1v1H567z M569 67h1v1H569z M577 67h1v1H577z M582 67h1v1H582z M585 67h1v1H585z M587 67h1v1H587z M589 67h1v1H589z M593 67h1v1H593z M599 67h1v1H599z M549 68h1v1H549z M551 68h1v1H551z M553 68h1v1H553z M555 68h1v1H555z M558 68h1v1H558z M561 68h3v1H561z M566 68h1v1H566z M569 68h3v1H569z M577 68h1v1H577z M581 68h3v1H581z M585 68h1v1H585z M587 68h1v1H587z M589 68h3v1H589z M593 68h3v1H593z M597 68h3v1H597z" />
+  </g>
+  <g data-font="MD_F3" data-text="ILLUSTRATIVE. NOT A DEVICE CAPTURE." data-scale="1">
+    <title>ILLUSTRATIVE. NOT A DEVICE CAPTURE.</title>
+    <path fill="#635758" d="M40 100h3v1H40z M44 100h1v1H44z M48 100h1v1H48z M52 100h1v1H52z M54 100h1v1H54z M56 100h3v1H56z M60 100h3v1H60z M64 100h3v1H64z M68 100h3v1H68z M72 100h3v1H72z M76 100h3v1H76z M80 100h1v1H80z M82 100h1v1H82z M84 100h3v1H84z M94 100h2v1H94z M98 100h3v1H98z M102 100h3v1H102z M110 100h3v1H110z M118 100h2v1H118z M122 100h3v1H122z M126 100h1v1H126z M128 100h1v1H128z M130 100h3v1H130z M134 100h3v1H134z M138 100h3v1H138z M146 100h3v1H146z M150 100h3v1H150z M154 100h3v1H154z M158 100h3v1H158z M162 100h1v1H162z M164 100h1v1H164z M166 100h3v1H166z M170 100h3v1H170z M41 101h1v1H41z M44 101h1v1H44z M48 101h1v1H48z M52 101h1v1H52z M54 101h1v1H54z M56 101h1v1H56z M61 101h1v1H61z M64 101h1v1H64z M66 101h1v1H66z M68 101h1v1H68z M70 101h1v1H70z M73 101h1v1H73z M77 101h1v1H77z M80 101h1v1H80z M82 101h1v1H82z M84 101h1v1H84z M94 101h1v1H94z M96 101h1v1H96z M98 101h1v1H98z M100 101h1v1H100z M103 101h1v1H103z M110 101h1v1H110z M112 101h1v1H112z M118 101h1v1H118z M120 101h1v1H120z M122 101h1v1H122z M126 101h1v1H126z M128 101h1v1H128z M131 101h1v1H131z M134 101h1v1H134z M138 101h1v1H138z M146 101h1v1H146z M150 101h1v1H150z M152 101h1v1H152z M154 101h1v1H154z M156 101h1v1H156z M159 101h1v1H159z M162 101h1v1H162z M164 101h1v1H164z M166 101h1v1H166z M168 101h1v1H168z M170 101h1v1H170z M41 102h1v1H41z M44 102h1v1H44z M48 102h1v1H48z M52 102h1v1H52z M54 102h1v1H54z M56 102h3v1H56z M61 102h1v1H61z M64 102h2v1H64z M68 102h3v1H68z M73 102h1v1H73z M77 102h1v1H77z M80 102h1v1H80z M82 102h1v1H82z M84 102h3v1H84z M94 102h1v1H94z M96 102h1v1H96z M98 102h1v1H98z M100 102h1v1H100z M103 102h1v1H103z M110 102h3v1H110z M118 102h1v1H118z M120 102h1v1H120z M122 102h3v1H122z M126 102h1v1H126z M128 102h1v1H128z M131 102h1v1H131z M134 102h1v1H134z M138 102h3v1H138z M146 102h1v1H146z M150 102h3v1H150z M154 102h3v1H154z M159 102h1v1H159z M162 102h1v1H162z M164 102h1v1H164z M166 102h2v1H166z M170 102h3v1H170z M41 103h1v1H41z M44 103h1v1H44z M48 103h1v1H48z M52 103h1v1H52z M54 103h1v1H54z M58 103h1v1H58z M61 103h1v1H61z M64 103h1v1H64z M66 103h1v1H66z M68 103h1v1H68z M70 103h1v1H70z M73 103h1v1H73z M77 103h1v1H77z M80 103h1v1H80z M82 103h1v1H82z M84 103h1v1H84z M94 103h1v1H94z M96 103h1v1H96z M98 103h1v1H98z M100 103h1v1H100z M103 103h1v1H103z M110 103h1v1H110z M112 103h1v1H112z M118 103h1v1H118z M120 103h1v1H120z M122 103h1v1H122z M126 103h1v1H126z M128 103h1v1H128z M131 103h1v1H131z M134 103h1v1H134z M138 103h1v1H138z M146 103h1v1H146z M150 103h1v1H150z M152 103h1v1H152z M154 103h1v1H154z M159 103h1v1H159z M162 103h1v1H162z M164 103h1v1H164z M166 103h1v1H166z M168 103h1v1H168z M170 103h1v1H170z M40 104h3v1H40z M44 104h3v1H44z M48 104h3v1H48z M52 104h3v1H52z M56 104h3v1H56z M61 104h1v1H61z M64 104h1v1H64z M66 104h1v1H66z M68 104h1v1H68z M70 104h1v1H70z M73 104h1v1H73z M76 104h3v1H76z M81 104h1v1H81z M84 104h3v1H84z M88 104h1v1H88z M94 104h1v1H94z M96 104h1v1H96z M98 104h3v1H98z M103 104h1v1H103z M110 104h1v1H110z M112 104h1v1H112z M118 104h2v1H118z M122 104h3v1H122z M127 104h1v1H127z M130 104h3v1H130z M134 104h3v1H134z M138 104h3v1H138z M146 104h3v1H146z M150 104h1v1H150z M152 104h1v1H152z M154 104h1v1H154z M159 104h1v1H159z M162 104h3v1H162z M166 104h1v1H166z M168 104h1v1H168z M170 104h3v1H170z M174 104h1v1H174z" />
+  </g>
+  <g data-font="MD_F3" data-text="01 / SYSTEM WAKE" data-scale="2">
+    <title>01 / SYSTEM WAKE</title>
+    <path fill="#211C1D" d="M40 126h6v2H40z M48 126h4v2H48z M68 126h2v2H68z M80 126h6v2H80z M88 126h2v2H88z M92 126h2v2H92z M96 126h6v2H96z M104 126h6v2H104z M112 126h6v2H112z M120 126h2v2H120z M124 126h2v2H124z M136 126h2v2H136z M140 126h2v2H140z M144 126h6v2H144z M152 126h2v2H152z M156 126h2v2H156z M160 126h6v2H160z M40 128h2v2H40z M44 128h2v2H44z M50 128h2v2H50z M68 128h2v2H68z M80 128h2v2H80z M88 128h2v2H88z M92 128h2v2H92z M96 128h2v2H96z M106 128h2v2H106z M112 128h2v2H112z M120 128h6v2H120z M136 128h2v2H136z M140 128h2v2H140z M144 128h2v2H144z M148 128h2v2H148z M152 128h2v2H152z M156 128h2v2H156z M160 128h2v2H160z M40 130h2v2H40z M44 130h2v2H44z M50 130h2v2H50z M66 130h2v2H66z M80 130h6v2H80z M88 130h6v2H88z M96 130h6v2H96z M106 130h2v2H106z M112 130h6v2H112z M120 130h2v2H120z M124 130h2v2H124z M136 130h2v2H136z M140 130h2v2H140z M144 130h6v2H144z M152 130h4v2H152z M160 130h6v2H160z M40 132h2v2H40z M44 132h2v2H44z M50 132h2v2H50z M64 132h2v2H64z M84 132h2v2H84z M90 132h2v2H90z M100 132h2v2H100z M106 132h2v2H106z M112 132h2v2H112z M120 132h2v2H120z M124 132h2v2H124z M136 132h6v2H136z M144 132h2v2H144z M148 132h2v2H148z M152 132h2v2H152z M156 132h2v2H156z M160 132h2v2H160z M40 134h6v2H40z M48 134h6v2H48z M64 134h2v2H64z M80 134h6v2H80z M90 134h2v2H90z M96 134h6v2H96z M106 134h2v2H106z M112 134h6v2H112z M120 134h2v2H120z M124 134h2v2H124z M136 134h2v2H136z M140 134h2v2H140z M144 134h2v2H144z M148 134h2v2H148z M152 134h2v2H152z M156 134h2v2H156z M160 134h6v2H160z" />
+  </g>
+  <g data-font="MD_F3" data-text="STATIC TITLE / BEFORE MOTION" data-scale="1">
+    <title>STATIC TITLE / BEFORE MOTION</title>
+    <path fill="#635758" d="M40 144h3v1H40z M44 144h3v1H44z M48 144h3v1H48z M52 144h3v1H52z M56 144h3v1H56z M60 144h3v1H60z M68 144h3v1H68z M72 144h3v1H72z M76 144h3v1H76z M80 144h1v1H80z M84 144h3v1H84z M94 144h1v1H94z M100 144h2v1H100z M104 144h3v1H104z M108 144h3v1H108z M112 144h3v1H112z M116 144h3v1H116z M120 144h3v1H120z M128 144h1v1H128z M130 144h1v1H130z M132 144h3v1H132z M136 144h3v1H136z M140 144h3v1H140z M144 144h3v1H144z M148 144h2v1H148z M40 145h1v1H40z M45 145h1v1H45z M48 145h1v1H48z M50 145h1v1H50z M53 145h1v1H53z M57 145h1v1H57z M60 145h1v1H60z M69 145h1v1H69z M73 145h1v1H73z M77 145h1v1H77z M80 145h1v1H80z M84 145h1v1H84z M94 145h1v1H94z M100 145h1v1H100z M102 145h1v1H102z M104 145h1v1H104z M108 145h1v1H108z M112 145h1v1H112z M114 145h1v1H114z M116 145h1v1H116z M118 145h1v1H118z M120 145h1v1H120z M128 145h3v1H128z M132 145h1v1H132z M134 145h1v1H134z M137 145h1v1H137z M141 145h1v1H141z M144 145h1v1H144z M146 145h1v1H146z M148 145h1v1H148z M150 145h1v1H150z M40 146h3v1H40z M45 146h1v1H45z M48 146h3v1H48z M53 146h1v1H53z M57 146h1v1H57z M60 146h1v1H60z M69 146h1v1H69z M73 146h1v1H73z M77 146h1v1H77z M80 146h1v1H80z M84 146h3v1H84z M93 146h1v1H93z M100 146h2v1H100z M104 146h3v1H104z M108 146h3v1H108z M112 146h1v1H112z M114 146h1v1H114z M116 146h2v1H116z M120 146h3v1H120z M128 146h1v1H128z M130 146h1v1H130z M132 146h1v1H132z M134 146h1v1H134z M137 146h1v1H137z M141 146h1v1H141z M144 146h1v1H144z M146 146h1v1H146z M148 146h1v1H148z M150 146h1v1H150z M42 147h1v1H42z M45 147h1v1H45z M48 147h1v1H48z M50 147h1v1H50z M53 147h1v1H53z M57 147h1v1H57z M60 147h1v1H60z M69 147h1v1H69z M73 147h1v1H73z M77 147h1v1H77z M80 147h1v1H80z M84 147h1v1H84z M92 147h1v1H92z M100 147h1v1H100z M102 147h1v1H102z M104 147h1v1H104z M108 147h1v1H108z M112 147h1v1H112z M114 147h1v1H114z M116 147h1v1H116z M118 147h1v1H118z M120 147h1v1H120z M128 147h1v1H128z M130 147h1v1H130z M132 147h1v1H132z M134 147h1v1H134z M137 147h1v1H137z M141 147h1v1H141z M144 147h1v1H144z M146 147h1v1H146z M148 147h1v1H148z M150 147h1v1H150z M40 148h3v1H40z M45 148h1v1H45z M48 148h1v1H48z M50 148h1v1H50z M53 148h1v1H53z M56 148h3v1H56z M60 148h3v1H60z M69 148h1v1H69z M72 148h3v1H72z M77 148h1v1H77z M80 148h3v1H80z M84 148h3v1H84z M92 148h1v1H92z M100 148h2v1H100z M104 148h3v1H104z M108 148h1v1H108z M112 148h3v1H112z M116 148h1v1H116z M118 148h1v1H118z M120 148h3v1H120z M128 148h1v1H128z M130 148h1v1H130z M132 148h3v1H132z M137 148h1v1H137z M140 148h3v1H140z M144 148h3v1H144z M148 148h1v1H148z M150 148h1v1H150z" />
+  </g>
+  <g id="panel-wake" transform="translate(40 160)" data-native-width="240" data-native-height="240" data-time="static">
+    <title>SYSTEM WAKE: static title</title>
+    <rect x="0" y="0" width="240" height="240" fill="#080808" data-role="panel-background" />
+    <rect x="8" y="8" width="224" height="1" fill="#311819" />
+    <rect x="8" y="231" width="224" height="1" fill="#311819" />
+    <rect x="8" y="8" width="1" height="224" fill="#311819" />
+    <rect x="231" y="8" width="1" height="224" fill="#311819" />
+    <g data-font="MD_F3" data-text="GRIND" data-scale="8" data-role="grind-title">
+      <title>GRIND</title>
+      <path fill="#BD2429" d="M44 44h24v8H44z M76 44h24v8H76z M108 44h24v8H108z M140 44h16v8H140z M172 44h16v8H172z M44 52h8v8H44z M76 52h8v8H76z M92 52h8v8H92z M116 52h8v8H116z M140 52h8v8H140z M156 52h8v8H156z M172 52h8v8H172z M188 52h8v8H188z M44 60h8v8H44z M60 60h8v8H60z M76 60h16v8H76z M116 60h8v8H116z M140 60h8v8H140z M156 60h8v8H156z M172 60h8v8H172z M188 60h8v8H188z M44 68h8v8H44z M60 68h8v8H60z M76 68h8v8H76z M92 68h8v8H92z M116 68h8v8H116z M140 68h8v8H140z M156 68h8v8H156z M172 68h8v8H172z M188 68h8v8H188z M44 76h24v8H44z M76 76h8v8H76z M92 76h8v8H92z M108 76h24v8H108z M140 76h8v8H140z M156 76h8v8H156z M172 76h16v8H172z" />
+    </g>
+    <g data-font="MD_F3" data-text="MACHINE" data-scale="4" data-role="machine-title">
+      <title>MACHINE</title>
+      <path fill="#311819" d="M66 96h4v4H66z M74 96h4v4H74z M82 96h12v4H82z M98 96h12v4H98z M114 96h4v4H114z M122 96h4v4H122z M130 96h12v4H130z M146 96h8v4H146z M162 96h12v4H162z M66 100h12v4H66z M82 100h4v4H82z M90 100h4v4H90z M98 100h4v4H98z M114 100h4v4H114z M122 100h4v4H122z M134 100h4v4H134z M146 100h4v4H146z M154 100h4v4H154z M162 100h4v4H162z M66 104h4v4H66z M74 104h4v4H74z M82 104h12v4H82z M98 104h4v4H98z M114 104h12v4H114z M134 104h4v4H134z M146 104h4v4H146z M154 104h4v4H154z M162 104h12v4H162z M66 108h4v4H66z M74 108h4v4H74z M82 108h4v4H82z M90 108h4v4H90z M98 108h4v4H98z M114 108h4v4H114z M122 108h4v4H122z M134 108h4v4H134z M146 108h4v4H146z M154 108h4v4H154z M162 108h4v4H162z M66 112h4v4H66z M74 112h4v4H74z M82 112h4v4H82z M90 112h4v4H90z M98 112h12v4H98z M114 112h4v4H114z M122 112h4v4H122z M130 112h12v4H130z M146 112h4v4H146z M154 112h4v4H154z M162 112h12v4H162z" />
+    </g>
+    <rect x="24" y="124" width="192" height="2" fill="#311819" data-role="rail" />
+    <rect x="25" y="138" width="10" height="4" fill="#311819" data-role="grid-cell" data-row="0" data-col="0" />
+    <rect x="37" y="138" width="10" height="4" fill="#311819" data-role="grid-cell" data-row="0" data-col="1" />
+    <rect x="49" y="138" width="10" height="4" fill="#311819" data-role="grid-cell" data-row="0" data-col="2" />
+    <rect x="61" y="138" width="10" height="4" fill="#311819" data-role="grid-cell" data-row="0" data-col="3" />
+    <rect x="73" y="138" width="10" height="4" fill="#311819" data-role="grid-cell" data-row="0" data-col="4" />
+    <rect x="85" y="138" width="10" height="4" fill="#311819" data-role="grid-cell" data-row="0" data-col="5" />
+    <rect x="97" y="138" width="10" height="4" fill="#311819" data-role="grid-cell" data-row="0" data-col="6" />
+    <rect x="109" y="138" width="10" height="4" fill="#311819" data-role="grid-cell" data-row="0" data-col="7" />
+    <rect x="121" y="138" width="10" height="4" fill="#311819" data-role="grid-cell" data-row="0" data-col="8" />
+    <rect x="133" y="138" width="10" height="4" fill="#311819" data-role="grid-cell" data-row="0" data-col="9" />
+    <rect x="145" y="138" width="10" height="4" fill="#311819" data-role="grid-cell" data-row="0" data-col="10" />
+    <rect x="157" y="138" width="10" height="4" fill="#311819" data-role="grid-cell" data-row="0" data-col="11" />
+    <rect x="169" y="138" width="10" height="4" fill="#311819" data-role="grid-cell" data-row="0" data-col="12" />
+    <rect x="181" y="138" width="10" height="4" fill="#311819" data-role="grid-cell" data-row="0" data-col="13" />
+    <rect x="193" y="138" width="10" height="4" fill="#311819" data-role="grid-cell" data-row="0" data-col="14" />
+    <rect x="205" y="138" width="10" height="4" fill="#311819" data-role="grid-cell" data-row="0" data-col="15" />
+    <rect x="25" y="145" width="10" height="4" fill="#311819" data-role="grid-cell" data-row="1" data-col="0" />
+    <rect x="37" y="145" width="10" height="4" fill="#311819" data-role="grid-cell" data-row="1" data-col="1" />
+    <rect x="49" y="145" width="10" height="4" fill="#311819" data-role="grid-cell" data-row="1" data-col="2" />
+    <rect x="61" y="145" width="10" height="4" fill="#311819" data-role="grid-cell" data-row="1" data-col="3" />
+    <rect x="73" y="145" width="10" height="4" fill="#311819" data-role="grid-cell" data-row="1" data-col="4" />
+    <rect x="85" y="145" width="10" height="4" fill="#311819" data-role="grid-cell" data-row="1" data-col="5" />
+    <rect x="97" y="145" width="10" height="4" fill="#311819" data-role="grid-cell" data-row="1" data-col="6" />
+    <rect x="109" y="145" width="10" height="4" fill="#311819" data-role="grid-cell" data-row="1" data-col="7" />
+    <rect x="121" y="145" width="10" height="4" fill="#311819" data-role="grid-cell" data-row="1" data-col="8" />
+    <rect x="133" y="145" width="10" height="4" fill="#311819" data-role="grid-cell" data-row="1" data-col="9" />
+    <rect x="145" y="145" width="10" height="4" fill="#311819" data-role="grid-cell" data-row="1" data-col="10" />
+    <rect x="157" y="145" width="10" height="4" fill="#311819" data-role="grid-cell" data-row="1" data-col="11" />
+    <rect x="169" y="145" width="10" height="4" fill="#311819" data-role="grid-cell" data-row="1" data-col="12" />
+    <rect x="181" y="145" width="10" height="4" fill="#311819" data-role="grid-cell" data-row="1" data-col="13" />
+    <rect x="193" y="145" width="10" height="4" fill="#311819" data-role="grid-cell" data-row="1" data-col="14" />
+    <rect x="205" y="145" width="10" height="4" fill="#311819" data-role="grid-cell" data-row="1" data-col="15" />
+    <rect x="25" y="152" width="10" height="4" fill="#311819" data-role="grid-cell" data-row="2" data-col="0" />
+    <rect x="37" y="152" width="10" height="4" fill="#311819" data-role="grid-cell" data-row="2" data-col="1" />
+    <rect x="49" y="152" width="10" height="4" fill="#311819" data-role="grid-cell" data-row="2" data-col="2" />
+    <rect x="61" y="152" width="10" height="4" fill="#311819" data-role="grid-cell" data-row="2" data-col="3" />
+    <rect x="73" y="152" width="10" height="4" fill="#311819" data-role="grid-cell" data-row="2" data-col="4" />
+    <rect x="85" y="152" width="10" height="4" fill="#311819" data-role="grid-cell" data-row="2" data-col="5" />
+    <rect x="97" y="152" width="10" height="4" fill="#311819" data-role="grid-cell" data-row="2" data-col="6" />
+    <rect x="109" y="152" width="10" height="4" fill="#311819" data-role="grid-cell" data-row="2" data-col="7" />
+    <rect x="121" y="152" width="10" height="4" fill="#311819" data-role="grid-cell" data-row="2" data-col="8" />
+    <rect x="133" y="152" width="10" height="4" fill="#311819" data-role="grid-cell" data-row="2" data-col="9" />
+    <rect x="145" y="152" width="10" height="4" fill="#311819" data-role="grid-cell" data-row="2" data-col="10" />
+    <rect x="157" y="152" width="10" height="4" fill="#311819" data-role="grid-cell" data-row="2" data-col="11" />
+    <rect x="169" y="152" width="10" height="4" fill="#311819" data-role="grid-cell" data-row="2" data-col="12" />
+    <rect x="181" y="152" width="10" height="4" fill="#311819" data-role="grid-cell" data-row="2" data-col="13" />
+    <rect x="193" y="152" width="10" height="4" fill="#311819" data-role="grid-cell" data-row="2" data-col="14" />
+    <rect x="205" y="152" width="10" height="4" fill="#311819" data-role="grid-cell" data-row="2" data-col="15" />
+    <rect x="25" y="159" width="10" height="4" fill="#311819" data-role="grid-cell" data-row="3" data-col="0" />
+    <rect x="37" y="159" width="10" height="4" fill="#311819" data-role="grid-cell" data-row="3" data-col="1" />
+    <rect x="49" y="159" width="10" height="4" fill="#311819" data-role="grid-cell" data-row="3" data-col="2" />
+    <rect x="61" y="159" width="10" height="4" fill="#311819" data-role="grid-cell" data-row="3" data-col="3" />
+    <rect x="73" y="159" width="10" height="4" fill="#311819" data-role="grid-cell" data-row="3" data-col="4" />
+    <rect x="85" y="159" width="10" height="4" fill="#311819" data-role="grid-cell" data-row="3" data-col="5" />
+    <rect x="97" y="159" width="10" height="4" fill="#311819" data-role="grid-cell" data-row="3" data-col="6" />
+    <rect x="109" y="159" width="10" height="4" fill="#311819" data-role="grid-cell" data-row="3" data-col="7" />
+    <rect x="121" y="159" width="10" height="4" fill="#311819" data-role="grid-cell" data-row="3" data-col="8" />
+    <rect x="133" y="159" width="10" height="4" fill="#311819" data-role="grid-cell" data-row="3" data-col="9" />
+    <rect x="145" y="159" width="10" height="4" fill="#311819" data-role="grid-cell" data-row="3" data-col="10" />
+    <rect x="157" y="159" width="10" height="4" fill="#311819" data-role="grid-cell" data-row="3" data-col="11" />
+    <rect x="169" y="159" width="10" height="4" fill="#311819" data-role="grid-cell" data-row="3" data-col="12" />
+    <rect x="181" y="159" width="10" height="4" fill="#311819" data-role="grid-cell" data-row="3" data-col="13" />
+    <rect x="193" y="159" width="10" height="4" fill="#311819" data-role="grid-cell" data-row="3" data-col="14" />
+    <rect x="205" y="159" width="10" height="4" fill="#311819" data-role="grid-cell" data-row="3" data-col="15" />
+    <rect x="25" y="166" width="10" height="4" fill="#311819" data-role="grid-cell" data-row="4" data-col="0" />
+    <rect x="37" y="166" width="10" height="4" fill="#311819" data-role="grid-cell" data-row="4" data-col="1" />
+    <rect x="49" y="166" width="10" height="4" fill="#311819" data-role="grid-cell" data-row="4" data-col="2" />
+    <rect x="61" y="166" width="10" height="4" fill="#311819" data-role="grid-cell" data-row="4" data-col="3" />
+    <rect x="73" y="166" width="10" height="4" fill="#311819" data-role="grid-cell" data-row="4" data-col="4" />
+    <rect x="85" y="166" width="10" height="4" fill="#311819" data-role="grid-cell" data-row="4" data-col="5" />
+    <rect x="97" y="166" width="10" height="4" fill="#311819" data-role="grid-cell" data-row="4" data-col="6" />
+    <rect x="109" y="166" width="10" height="4" fill="#311819" data-role="grid-cell" data-row="4" data-col="7" />
+    <rect x="121" y="166" width="10" height="4" fill="#311819" data-role="grid-cell" data-row="4" data-col="8" />
+    <rect x="133" y="166" width="10" height="4" fill="#311819" data-role="grid-cell" data-row="4" data-col="9" />
+    <rect x="145" y="166" width="10" height="4" fill="#311819" data-role="grid-cell" data-row="4" data-col="10" />
+    <rect x="157" y="166" width="10" height="4" fill="#311819" data-role="grid-cell" data-row="4" data-col="11" />
+    <rect x="169" y="166" width="10" height="4" fill="#311819" data-role="grid-cell" data-row="4" data-col="12" />
+    <rect x="181" y="166" width="10" height="4" fill="#311819" data-role="grid-cell" data-row="4" data-col="13" />
+    <rect x="193" y="166" width="10" height="4" fill="#311819" data-role="grid-cell" data-row="4" data-col="14" />
+    <rect x="205" y="166" width="10" height="4" fill="#311819" data-role="grid-cell" data-row="4" data-col="15" />
+    <rect x="25" y="173" width="10" height="4" fill="#311819" data-role="grid-cell" data-row="5" data-col="0" />
+    <rect x="37" y="173" width="10" height="4" fill="#311819" data-role="grid-cell" data-row="5" data-col="1" />
+    <rect x="49" y="173" width="10" height="4" fill="#311819" data-role="grid-cell" data-row="5" data-col="2" />
+    <rect x="61" y="173" width="10" height="4" fill="#311819" data-role="grid-cell" data-row="5" data-col="3" />
+    <rect x="73" y="173" width="10" height="4" fill="#311819" data-role="grid-cell" data-row="5" data-col="4" />
+    <rect x="85" y="173" width="10" height="4" fill="#311819" data-role="grid-cell" data-row="5" data-col="5" />
+    <rect x="97" y="173" width="10" height="4" fill="#311819" data-role="grid-cell" data-row="5" data-col="6" />
+    <rect x="109" y="173" width="10" height="4" fill="#311819" data-role="grid-cell" data-row="5" data-col="7" />
+    <rect x="121" y="173" width="10" height="4" fill="#311819" data-role="grid-cell" data-row="5" data-col="8" />
+    <rect x="133" y="173" width="10" height="4" fill="#311819" data-role="grid-cell" data-row="5" data-col="9" />
+    <rect x="145" y="173" width="10" height="4" fill="#311819" data-role="grid-cell" data-row="5" data-col="10" />
+    <rect x="157" y="173" width="10" height="4" fill="#311819" data-role="grid-cell" data-row="5" data-col="11" />
+    <rect x="169" y="173" width="10" height="4" fill="#311819" data-role="grid-cell" data-row="5" data-col="12" />
+    <rect x="181" y="173" width="10" height="4" fill="#311819" data-role="grid-cell" data-row="5" data-col="13" />
+    <rect x="193" y="173" width="10" height="4" fill="#311819" data-role="grid-cell" data-row="5" data-col="14" />
+    <rect x="205" y="173" width="10" height="4" fill="#311819" data-role="grid-cell" data-row="5" data-col="15" />
+    <rect x="25" y="180" width="10" height="4" fill="#311819" data-role="grid-cell" data-row="6" data-col="0" />
+    <rect x="37" y="180" width="10" height="4" fill="#311819" data-role="grid-cell" data-row="6" data-col="1" />
+    <rect x="49" y="180" width="10" height="4" fill="#311819" data-role="grid-cell" data-row="6" data-col="2" />
+    <rect x="61" y="180" width="10" height="4" fill="#311819" data-role="grid-cell" data-row="6" data-col="3" />
+    <rect x="73" y="180" width="10" height="4" fill="#311819" data-role="grid-cell" data-row="6" data-col="4" />
+    <rect x="85" y="180" width="10" height="4" fill="#311819" data-role="grid-cell" data-row="6" data-col="5" />
+    <rect x="97" y="180" width="10" height="4" fill="#311819" data-role="grid-cell" data-row="6" data-col="6" />
+    <rect x="109" y="180" width="10" height="4" fill="#311819" data-role="grid-cell" data-row="6" data-col="7" />
+    <rect x="121" y="180" width="10" height="4" fill="#311819" data-role="grid-cell" data-row="6" data-col="8" />
+    <rect x="133" y="180" width="10" height="4" fill="#311819" data-role="grid-cell" data-row="6" data-col="9" />
+    <rect x="145" y="180" width="10" height="4" fill="#311819" data-role="grid-cell" data-row="6" data-col="10" />
+    <rect x="157" y="180" width="10" height="4" fill="#311819" data-role="grid-cell" data-row="6" data-col="11" />
+    <rect x="169" y="180" width="10" height="4" fill="#311819" data-role="grid-cell" data-row="6" data-col="12" />
+    <rect x="181" y="180" width="10" height="4" fill="#311819" data-role="grid-cell" data-row="6" data-col="13" />
+    <rect x="193" y="180" width="10" height="4" fill="#311819" data-role="grid-cell" data-row="6" data-col="14" />
+    <rect x="205" y="180" width="10" height="4" fill="#311819" data-role="grid-cell" data-row="6" data-col="15" />
+    <rect x="25" y="187" width="10" height="4" fill="#311819" data-role="grid-cell" data-row="7" data-col="0" />
+    <rect x="37" y="187" width="10" height="4" fill="#311819" data-role="grid-cell" data-row="7" data-col="1" />
+    <rect x="49" y="187" width="10" height="4" fill="#311819" data-role="grid-cell" data-row="7" data-col="2" />
+    <rect x="61" y="187" width="10" height="4" fill="#311819" data-role="grid-cell" data-row="7" data-col="3" />
+    <rect x="73" y="187" width="10" height="4" fill="#311819" data-role="grid-cell" data-row="7" data-col="4" />
+    <rect x="85" y="187" width="10" height="4" fill="#311819" data-role="grid-cell" data-row="7" data-col="5" />
+    <rect x="97" y="187" width="10" height="4" fill="#311819" data-role="grid-cell" data-row="7" data-col="6" />
+    <rect x="109" y="187" width="10" height="4" fill="#311819" data-role="grid-cell" data-row="7" data-col="7" />
+    <rect x="121" y="187" width="10" height="4" fill="#311819" data-role="grid-cell" data-row="7" data-col="8" />
+    <rect x="133" y="187" width="10" height="4" fill="#311819" data-role="grid-cell" data-row="7" data-col="9" />
+    <rect x="145" y="187" width="10" height="4" fill="#311819" data-role="grid-cell" data-row="7" data-col="10" />
+    <rect x="157" y="187" width="10" height="4" fill="#311819" data-role="grid-cell" data-row="7" data-col="11" />
+    <rect x="169" y="187" width="10" height="4" fill="#311819" data-role="grid-cell" data-row="7" data-col="12" />
+    <rect x="181" y="187" width="10" height="4" fill="#311819" data-role="grid-cell" data-row="7" data-col="13" />
+    <rect x="193" y="187" width="10" height="4" fill="#311819" data-role="grid-cell" data-row="7" data-col="14" />
+    <rect x="205" y="187" width="10" height="4" fill="#311819" data-role="grid-cell" data-row="7" data-col="15" />
+    <g data-font="MD_F3" data-text="FM-1 EDITION" data-scale="2" data-role="footer">
+      <title>FM-1 EDITION</title>
+      <path fill="#311819" d="M73 210h6v2H73z M81 210h2v2H81z M85 210h2v2H85z M97 210h4v2H97z M113 210h6v2H113z M121 210h4v2H121z M129 210h6v2H129z M137 210h6v2H137z M145 210h6v2H145z M153 210h6v2H153z M161 210h4v2H161z M73 212h2v2H73z M81 212h6v2H81z M99 212h2v2H99z M113 212h2v2H113z M121 212h2v2H121z M125 212h2v2H125z M131 212h2v2H131z M139 212h2v2H139z M147 212h2v2H147z M153 212h2v2H153z M157 212h2v2H157z M161 212h2v2H161z M165 212h2v2H165z M73 214h6v2H73z M81 214h2v2H81z M85 214h2v2H85z M89 214h6v2H89z M99 214h2v2H99z M113 214h6v2H113z M121 214h2v2H121z M125 214h2v2H125z M131 214h2v2H131z M139 214h2v2H139z M147 214h2v2H147z M153 214h2v2H153z M157 214h2v2H157z M161 214h2v2H161z M165 214h2v2H165z M73 216h2v2H73z M81 216h2v2H81z M85 216h2v2H85z M99 216h2v2H99z M113 216h2v2H113z M121 216h2v2H121z M125 216h2v2H125z M131 216h2v2H131z M139 216h2v2H139z M147 216h2v2H147z M153 216h2v2H153z M157 216h2v2H157z M161 216h2v2H161z M165 216h2v2H165z M73 218h2v2H73z M81 218h2v2H81z M85 218h2v2H85z M97 218h6v2H97z M113 218h6v2H113z M121 218h4v2H121z M129 218h6v2H129z M139 218h2v2H139z M145 218h6v2H145z M153 218h6v2H153z M161 218h2v2H161z M165 218h2v2H165z" />
+    </g>
+  </g>
+  <g data-font="MD_F3" data-text="02 / RHYTHM IGNITION" data-scale="2">
+    <title>02 / RHYTHM IGNITION</title>
+    <path fill="#211C1D" d="M360 126h6v2H360z M368 126h6v2H368z M388 126h2v2H388z M400 126h6v2H400z M408 126h2v2H408z M412 126h2v2H412z M416 126h2v2H416z M420 126h2v2H420z M424 126h6v2H424z M432 126h2v2H432z M436 126h2v2H436z M440 126h2v2H440z M444 126h2v2H444z M456 126h6v2H456z M464 126h6v2H464z M472 126h4v2H472z M480 126h6v2H480z M488 126h6v2H488z M496 126h6v2H496z M504 126h6v2H504z M512 126h4v2H512z M360 128h2v2H360z M364 128h2v2H364z M372 128h2v2H372z M388 128h2v2H388z M400 128h2v2H400z M404 128h2v2H404z M408 128h2v2H408z M412 128h2v2H412z M416 128h2v2H416z M420 128h2v2H420z M426 128h2v2H426z M432 128h2v2H432z M436 128h2v2H436z M440 128h6v2H440z M458 128h2v2H458z M464 128h2v2H464z M472 128h2v2H472z M476 128h2v2H476z M482 128h2v2H482z M490 128h2v2H490z M498 128h2v2H498z M504 128h2v2H504z M508 128h2v2H508z M512 128h2v2H512z M516 128h2v2H516z M360 130h2v2H360z M364 130h2v2H364z M368 130h6v2H368z M386 130h2v2H386z M400 130h4v2H400z M408 130h6v2H408z M416 130h6v2H416z M426 130h2v2H426z M432 130h6v2H432z M440 130h2v2H440z M444 130h2v2H444z M458 130h2v2H458z M464 130h2v2H464z M468 130h2v2H468z M472 130h2v2H472z M476 130h2v2H476z M482 130h2v2H482z M490 130h2v2H490z M498 130h2v2H498z M504 130h2v2H504z M508 130h2v2H508z M512 130h2v2H512z M516 130h2v2H516z M360 132h2v2H360z M364 132h2v2H364z M368 132h2v2H368z M384 132h2v2H384z M400 132h2v2H400z M404 132h2v2H404z M408 132h2v2H408z M412 132h2v2H412z M418 132h2v2H418z M426 132h2v2H426z M432 132h2v2H432z M436 132h2v2H436z M440 132h2v2H440z M444 132h2v2H444z M458 132h2v2H458z M464 132h2v2H464z M468 132h2v2H468z M472 132h2v2H472z M476 132h2v2H476z M482 132h2v2H482z M490 132h2v2H490z M498 132h2v2H498z M504 132h2v2H504z M508 132h2v2H508z M512 132h2v2H512z M516 132h2v2H516z M360 134h6v2H360z M368 134h6v2H368z M384 134h2v2H384z M400 134h2v2H400z M404 134h2v2H404z M408 134h2v2H408z M412 134h2v2H412z M418 134h2v2H418z M426 134h2v2H426z M432 134h2v2H432z M436 134h2v2H436z M440 134h2v2H440z M444 134h2v2H444z M456 134h6v2H456z M464 134h6v2H464z M472 134h2v2H472z M476 134h2v2H476z M480 134h6v2H480z M490 134h2v2H490z M496 134h6v2H496z M504 134h6v2H504z M512 134h2v2H512z M516 134h2v2H516z" />
+  </g>
+  <g data-font="MD_F3" data-text="T = 60 MS / COLUMNS 0-7" data-scale="1">
+    <title>T = 60 MS / COLUMNS 0-7</title>
+    <path fill="#635758" d="M360 144h3v1H360z M376 144h3v1H376z M380 144h3v1H380z M388 144h1v1H388z M390 144h1v1H390z M392 144h3v1H392z M402 144h1v1H402z M408 144h3v1H408z M412 144h3v1H412z M416 144h1v1H416z M420 144h1v1H420z M422 144h1v1H422z M424 144h1v1H424z M426 144h1v1H426z M428 144h2v1H428z M432 144h3v1H432z M440 144h3v1H440z M448 144h3v1H448z M361 145h1v1H361z M368 145h3v1H368z M376 145h1v1H376z M380 145h1v1H380z M382 145h1v1H382z M388 145h3v1H388z M392 145h1v1H392z M402 145h1v1H402z M408 145h1v1H408z M412 145h1v1H412z M414 145h1v1H414z M416 145h1v1H416z M420 145h1v1H420z M422 145h1v1H422z M424 145h3v1H424z M428 145h1v1H428z M430 145h1v1H430z M432 145h1v1H432z M440 145h1v1H440z M442 145h1v1H442z M450 145h1v1H450z M361 146h1v1H361z M376 146h3v1H376z M380 146h1v1H380z M382 146h1v1H382z M388 146h1v1H388z M390 146h1v1H390z M392 146h3v1H392z M401 146h1v1H401z M408 146h1v1H408z M412 146h1v1H412z M414 146h1v1H414z M416 146h1v1H416z M420 146h1v1H420z M422 146h1v1H422z M424 146h1v1H424z M426 146h1v1H426z M428 146h1v1H428z M430 146h1v1H430z M432 146h3v1H432z M440 146h1v1H440z M442 146h1v1H442z M444 146h3v1H444z M450 146h1v1H450z M361 147h1v1H361z M368 147h3v1H368z M376 147h1v1H376z M378 147h1v1H378z M380 147h1v1H380z M382 147h1v1H382z M388 147h1v1H388z M390 147h1v1H390z M394 147h1v1H394z M400 147h1v1H400z M408 147h1v1H408z M412 147h1v1H412z M414 147h1v1H414z M416 147h1v1H416z M420 147h1v1H420z M422 147h1v1H422z M424 147h1v1H424z M426 147h1v1H426z M428 147h1v1H428z M430 147h1v1H430z M434 147h1v1H434z M440 147h1v1H440z M442 147h1v1H442z M450 147h1v1H450z M361 148h1v1H361z M376 148h3v1H376z M380 148h3v1H380z M388 148h1v1H388z M390 148h1v1H390z M392 148h3v1H392z M400 148h1v1H400z M408 148h3v1H408z M412 148h3v1H412z M416 148h3v1H416z M420 148h3v1H420z M424 148h1v1H424z M426 148h1v1H426z M428 148h1v1H428z M430 148h1v1H430z M432 148h3v1H432z M440 148h3v1H440z M450 148h1v1H450z" />
+  </g>
+  <g id="panel-ignition" transform="translate(360 160)" data-native-width="240" data-native-height="240" data-time-ms="60">
+    <title>RHYTHM IGNITION at 60 milliseconds</title>
+    <rect x="0" y="0" width="240" height="240" fill="#080808" data-role="panel-background" />
+    <rect x="8" y="8" width="224" height="1" fill="#311819" />
+    <rect x="8" y="231" width="224" height="1" fill="#311819" />
+    <rect x="8" y="8" width="1" height="224" fill="#311819" />
+    <rect x="231" y="8" width="1" height="224" fill="#311819" />
+    <g data-font="MD_F3" data-text="GRIND" data-scale="8" data-role="grind-title">
+      <title>GRIND</title>
+      <path fill="#BD2429" d="M44 44h24v8H44z M76 44h24v8H76z M108 44h24v8H108z M140 44h16v8H140z M172 44h16v8H172z M44 52h8v8H44z M76 52h8v8H76z M92 52h8v8H92z M116 52h8v8H116z M140 52h8v8H140z M156 52h8v8H156z M172 52h8v8H172z M188 52h8v8H188z M44 60h8v8H44z M60 60h8v8H60z M76 60h16v8H76z M116 60h8v8H116z M140 60h8v8H140z M156 60h8v8H156z M172 60h8v8H172z M188 60h8v8H188z M44 68h8v8H44z M60 68h8v8H60z M76 68h8v8H76z M92 68h8v8H92z M116 68h8v8H116z M140 68h8v8H140z M156 68h8v8H156z M172 68h8v8H172z M188 68h8v8H188z M44 76h24v8H44z M76 76h8v8H76z M92 76h8v8H92z M108 76h24v8H108z M140 76h8v8H140z M156 76h8v8H156z M172 76h16v8H172z" />
+    </g>
+    <g data-font="MD_F3" data-text="MACHINE" data-scale="4" data-role="machine-title">
+      <title>MACHINE</title>
+      <path fill="#F74D52" d="M66 96h4v4H66z M74 96h4v4H74z M82 96h12v4H82z M98 96h12v4H98z M114 96h4v4H114z M122 96h4v4H122z M130 96h12v4H130z M146 96h8v4H146z M162 96h12v4H162z M66 100h12v4H66z M82 100h4v4H82z M90 100h4v4H90z M98 100h4v4H98z M114 100h4v4H114z M122 100h4v4H122z M134 100h4v4H134z M146 100h4v4H146z M154 100h4v4H154z M162 100h4v4H162z M66 104h4v4H66z M74 104h4v4H74z M82 104h12v4H82z M98 104h4v4H98z M114 104h12v4H114z M134 104h4v4H134z M146 104h4v4H146z M154 104h4v4H154z M162 104h12v4H162z M66 108h4v4H66z M74 108h4v4H74z M82 108h4v4H82z M90 108h4v4H90z M98 108h4v4H98z M114 108h4v4H114z M122 108h4v4H122z M134 108h4v4H134z M146 108h4v4H146z M154 108h4v4H154z M162 108h4v4H162z M66 112h4v4H66z M74 112h4v4H74z M82 112h4v4H82z M90 112h4v4H90z M98 112h12v4H98z M114 112h4v4H114z M122 112h4v4H122z M130 112h12v4H130z M146 112h4v4H146z M154 112h4v4H154z M162 112h12v4H162z" />
+    </g>
+    <rect x="24" y="124" width="192" height="2" fill="#311819" data-role="rail" />
+    <rect x="25" y="138" width="10" height="4" fill="#BD2429" data-role="grid-cell" data-row="0" data-col="0" />
+    <rect x="37" y="138" width="10" height="4" fill="#311819" data-role="grid-cell" data-row="0" data-col="1" />
+    <rect x="49" y="138" width="10" height="4" fill="#BD2429" data-role="grid-cell" data-row="0" data-col="2" />
+    <rect x="61" y="138" width="10" height="4" fill="#311819" data-role="grid-cell" data-row="0" data-col="3" />
+    <rect x="73" y="138" width="10" height="4" fill="#BD2429" data-role="grid-cell" data-row="0" data-col="4" />
+    <rect x="85" y="138" width="10" height="4" fill="#311819" data-role="grid-cell" data-row="0" data-col="5" />
+    <rect x="97" y="138" width="10" height="4" fill="#BD2429" data-role="grid-cell" data-row="0" data-col="6" />
+    <rect x="109" y="138" width="10" height="4" fill="#311819" data-role="grid-cell" data-row="0" data-col="7" />
+    <rect x="121" y="138" width="10" height="4" fill="#311819" data-role="grid-cell" data-row="0" data-col="8" />
+    <rect x="133" y="138" width="10" height="4" fill="#311819" data-role="grid-cell" data-row="0" data-col="9" />
+    <rect x="145" y="138" width="10" height="4" fill="#311819" data-role="grid-cell" data-row="0" data-col="10" />
+    <rect x="157" y="138" width="10" height="4" fill="#311819" data-role="grid-cell" data-row="0" data-col="11" />
+    <rect x="169" y="138" width="10" height="4" fill="#311819" data-role="grid-cell" data-row="0" data-col="12" />
+    <rect x="181" y="138" width="10" height="4" fill="#311819" data-role="grid-cell" data-row="0" data-col="13" />
+    <rect x="193" y="138" width="10" height="4" fill="#311819" data-role="grid-cell" data-row="0" data-col="14" />
+    <rect x="205" y="138" width="10" height="4" fill="#311819" data-role="grid-cell" data-row="0" data-col="15" />
+    <rect x="25" y="145" width="10" height="4" fill="#311819" data-role="grid-cell" data-row="1" data-col="0" />
+    <rect x="37" y="145" width="10" height="4" fill="#BD2429" data-role="grid-cell" data-row="1" data-col="1" />
+    <rect x="49" y="145" width="10" height="4" fill="#311819" data-role="grid-cell" data-row="1" data-col="2" />
+    <rect x="61" y="145" width="10" height="4" fill="#BD2429" data-role="grid-cell" data-row="1" data-col="3" />
+    <rect x="73" y="145" width="10" height="4" fill="#311819" data-role="grid-cell" data-row="1" data-col="4" />
+    <rect x="85" y="145" width="10" height="4" fill="#BD2429" data-role="grid-cell" data-row="1" data-col="5" />
+    <rect x="97" y="145" width="10" height="4" fill="#311819" data-role="grid-cell" data-row="1" data-col="6" />
+    <rect x="109" y="145" width="10" height="4" fill="#BD2429" data-role="grid-cell" data-row="1" data-col="7" />
+    <rect x="121" y="145" width="10" height="4" fill="#311819" data-role="grid-cell" data-row="1" data-col="8" />
+    <rect x="133" y="145" width="10" height="4" fill="#311819" data-role="grid-cell" data-row="1" data-col="9" />
+    <rect x="145" y="145" width="10" height="4" fill="#311819" data-role="grid-cell" data-row="1" data-col="10" />
+    <rect x="157" y="145" width="10" height="4" fill="#311819" data-role="grid-cell" data-row="1" data-col="11" />
+    <rect x="169" y="145" width="10" height="4" fill="#311819" data-role="grid-cell" data-row="1" data-col="12" />
+    <rect x="181" y="145" width="10" height="4" fill="#311819" data-role="grid-cell" data-row="1" data-col="13" />
+    <rect x="193" y="145" width="10" height="4" fill="#311819" data-role="grid-cell" data-row="1" data-col="14" />
+    <rect x="205" y="145" width="10" height="4" fill="#311819" data-role="grid-cell" data-row="1" data-col="15" />
+    <rect x="25" y="152" width="10" height="4" fill="#BD2429" data-role="grid-cell" data-row="2" data-col="0" />
+    <rect x="37" y="152" width="10" height="4" fill="#311819" data-role="grid-cell" data-row="2" data-col="1" />
+    <rect x="49" y="152" width="10" height="4" fill="#BD2429" data-role="grid-cell" data-row="2" data-col="2" />
+    <rect x="61" y="152" width="10" height="4" fill="#311819" data-role="grid-cell" data-row="2" data-col="3" />
+    <rect x="73" y="152" width="10" height="4" fill="#BD2429" data-role="grid-cell" data-row="2" data-col="4" />
+    <rect x="85" y="152" width="10" height="4" fill="#311819" data-role="grid-cell" data-row="2" data-col="5" />
+    <rect x="97" y="152" width="10" height="4" fill="#BD2429" data-role="grid-cell" data-row="2" data-col="6" />
+    <rect x="109" y="152" width="10" height="4" fill="#311819" data-role="grid-cell" data-row="2" data-col="7" />
+    <rect x="121" y="152" width="10" height="4" fill="#311819" data-role="grid-cell" data-row="2" data-col="8" />
+    <rect x="133" y="152" width="10" height="4" fill="#311819" data-role="grid-cell" data-row="2" data-col="9" />
+    <rect x="145" y="152" width="10" height="4" fill="#311819" data-role="grid-cell" data-row="2" data-col="10" />
+    <rect x="157" y="152" width="10" height="4" fill="#311819" data-role="grid-cell" data-row="2" data-col="11" />
+    <rect x="169" y="152" width="10" height="4" fill="#311819" data-role="grid-cell" data-row="2" data-col="12" />
+    <rect x="181" y="152" width="10" height="4" fill="#311819" data-role="grid-cell" data-row="2" data-col="13" />
+    <rect x="193" y="152" width="10" height="4" fill="#311819" data-role="grid-cell" data-row="2" data-col="14" />
+    <rect x="205" y="152" width="10" height="4" fill="#311819" data-role="grid-cell" data-row="2" data-col="15" />
+    <rect x="25" y="159" width="10" height="4" fill="#311819" data-role="grid-cell" data-row="3" data-col="0" />
+    <rect x="37" y="159" width="10" height="4" fill="#311819" data-role="grid-cell" data-row="3" data-col="1" />
+    <rect x="49" y="159" width="10" height="4" fill="#311819" data-role="grid-cell" data-row="3" data-col="2" />
+    <rect x="61" y="159" width="10" height="4" fill="#BD2429" data-role="grid-cell" data-row="3" data-col="3" />
+    <rect x="73" y="159" width="10" height="4" fill="#311819" data-role="grid-cell" data-row="3" data-col="4" />
+    <rect x="85" y="159" width="10" height="4" fill="#311819" data-role="grid-cell" data-row="3" data-col="5" />
+    <rect x="97" y="159" width="10" height="4" fill="#311819" data-role="grid-cell" data-row="3" data-col="6" />
+    <rect x="109" y="159" width="10" height="4" fill="#BD2429" data-role="grid-cell" data-row="3" data-col="7" />
+    <rect x="121" y="159" width="10" height="4" fill="#311819" data-role="grid-cell" data-row="3" data-col="8" />
+    <rect x="133" y="159" width="10" height="4" fill="#311819" data-role="grid-cell" data-row="3" data-col="9" />
+    <rect x="145" y="159" width="10" height="4" fill="#311819" data-role="grid-cell" data-row="3" data-col="10" />
+    <rect x="157" y="159" width="10" height="4" fill="#311819" data-role="grid-cell" data-row="3" data-col="11" />
+    <rect x="169" y="159" width="10" height="4" fill="#311819" data-role="grid-cell" data-row="3" data-col="12" />
+    <rect x="181" y="159" width="10" height="4" fill="#311819" data-role="grid-cell" data-row="3" data-col="13" />
+    <rect x="193" y="159" width="10" height="4" fill="#311819" data-role="grid-cell" data-row="3" data-col="14" />
+    <rect x="205" y="159" width="10" height="4" fill="#311819" data-role="grid-cell" data-row="3" data-col="15" />
+    <rect x="25" y="166" width="10" height="4" fill="#311819" data-role="grid-cell" data-row="4" data-col="0" />
+    <rect x="37" y="166" width="10" height="4" fill="#311819" data-role="grid-cell" data-row="4" data-col="1" />
+    <rect x="49" y="166" width="10" height="4" fill="#311819" data-role="grid-cell" data-row="4" data-col="2" />
+    <rect x="61" y="166" width="10" height="4" fill="#311819" data-role="grid-cell" data-row="4" data-col="3" />
+    <rect x="73" y="166" width="10" height="4" fill="#311819" data-role="grid-cell" data-row="4" data-col="4" />
+    <rect x="85" y="166" width="10" height="4" fill="#311819" data-role="grid-cell" data-row="4" data-col="5" />
+    <rect x="97" y="166" width="10" height="4" fill="#311819" data-role="grid-cell" data-row="4" data-col="6" />
+    <rect x="109" y="166" width="10" height="4" fill="#311819" data-role="grid-cell" data-row="4" data-col="7" />
+    <rect x="121" y="166" width="10" height="4" fill="#311819" data-role="grid-cell" data-row="4" data-col="8" />
+    <rect x="133" y="166" width="10" height="4" fill="#311819" data-role="grid-cell" data-row="4" data-col="9" />
+    <rect x="145" y="166" width="10" height="4" fill="#311819" data-role="grid-cell" data-row="4" data-col="10" />
+    <rect x="157" y="166" width="10" height="4" fill="#311819" data-role="grid-cell" data-row="4" data-col="11" />
+    <rect x="169" y="166" width="10" height="4" fill="#311819" data-role="grid-cell" data-row="4" data-col="12" />
+    <rect x="181" y="166" width="10" height="4" fill="#311819" data-role="grid-cell" data-row="4" data-col="13" />
+    <rect x="193" y="166" width="10" height="4" fill="#311819" data-role="grid-cell" data-row="4" data-col="14" />
+    <rect x="205" y="166" width="10" height="4" fill="#311819" data-role="grid-cell" data-row="4" data-col="15" />
+    <rect x="25" y="173" width="10" height="4" fill="#311819" data-role="grid-cell" data-row="5" data-col="0" />
+    <rect x="37" y="173" width="10" height="4" fill="#311819" data-role="grid-cell" data-row="5" data-col="1" />
+    <rect x="49" y="173" width="10" height="4" fill="#311819" data-role="grid-cell" data-row="5" data-col="2" />
+    <rect x="61" y="173" width="10" height="4" fill="#311819" data-role="grid-cell" data-row="5" data-col="3" />
+    <rect x="73" y="173" width="10" height="4" fill="#311819" data-role="grid-cell" data-row="5" data-col="4" />
+    <rect x="85" y="173" width="10" height="4" fill="#311819" data-role="grid-cell" data-row="5" data-col="5" />
+    <rect x="97" y="173" width="10" height="4" fill="#311819" data-role="grid-cell" data-row="5" data-col="6" />
+    <rect x="109" y="173" width="10" height="4" fill="#311819" data-role="grid-cell" data-row="5" data-col="7" />
+    <rect x="121" y="173" width="10" height="4" fill="#311819" data-role="grid-cell" data-row="5" data-col="8" />
+    <rect x="133" y="173" width="10" height="4" fill="#311819" data-role="grid-cell" data-row="5" data-col="9" />
+    <rect x="145" y="173" width="10" height="4" fill="#311819" data-role="grid-cell" data-row="5" data-col="10" />
+    <rect x="157" y="173" width="10" height="4" fill="#311819" data-role="grid-cell" data-row="5" data-col="11" />
+    <rect x="169" y="173" width="10" height="4" fill="#311819" data-role="grid-cell" data-row="5" data-col="12" />
+    <rect x="181" y="173" width="10" height="4" fill="#311819" data-role="grid-cell" data-row="5" data-col="13" />
+    <rect x="193" y="173" width="10" height="4" fill="#311819" data-role="grid-cell" data-row="5" data-col="14" />
+    <rect x="205" y="173" width="10" height="4" fill="#311819" data-role="grid-cell" data-row="5" data-col="15" />
+    <rect x="25" y="180" width="10" height="4" fill="#311819" data-role="grid-cell" data-row="6" data-col="0" />
+    <rect x="37" y="180" width="10" height="4" fill="#311819" data-role="grid-cell" data-row="6" data-col="1" />
+    <rect x="49" y="180" width="10" height="4" fill="#311819" data-role="grid-cell" data-row="6" data-col="2" />
+    <rect x="61" y="180" width="10" height="4" fill="#311819" data-role="grid-cell" data-row="6" data-col="3" />
+    <rect x="73" y="180" width="10" height="4" fill="#311819" data-role="grid-cell" data-row="6" data-col="4" />
+    <rect x="85" y="180" width="10" height="4" fill="#311819" data-role="grid-cell" data-row="6" data-col="5" />
+    <rect x="97" y="180" width="10" height="4" fill="#311819" data-role="grid-cell" data-row="6" data-col="6" />
+    <rect x="109" y="180" width="10" height="4" fill="#311819" data-role="grid-cell" data-row="6" data-col="7" />
+    <rect x="121" y="180" width="10" height="4" fill="#311819" data-role="grid-cell" data-row="6" data-col="8" />
+    <rect x="133" y="180" width="10" height="4" fill="#311819" data-role="grid-cell" data-row="6" data-col="9" />
+    <rect x="145" y="180" width="10" height="4" fill="#311819" data-role="grid-cell" data-row="6" data-col="10" />
+    <rect x="157" y="180" width="10" height="4" fill="#311819" data-role="grid-cell" data-row="6" data-col="11" />
+    <rect x="169" y="180" width="10" height="4" fill="#311819" data-role="grid-cell" data-row="6" data-col="12" />
+    <rect x="181" y="180" width="10" height="4" fill="#311819" data-role="grid-cell" data-row="6" data-col="13" />
+    <rect x="193" y="180" width="10" height="4" fill="#311819" data-role="grid-cell" data-row="6" data-col="14" />
+    <rect x="205" y="180" width="10" height="4" fill="#311819" data-role="grid-cell" data-row="6" data-col="15" />
+    <rect x="25" y="187" width="10" height="4" fill="#BD2429" data-role="grid-cell" data-row="7" data-col="0" />
+    <rect x="37" y="187" width="10" height="4" fill="#311819" data-role="grid-cell" data-row="7" data-col="1" />
+    <rect x="49" y="187" width="10" height="4" fill="#311819" data-role="grid-cell" data-row="7" data-col="2" />
+    <rect x="61" y="187" width="10" height="4" fill="#311819" data-role="grid-cell" data-row="7" data-col="3" />
+    <rect x="73" y="187" width="10" height="4" fill="#311819" data-role="grid-cell" data-row="7" data-col="4" />
+    <rect x="85" y="187" width="10" height="4" fill="#311819" data-role="grid-cell" data-row="7" data-col="5" />
+    <rect x="97" y="187" width="10" height="4" fill="#311819" data-role="grid-cell" data-row="7" data-col="6" />
+    <rect x="109" y="187" width="10" height="4" fill="#311819" data-role="grid-cell" data-row="7" data-col="7" />
+    <rect x="121" y="187" width="10" height="4" fill="#311819" data-role="grid-cell" data-row="7" data-col="8" />
+    <rect x="133" y="187" width="10" height="4" fill="#311819" data-role="grid-cell" data-row="7" data-col="9" />
+    <rect x="145" y="187" width="10" height="4" fill="#311819" data-role="grid-cell" data-row="7" data-col="10" />
+    <rect x="157" y="187" width="10" height="4" fill="#311819" data-role="grid-cell" data-row="7" data-col="11" />
+    <rect x="169" y="187" width="10" height="4" fill="#311819" data-role="grid-cell" data-row="7" data-col="12" />
+    <rect x="181" y="187" width="10" height="4" fill="#311819" data-role="grid-cell" data-row="7" data-col="13" />
+    <rect x="193" y="187" width="10" height="4" fill="#311819" data-role="grid-cell" data-row="7" data-col="14" />
+    <rect x="205" y="187" width="10" height="4" fill="#311819" data-role="grid-cell" data-row="7" data-col="15" />
+    <rect x="121" y="131" width="10" height="2" fill="#F74D52" data-role="column-marker" data-col="8" />
+    <g data-font="MD_F3" data-text="FM-1 EDITION" data-scale="2" data-role="footer">
+      <title>FM-1 EDITION</title>
+      <path fill="#F7F3EF" d="M73 210h6v2H73z M81 210h2v2H81z M85 210h2v2H85z M97 210h4v2H97z M113 210h6v2H113z M121 210h4v2H121z M129 210h6v2H129z M137 210h6v2H137z M145 210h6v2H145z M153 210h6v2H153z M161 210h4v2H161z M73 212h2v2H73z M81 212h6v2H81z M99 212h2v2H99z M113 212h2v2H113z M121 212h2v2H121z M125 212h2v2H125z M131 212h2v2H131z M139 212h2v2H139z M147 212h2v2H147z M153 212h2v2H153z M157 212h2v2H157z M161 212h2v2H161z M165 212h2v2H165z M73 214h6v2H73z M81 214h2v2H81z M85 214h2v2H85z M89 214h6v2H89z M99 214h2v2H99z M113 214h6v2H113z M121 214h2v2H121z M125 214h2v2H125z M131 214h2v2H131z M139 214h2v2H139z M147 214h2v2H147z M153 214h2v2H153z M157 214h2v2H157z M161 214h2v2H161z M165 214h2v2H165z M73 216h2v2H73z M81 216h2v2H81z M85 216h2v2H85z M99 216h2v2H99z M113 216h2v2H113z M121 216h2v2H121z M125 216h2v2H125z M131 216h2v2H131z M139 216h2v2H139z M147 216h2v2H147z M153 216h2v2H153z M157 216h2v2H157z M161 216h2v2H161z M165 216h2v2H165z M73 218h2v2H73z M81 218h2v2H81z M85 218h2v2H85z M97 218h6v2H97z M113 218h6v2H113z M121 218h4v2H121z M129 218h6v2H129z M139 218h2v2H139z M145 218h6v2H145z M153 218h6v2H153z M161 218h2v2H161z M165 218h2v2H165z" />
+    </g>
+  </g>
+  <g data-font="MD_F3" data-text="03 / BLAST ATTACK" data-scale="2">
+    <title>03 / BLAST ATTACK</title>
+    <path fill="#211C1D" d="M40 430h6v2H40z M48 430h6v2H48z M68 430h2v2H68z M80 430h4v2H80z M88 430h2v2H88z M96 430h6v2H96z M104 430h6v2H104z M112 430h6v2H112z M128 430h6v2H128z M136 430h6v2H136z M144 430h6v2H144z M152 430h6v2H152z M160 430h6v2H160z M168 430h2v2H168z M172 430h2v2H172z M40 432h2v2H40z M44 432h2v2H44z M52 432h2v2H52z M68 432h2v2H68z M80 432h2v2H80z M84 432h2v2H84z M88 432h2v2H88z M96 432h2v2H96z M100 432h2v2H100z M104 432h2v2H104z M114 432h2v2H114z M128 432h2v2H128z M132 432h2v2H132z M138 432h2v2H138z M146 432h2v2H146z M152 432h2v2H152z M156 432h2v2H156z M160 432h2v2H160z M168 432h2v2H168z M172 432h2v2H172z M40 434h2v2H40z M44 434h2v2H44z M48 434h6v2H48z M66 434h2v2H66z M80 434h4v2H80z M88 434h2v2H88z M96 434h6v2H96z M104 434h6v2H104z M114 434h2v2H114z M128 434h6v2H128z M138 434h2v2H138z M146 434h2v2H146z M152 434h6v2H152z M160 434h2v2H160z M168 434h4v2H168z M40 436h2v2H40z M44 436h2v2H44z M52 436h2v2H52z M64 436h2v2H64z M80 436h2v2H80z M84 436h2v2H84z M88 436h2v2H88z M96 436h2v2H96z M100 436h2v2H100z M108 436h2v2H108z M114 436h2v2H114z M128 436h2v2H128z M132 436h2v2H132z M138 436h2v2H138z M146 436h2v2H146z M152 436h2v2H152z M156 436h2v2H156z M160 436h2v2H160z M168 436h2v2H168z M172 436h2v2H172z M40 438h6v2H40z M48 438h6v2H48z M64 438h2v2H64z M80 438h4v2H80z M88 438h6v2H88z M96 438h2v2H96z M100 438h2v2H100z M104 438h6v2H104z M114 438h2v2H114z M128 438h2v2H128z M132 438h2v2H132z M138 438h2v2H138z M146 438h2v2H146z M152 438h2v2H152z M156 438h2v2H156z M160 438h6v2H160z M168 438h2v2H168z M172 438h2v2H172z" />
+  </g>
+  <g data-font="MD_F3" data-text="T = 200 MS / SCANNER COLUMN 8" data-scale="1">
+    <title>T = 200 MS / SCANNER COLUMN 8</title>
+    <path fill="#635758" d="M40 448h3v1H40z M56 448h3v1H56z M60 448h3v1H60z M64 448h3v1H64z M72 448h1v1H72z M74 448h1v1H74z M76 448h3v1H76z M86 448h1v1H86z M92 448h3v1H92z M96 448h3v1H96z M100 448h3v1H100z M104 448h2v1H104z M108 448h2v1H108z M112 448h3v1H112z M116 448h3v1H116z M124 448h3v1H124z M128 448h3v1H128z M132 448h1v1H132z M136 448h1v1H136z M138 448h1v1H138z M140 448h1v1H140z M142 448h1v1H142z M144 448h2v1H144z M152 448h3v1H152z M41 449h1v1H41z M48 449h3v1H48z M58 449h1v1H58z M60 449h1v1H60z M62 449h1v1H62z M64 449h1v1H64z M66 449h1v1H66z M72 449h3v1H72z M76 449h1v1H76z M86 449h1v1H86z M92 449h1v1H92z M96 449h1v1H96z M100 449h1v1H100z M102 449h1v1H102z M104 449h1v1H104z M106 449h1v1H106z M108 449h1v1H108z M110 449h1v1H110z M112 449h1v1H112z M116 449h1v1H116z M118 449h1v1H118z M124 449h1v1H124z M128 449h1v1H128z M130 449h1v1H130z M132 449h1v1H132z M136 449h1v1H136z M138 449h1v1H138z M140 449h3v1H140z M144 449h1v1H144z M146 449h1v1H146z M152 449h1v1H152z M154 449h1v1H154z M41 450h1v1H41z M56 450h3v1H56z M60 450h1v1H60z M62 450h1v1H62z M64 450h1v1H64z M66 450h1v1H66z M72 450h1v1H72z M74 450h1v1H74z M76 450h3v1H76z M85 450h1v1H85z M92 450h3v1H92z M96 450h1v1H96z M100 450h3v1H100z M104 450h1v1H104z M106 450h1v1H106z M108 450h1v1H108z M110 450h1v1H110z M112 450h3v1H112z M116 450h2v1H116z M124 450h1v1H124z M128 450h1v1H128z M130 450h1v1H130z M132 450h1v1H132z M136 450h1v1H136z M138 450h1v1H138z M140 450h1v1H140z M142 450h1v1H142z M144 450h1v1H144z M146 450h1v1H146z M152 450h3v1H152z M41 451h1v1H41z M48 451h3v1H48z M56 451h1v1H56z M60 451h1v1H60z M62 451h1v1H62z M64 451h1v1H64z M66 451h1v1H66z M72 451h1v1H72z M74 451h1v1H74z M78 451h1v1H78z M84 451h1v1H84z M94 451h1v1H94z M96 451h1v1H96z M100 451h1v1H100z M102 451h1v1H102z M104 451h1v1H104z M106 451h1v1H106z M108 451h1v1H108z M110 451h1v1H110z M112 451h1v1H112z M116 451h1v1H116z M118 451h1v1H118z M124 451h1v1H124z M128 451h1v1H128z M130 451h1v1H130z M132 451h1v1H132z M136 451h1v1H136z M138 451h1v1H138z M140 451h1v1H140z M142 451h1v1H142z M144 451h1v1H144z M146 451h1v1H146z M152 451h1v1H152z M154 451h1v1H154z M41 452h1v1H41z M56 452h3v1H56z M60 452h3v1H60z M64 452h3v1H64z M72 452h1v1H72z M74 452h1v1H74z M76 452h3v1H76z M84 452h1v1H84z M92 452h3v1H92z M96 452h3v1H96z M100 452h1v1H100z M102 452h1v1H102z M104 452h1v1H104z M106 452h1v1H106z M108 452h1v1H108z M110 452h1v1H110z M112 452h3v1H112z M116 452h1v1H116z M118 452h1v1H118z M124 452h3v1H124z M128 452h3v1H128z M132 452h3v1H132z M136 452h3v1H136z M140 452h1v1H140z M142 452h1v1H142z M144 452h1v1H144z M146 452h1v1H146z M152 452h3v1H152z" />
+  </g>
+  <g id="panel-attack" transform="translate(40 464)" data-native-width="240" data-native-height="240" data-time-ms="200">
+    <title>BLAST ATTACK at 200 milliseconds</title>
+    <rect x="0" y="0" width="240" height="240" fill="#080808" data-role="panel-background" />
+    <rect x="8" y="8" width="224" height="1" fill="#311819" />
+    <rect x="8" y="231" width="224" height="1" fill="#311819" />
+    <rect x="8" y="8" width="1" height="224" fill="#311819" />
+    <rect x="231" y="8" width="1" height="224" fill="#311819" />
+    <g data-font="MD_F3" data-text="GRIND" data-scale="8" data-role="grind-title">
+      <title>GRIND</title>
+      <path fill="#F7F3EF" d="M44 44h24v8H44z M76 44h24v8H76z M108 44h24v8H108z M140 44h16v8H140z M172 44h16v8H172z M44 52h8v8H44z M76 52h8v8H76z M92 52h8v8H92z M116 52h8v8H116z M140 52h8v8H140z M156 52h8v8H156z M172 52h8v8H172z M188 52h8v8H188z M44 60h8v8H44z M60 60h8v8H60z M76 60h16v8H76z M116 60h8v8H116z M140 60h8v8H140z M156 60h8v8H156z M172 60h8v8H172z M188 60h8v8H188z M44 68h8v8H44z M60 68h8v8H60z M76 68h8v8H76z M92 68h8v8H92z M116 68h8v8H116z M140 68h8v8H140z M156 68h8v8H156z M172 68h8v8H172z M188 68h8v8H188z M44 76h24v8H44z M76 76h8v8H76z M92 76h8v8H92z M108 76h24v8H108z M140 76h8v8H140z M156 76h8v8H156z M172 76h16v8H172z" />
+    </g>
+    <g data-font="MD_F3" data-text="MACHINE" data-scale="4" data-role="machine-title">
+      <title>MACHINE</title>
+      <path fill="#F74D52" d="M66 96h4v4H66z M74 96h4v4H74z M82 96h12v4H82z M98 96h12v4H98z M114 96h4v4H114z M122 96h4v4H122z M130 96h12v4H130z M146 96h8v4H146z M162 96h12v4H162z M66 100h12v4H66z M82 100h4v4H82z M90 100h4v4H90z M98 100h4v4H98z M114 100h4v4H114z M122 100h4v4H122z M134 100h4v4H134z M146 100h4v4H146z M154 100h4v4H154z M162 100h4v4H162z M66 104h4v4H66z M74 104h4v4H74z M82 104h12v4H82z M98 104h4v4H98z M114 104h12v4H114z M134 104h4v4H134z M146 104h4v4H146z M154 104h4v4H154z M162 104h12v4H162z M66 108h4v4H66z M74 108h4v4H74z M82 108h4v4H82z M90 108h4v4H90z M98 108h4v4H98z M114 108h4v4H114z M122 108h4v4H122z M134 108h4v4H134z M146 108h4v4H146z M154 108h4v4H154z M162 108h4v4H162z M66 112h4v4H66z M74 112h4v4H74z M82 112h4v4H82z M90 112h4v4H90z M98 112h12v4H98z M114 112h4v4H114z M122 112h4v4H122z M130 112h12v4H130z M146 112h4v4H146z M154 112h4v4H154z M162 112h12v4H162z" />
+    </g>
+    <rect x="24" y="124" width="192" height="2" fill="#311819" data-role="rail" />
+    <rect x="25" y="138" width="10" height="4" fill="#BD2429" data-role="grid-cell" data-row="0" data-col="0" />
+    <rect x="37" y="138" width="10" height="4" fill="#311819" data-role="grid-cell" data-row="0" data-col="1" />
+    <rect x="49" y="138" width="10" height="4" fill="#BD2429" data-role="grid-cell" data-row="0" data-col="2" />
+    <rect x="61" y="138" width="10" height="4" fill="#311819" data-role="grid-cell" data-row="0" data-col="3" />
+    <rect x="73" y="138" width="10" height="4" fill="#BD2429" data-role="grid-cell" data-row="0" data-col="4" />
+    <rect x="85" y="138" width="10" height="4" fill="#311819" data-role="grid-cell" data-row="0" data-col="5" />
+    <rect x="97" y="138" width="10" height="4" fill="#BD2429" data-role="grid-cell" data-row="0" data-col="6" />
+    <rect x="109" y="138" width="10" height="4" fill="#311819" data-role="grid-cell" data-row="0" data-col="7" />
+    <rect x="121" y="138" width="10" height="4" fill="#F74D52" data-role="grid-cell" data-row="0" data-col="8" />
+    <rect x="133" y="138" width="10" height="4" fill="#311819" data-role="grid-cell" data-row="0" data-col="9" />
+    <rect x="145" y="138" width="10" height="4" fill="#BD2429" data-role="grid-cell" data-row="0" data-col="10" />
+    <rect x="157" y="138" width="10" height="4" fill="#311819" data-role="grid-cell" data-row="0" data-col="11" />
+    <rect x="169" y="138" width="10" height="4" fill="#BD2429" data-role="grid-cell" data-row="0" data-col="12" />
+    <rect x="181" y="138" width="10" height="4" fill="#311819" data-role="grid-cell" data-row="0" data-col="13" />
+    <rect x="193" y="138" width="10" height="4" fill="#BD2429" data-role="grid-cell" data-row="0" data-col="14" />
+    <rect x="205" y="138" width="10" height="4" fill="#311819" data-role="grid-cell" data-row="0" data-col="15" />
+    <rect x="25" y="145" width="10" height="4" fill="#311819" data-role="grid-cell" data-row="1" data-col="0" />
+    <rect x="37" y="145" width="10" height="4" fill="#BD2429" data-role="grid-cell" data-row="1" data-col="1" />
+    <rect x="49" y="145" width="10" height="4" fill="#311819" data-role="grid-cell" data-row="1" data-col="2" />
+    <rect x="61" y="145" width="10" height="4" fill="#BD2429" data-role="grid-cell" data-row="1" data-col="3" />
+    <rect x="73" y="145" width="10" height="4" fill="#311819" data-role="grid-cell" data-row="1" data-col="4" />
+    <rect x="85" y="145" width="10" height="4" fill="#BD2429" data-role="grid-cell" data-row="1" data-col="5" />
+    <rect x="97" y="145" width="10" height="4" fill="#311819" data-role="grid-cell" data-row="1" data-col="6" />
+    <rect x="109" y="145" width="10" height="4" fill="#BD2429" data-role="grid-cell" data-row="1" data-col="7" />
+    <rect x="121" y="145" width="10" height="4" fill="#311819" data-role="grid-cell" data-row="1" data-col="8" />
+    <rect x="133" y="145" width="10" height="4" fill="#BD2429" data-role="grid-cell" data-row="1" data-col="9" />
+    <rect x="145" y="145" width="10" height="4" fill="#311819" data-role="grid-cell" data-row="1" data-col="10" />
+    <rect x="157" y="145" width="10" height="4" fill="#BD2429" data-role="grid-cell" data-row="1" data-col="11" />
+    <rect x="169" y="145" width="10" height="4" fill="#311819" data-role="grid-cell" data-row="1" data-col="12" />
+    <rect x="181" y="145" width="10" height="4" fill="#BD2429" data-role="grid-cell" data-row="1" data-col="13" />
+    <rect x="193" y="145" width="10" height="4" fill="#311819" data-role="grid-cell" data-row="1" data-col="14" />
+    <rect x="205" y="145" width="10" height="4" fill="#BD2429" data-role="grid-cell" data-row="1" data-col="15" />
+    <rect x="25" y="152" width="10" height="4" fill="#BD2429" data-role="grid-cell" data-row="2" data-col="0" />
+    <rect x="37" y="152" width="10" height="4" fill="#311819" data-role="grid-cell" data-row="2" data-col="1" />
+    <rect x="49" y="152" width="10" height="4" fill="#BD2429" data-role="grid-cell" data-row="2" data-col="2" />
+    <rect x="61" y="152" width="10" height="4" fill="#311819" data-role="grid-cell" data-row="2" data-col="3" />
+    <rect x="73" y="152" width="10" height="4" fill="#BD2429" data-role="grid-cell" data-row="2" data-col="4" />
+    <rect x="85" y="152" width="10" height="4" fill="#311819" data-role="grid-cell" data-row="2" data-col="5" />
+    <rect x="97" y="152" width="10" height="4" fill="#BD2429" data-role="grid-cell" data-row="2" data-col="6" />
+    <rect x="109" y="152" width="10" height="4" fill="#311819" data-role="grid-cell" data-row="2" data-col="7" />
+    <rect x="121" y="152" width="10" height="4" fill="#F74D52" data-role="grid-cell" data-row="2" data-col="8" />
+    <rect x="133" y="152" width="10" height="4" fill="#311819" data-role="grid-cell" data-row="2" data-col="9" />
+    <rect x="145" y="152" width="10" height="4" fill="#BD2429" data-role="grid-cell" data-row="2" data-col="10" />
+    <rect x="157" y="152" width="10" height="4" fill="#311819" data-role="grid-cell" data-row="2" data-col="11" />
+    <rect x="169" y="152" width="10" height="4" fill="#BD2429" data-role="grid-cell" data-row="2" data-col="12" />
+    <rect x="181" y="152" width="10" height="4" fill="#311819" data-role="grid-cell" data-row="2" data-col="13" />
+    <rect x="193" y="152" width="10" height="4" fill="#BD2429" data-role="grid-cell" data-row="2" data-col="14" />
+    <rect x="205" y="152" width="10" height="4" fill="#311819" data-role="grid-cell" data-row="2" data-col="15" />
+    <rect x="25" y="159" width="10" height="4" fill="#311819" data-role="grid-cell" data-row="3" data-col="0" />
+    <rect x="37" y="159" width="10" height="4" fill="#311819" data-role="grid-cell" data-row="3" data-col="1" />
+    <rect x="49" y="159" width="10" height="4" fill="#311819" data-role="grid-cell" data-row="3" data-col="2" />
+    <rect x="61" y="159" width="10" height="4" fill="#BD2429" data-role="grid-cell" data-row="3" data-col="3" />
+    <rect x="73" y="159" width="10" height="4" fill="#311819" data-role="grid-cell" data-row="3" data-col="4" />
+    <rect x="85" y="159" width="10" height="4" fill="#311819" data-role="grid-cell" data-row="3" data-col="5" />
+    <rect x="97" y="159" width="10" height="4" fill="#311819" data-role="grid-cell" data-row="3" data-col="6" />
+    <rect x="109" y="159" width="10" height="4" fill="#BD2429" data-role="grid-cell" data-row="3" data-col="7" />
+    <rect x="121" y="159" width="10" height="4" fill="#311819" data-role="grid-cell" data-row="3" data-col="8" />
+    <rect x="133" y="159" width="10" height="4" fill="#311819" data-role="grid-cell" data-row="3" data-col="9" />
+    <rect x="145" y="159" width="10" height="4" fill="#311819" data-role="grid-cell" data-row="3" data-col="10" />
+    <rect x="157" y="159" width="10" height="4" fill="#BD2429" data-role="grid-cell" data-row="3" data-col="11" />
+    <rect x="169" y="159" width="10" height="4" fill="#311819" data-role="grid-cell" data-row="3" data-col="12" />
+    <rect x="181" y="159" width="10" height="4" fill="#311819" data-role="grid-cell" data-row="3" data-col="13" />
+    <rect x="193" y="159" width="10" height="4" fill="#311819" data-role="grid-cell" data-row="3" data-col="14" />
+    <rect x="205" y="159" width="10" height="4" fill="#BD2429" data-role="grid-cell" data-row="3" data-col="15" />
+    <rect x="25" y="166" width="10" height="4" fill="#311819" data-role="grid-cell" data-row="4" data-col="0" />
+    <rect x="37" y="166" width="10" height="4" fill="#311819" data-role="grid-cell" data-row="4" data-col="1" />
+    <rect x="49" y="166" width="10" height="4" fill="#311819" data-role="grid-cell" data-row="4" data-col="2" />
+    <rect x="61" y="166" width="10" height="4" fill="#311819" data-role="grid-cell" data-row="4" data-col="3" />
+    <rect x="73" y="166" width="10" height="4" fill="#311819" data-role="grid-cell" data-row="4" data-col="4" />
+    <rect x="85" y="166" width="10" height="4" fill="#311819" data-role="grid-cell" data-row="4" data-col="5" />
+    <rect x="97" y="166" width="10" height="4" fill="#311819" data-role="grid-cell" data-row="4" data-col="6" />
+    <rect x="109" y="166" width="10" height="4" fill="#311819" data-role="grid-cell" data-row="4" data-col="7" />
+    <rect x="121" y="166" width="10" height="4" fill="#311819" data-role="grid-cell" data-row="4" data-col="8" />
+    <rect x="133" y="166" width="10" height="4" fill="#311819" data-role="grid-cell" data-row="4" data-col="9" />
+    <rect x="145" y="166" width="10" height="4" fill="#311819" data-role="grid-cell" data-row="4" data-col="10" />
+    <rect x="157" y="166" width="10" height="4" fill="#BD2429" data-role="grid-cell" data-row="4" data-col="11" />
+    <rect x="169" y="166" width="10" height="4" fill="#311819" data-role="grid-cell" data-row="4" data-col="12" />
+    <rect x="181" y="166" width="10" height="4" fill="#311819" data-role="grid-cell" data-row="4" data-col="13" />
+    <rect x="193" y="166" width="10" height="4" fill="#311819" data-role="grid-cell" data-row="4" data-col="14" />
+    <rect x="205" y="166" width="10" height="4" fill="#311819" data-role="grid-cell" data-row="4" data-col="15" />
+    <rect x="25" y="173" width="10" height="4" fill="#311819" data-role="grid-cell" data-row="5" data-col="0" />
+    <rect x="37" y="173" width="10" height="4" fill="#311819" data-role="grid-cell" data-row="5" data-col="1" />
+    <rect x="49" y="173" width="10" height="4" fill="#311819" data-role="grid-cell" data-row="5" data-col="2" />
+    <rect x="61" y="173" width="10" height="4" fill="#311819" data-role="grid-cell" data-row="5" data-col="3" />
+    <rect x="73" y="173" width="10" height="4" fill="#311819" data-role="grid-cell" data-row="5" data-col="4" />
+    <rect x="85" y="173" width="10" height="4" fill="#311819" data-role="grid-cell" data-row="5" data-col="5" />
+    <rect x="97" y="173" width="10" height="4" fill="#311819" data-role="grid-cell" data-row="5" data-col="6" />
+    <rect x="109" y="173" width="10" height="4" fill="#311819" data-role="grid-cell" data-row="5" data-col="7" />
+    <rect x="121" y="173" width="10" height="4" fill="#311819" data-role="grid-cell" data-row="5" data-col="8" />
+    <rect x="133" y="173" width="10" height="4" fill="#311819" data-role="grid-cell" data-row="5" data-col="9" />
+    <rect x="145" y="173" width="10" height="4" fill="#311819" data-role="grid-cell" data-row="5" data-col="10" />
+    <rect x="157" y="173" width="10" height="4" fill="#311819" data-role="grid-cell" data-row="5" data-col="11" />
+    <rect x="169" y="173" width="10" height="4" fill="#311819" data-role="grid-cell" data-row="5" data-col="12" />
+    <rect x="181" y="173" width="10" height="4" fill="#BD2429" data-role="grid-cell" data-row="5" data-col="13" />
+    <rect x="193" y="173" width="10" height="4" fill="#311819" data-role="grid-cell" data-row="5" data-col="14" />
+    <rect x="205" y="173" width="10" height="4" fill="#311819" data-role="grid-cell" data-row="5" data-col="15" />
+    <rect x="25" y="180" width="10" height="4" fill="#311819" data-role="grid-cell" data-row="6" data-col="0" />
+    <rect x="37" y="180" width="10" height="4" fill="#311819" data-role="grid-cell" data-row="6" data-col="1" />
+    <rect x="49" y="180" width="10" height="4" fill="#311819" data-role="grid-cell" data-row="6" data-col="2" />
+    <rect x="61" y="180" width="10" height="4" fill="#311819" data-role="grid-cell" data-row="6" data-col="3" />
+    <rect x="73" y="180" width="10" height="4" fill="#311819" data-role="grid-cell" data-row="6" data-col="4" />
+    <rect x="85" y="180" width="10" height="4" fill="#311819" data-role="grid-cell" data-row="6" data-col="5" />
+    <rect x="97" y="180" width="10" height="4" fill="#311819" data-role="grid-cell" data-row="6" data-col="6" />
+    <rect x="109" y="180" width="10" height="4" fill="#311819" data-role="grid-cell" data-row="6" data-col="7" />
+    <rect x="121" y="180" width="10" height="4" fill="#311819" data-role="grid-cell" data-row="6" data-col="8" />
+    <rect x="133" y="180" width="10" height="4" fill="#311819" data-role="grid-cell" data-row="6" data-col="9" />
+    <rect x="145" y="180" width="10" height="4" fill="#311819" data-role="grid-cell" data-row="6" data-col="10" />
+    <rect x="157" y="180" width="10" height="4" fill="#311819" data-role="grid-cell" data-row="6" data-col="11" />
+    <rect x="169" y="180" width="10" height="4" fill="#311819" data-role="grid-cell" data-row="6" data-col="12" />
+    <rect x="181" y="180" width="10" height="4" fill="#311819" data-role="grid-cell" data-row="6" data-col="13" />
+    <rect x="193" y="180" width="10" height="4" fill="#311819" data-role="grid-cell" data-row="6" data-col="14" />
+    <rect x="205" y="180" width="10" height="4" fill="#BD2429" data-role="grid-cell" data-row="6" data-col="15" />
+    <rect x="25" y="187" width="10" height="4" fill="#BD2429" data-role="grid-cell" data-row="7" data-col="0" />
+    <rect x="37" y="187" width="10" height="4" fill="#311819" data-role="grid-cell" data-row="7" data-col="1" />
+    <rect x="49" y="187" width="10" height="4" fill="#311819" data-role="grid-cell" data-row="7" data-col="2" />
+    <rect x="61" y="187" width="10" height="4" fill="#311819" data-role="grid-cell" data-row="7" data-col="3" />
+    <rect x="73" y="187" width="10" height="4" fill="#311819" data-role="grid-cell" data-row="7" data-col="4" />
+    <rect x="85" y="187" width="10" height="4" fill="#311819" data-role="grid-cell" data-row="7" data-col="5" />
+    <rect x="97" y="187" width="10" height="4" fill="#311819" data-role="grid-cell" data-row="7" data-col="6" />
+    <rect x="109" y="187" width="10" height="4" fill="#311819" data-role="grid-cell" data-row="7" data-col="7" />
+    <rect x="121" y="187" width="10" height="4" fill="#311819" data-role="grid-cell" data-row="7" data-col="8" />
+    <rect x="133" y="187" width="10" height="4" fill="#311819" data-role="grid-cell" data-row="7" data-col="9" />
+    <rect x="145" y="187" width="10" height="4" fill="#311819" data-role="grid-cell" data-row="7" data-col="10" />
+    <rect x="157" y="187" width="10" height="4" fill="#311819" data-role="grid-cell" data-row="7" data-col="11" />
+    <rect x="169" y="187" width="10" height="4" fill="#311819" data-role="grid-cell" data-row="7" data-col="12" />
+    <rect x="181" y="187" width="10" height="4" fill="#311819" data-role="grid-cell" data-row="7" data-col="13" />
+    <rect x="193" y="187" width="10" height="4" fill="#311819" data-role="grid-cell" data-row="7" data-col="14" />
+    <rect x="205" y="187" width="10" height="4" fill="#BD2429" data-role="grid-cell" data-row="7" data-col="15" />
+    <rect x="121" y="131" width="10" height="2" fill="#F74D52" data-role="column-marker" data-col="8" />
+    <g data-role="shards">
+      <rect x="22" y="46" width="1" height="1" fill="#311819" />
+      <rect x="23" y="46" width="1" height="1" fill="#311819" />
+      <rect x="24" y="47" width="1" height="1" fill="#311819" />
+      <rect x="25" y="47" width="1" height="1" fill="#311819" />
+      <rect x="26" y="48" width="1" height="1" fill="#311819" />
+      <rect x="27" y="48" width="1" height="1" fill="#311819" />
+      <rect x="28" y="49" width="1" height="1" fill="#311819" />
+      <rect x="29" y="49" width="1" height="1" fill="#311819" />
+      <rect x="30" y="49" width="1" height="1" fill="#311819" />
+      <rect x="31" y="50" width="1" height="1" fill="#311819" />
+      <rect x="32" y="50" width="1" height="1" fill="#311819" />
+      <rect x="33" y="51" width="1" height="1" fill="#311819" />
+      <rect x="34" y="51" width="1" height="1" fill="#311819" />
+      <rect x="35" y="52" width="1" height="1" fill="#311819" />
+      <rect x="36" y="52" width="1" height="1" fill="#311819" />
+      <rect x="20" y="68" width="1" height="1" fill="#311819" />
+      <rect x="21" y="68" width="1" height="1" fill="#311819" />
+      <rect x="22" y="68" width="1" height="1" fill="#311819" />
+      <rect x="23" y="68" width="1" height="1" fill="#311819" />
+      <rect x="24" y="68" width="1" height="1" fill="#311819" />
+      <rect x="25" y="68" width="1" height="1" fill="#311819" />
+      <rect x="26" y="68" width="1" height="1" fill="#311819" />
+      <rect x="27" y="68" width="1" height="1" fill="#311819" />
+      <rect x="28" y="68" width="1" height="1" fill="#311819" />
+      <rect x="29" y="68" width="1" height="1" fill="#311819" />
+      <rect x="30" y="68" width="1" height="1" fill="#311819" />
+      <rect x="31" y="68" width="1" height="1" fill="#311819" />
+      <rect x="32" y="68" width="1" height="1" fill="#311819" />
+      <rect x="33" y="68" width="1" height="1" fill="#311819" />
+      <rect x="34" y="68" width="1" height="1" fill="#311819" />
+      <rect x="22" y="90" width="1" height="1" fill="#311819" />
+      <rect x="23" y="90" width="1" height="1" fill="#311819" />
+      <rect x="24" y="89" width="1" height="1" fill="#311819" />
+      <rect x="25" y="89" width="1" height="1" fill="#311819" />
+      <rect x="26" y="88" width="1" height="1" fill="#311819" />
+      <rect x="27" y="88" width="1" height="1" fill="#311819" />
+      <rect x="28" y="87" width="1" height="1" fill="#311819" />
+      <rect x="29" y="87" width="1" height="1" fill="#311819" />
+      <rect x="30" y="87" width="1" height="1" fill="#311819" />
+      <rect x="31" y="86" width="1" height="1" fill="#311819" />
+      <rect x="32" y="86" width="1" height="1" fill="#311819" />
+      <rect x="33" y="85" width="1" height="1" fill="#311819" />
+      <rect x="34" y="85" width="1" height="1" fill="#311819" />
+      <rect x="35" y="84" width="1" height="1" fill="#311819" />
+      <rect x="36" y="84" width="1" height="1" fill="#311819" />
+      <rect x="204" y="52" width="1" height="1" fill="#311819" />
+      <rect x="205" y="52" width="1" height="1" fill="#311819" />
+      <rect x="206" y="51" width="1" height="1" fill="#311819" />
+      <rect x="207" y="51" width="1" height="1" fill="#311819" />
+      <rect x="208" y="50" width="1" height="1" fill="#311819" />
+      <rect x="209" y="50" width="1" height="1" fill="#311819" />
+      <rect x="210" y="49" width="1" height="1" fill="#311819" />
+      <rect x="211" y="49" width="1" height="1" fill="#311819" />
+      <rect x="212" y="49" width="1" height="1" fill="#311819" />
+      <rect x="213" y="48" width="1" height="1" fill="#311819" />
+      <rect x="214" y="48" width="1" height="1" fill="#311819" />
+      <rect x="215" y="47" width="1" height="1" fill="#311819" />
+      <rect x="216" y="47" width="1" height="1" fill="#311819" />
+      <rect x="217" y="46" width="1" height="1" fill="#311819" />
+      <rect x="218" y="46" width="1" height="1" fill="#311819" />
+      <rect x="206" y="68" width="1" height="1" fill="#311819" />
+      <rect x="207" y="68" width="1" height="1" fill="#311819" />
+      <rect x="208" y="68" width="1" height="1" fill="#311819" />
+      <rect x="209" y="68" width="1" height="1" fill="#311819" />
+      <rect x="210" y="68" width="1" height="1" fill="#311819" />
+      <rect x="211" y="68" width="1" height="1" fill="#311819" />
+      <rect x="212" y="68" width="1" height="1" fill="#311819" />
+      <rect x="213" y="68" width="1" height="1" fill="#311819" />
+      <rect x="214" y="68" width="1" height="1" fill="#311819" />
+      <rect x="215" y="68" width="1" height="1" fill="#311819" />
+      <rect x="216" y="68" width="1" height="1" fill="#311819" />
+      <rect x="217" y="68" width="1" height="1" fill="#311819" />
+      <rect x="218" y="68" width="1" height="1" fill="#311819" />
+      <rect x="219" y="68" width="1" height="1" fill="#311819" />
+      <rect x="220" y="68" width="1" height="1" fill="#311819" />
+      <rect x="204" y="84" width="1" height="1" fill="#311819" />
+      <rect x="205" y="84" width="1" height="1" fill="#311819" />
+      <rect x="206" y="85" width="1" height="1" fill="#311819" />
+      <rect x="207" y="85" width="1" height="1" fill="#311819" />
+      <rect x="208" y="86" width="1" height="1" fill="#311819" />
+      <rect x="209" y="86" width="1" height="1" fill="#311819" />
+      <rect x="210" y="87" width="1" height="1" fill="#311819" />
+      <rect x="211" y="87" width="1" height="1" fill="#311819" />
+      <rect x="212" y="87" width="1" height="1" fill="#311819" />
+      <rect x="213" y="88" width="1" height="1" fill="#311819" />
+      <rect x="214" y="88" width="1" height="1" fill="#311819" />
+      <rect x="215" y="89" width="1" height="1" fill="#311819" />
+      <rect x="216" y="89" width="1" height="1" fill="#311819" />
+      <rect x="217" y="90" width="1" height="1" fill="#311819" />
+      <rect x="218" y="90" width="1" height="1" fill="#311819" />
+    </g>
+    <g data-font="MD_F3" data-text="FM-1 EDITION" data-scale="2" data-role="footer">
+      <title>FM-1 EDITION</title>
+      <path fill="#F7F3EF" d="M73 210h6v2H73z M81 210h2v2H81z M85 210h2v2H85z M97 210h4v2H97z M113 210h6v2H113z M121 210h4v2H121z M129 210h6v2H129z M137 210h6v2H137z M145 210h6v2H145z M153 210h6v2H153z M161 210h4v2H161z M73 212h2v2H73z M81 212h6v2H81z M99 212h2v2H99z M113 212h2v2H113z M121 212h2v2H121z M125 212h2v2H125z M131 212h2v2H131z M139 212h2v2H139z M147 212h2v2H147z M153 212h2v2H153z M157 212h2v2H157z M161 212h2v2H161z M165 212h2v2H165z M73 214h6v2H73z M81 214h2v2H81z M85 214h2v2H85z M89 214h6v2H89z M99 214h2v2H99z M113 214h6v2H113z M121 214h2v2H121z M125 214h2v2H125z M131 214h2v2H131z M139 214h2v2H139z M147 214h2v2H147z M153 214h2v2H153z M157 214h2v2H157z M161 214h2v2H161z M165 214h2v2H165z M73 216h2v2H73z M81 216h2v2H81z M85 216h2v2H85z M99 216h2v2H99z M113 216h2v2H113z M121 216h2v2H121z M125 216h2v2H125z M131 216h2v2H131z M139 216h2v2H139z M147 216h2v2H147z M153 216h2v2H153z M157 216h2v2H157z M161 216h2v2H161z M165 216h2v2H165z M73 218h2v2H73z M81 218h2v2H81z M85 218h2v2H85z M97 218h6v2H97z M113 218h6v2H113z M121 218h4v2H121z M129 218h6v2H129z M139 218h2v2H139z M145 218h6v2H145z M153 218h6v2H153z M161 218h2v2H161z M165 218h2v2H165z" />
+    </g>
+  </g>
+  <g data-font="MD_F3" data-text="04 / MACHINE READY" data-scale="2">
+    <title>04 / MACHINE READY</title>
+    <path fill="#211C1D" d="M360 430h6v2H360z M368 430h2v2H368z M372 430h2v2H372z M388 430h2v2H388z M400 430h2v2H400z M404 430h2v2H404z M408 430h6v2H408z M416 430h6v2H416z M424 430h2v2H424z M428 430h2v2H428z M432 430h6v2H432z M440 430h4v2H440z M448 430h6v2H448z M464 430h6v2H464z M472 430h6v2H472z M480 430h6v2H480z M488 430h4v2H488z M496 430h2v2H496z M500 430h2v2H500z M360 432h2v2H360z M364 432h2v2H364z M368 432h2v2H368z M372 432h2v2H372z M388 432h2v2H388z M400 432h6v2H400z M408 432h2v2H408z M412 432h2v2H412z M416 432h2v2H416z M424 432h2v2H424z M428 432h2v2H428z M434 432h2v2H434z M440 432h2v2H440z M444 432h2v2H444z M448 432h2v2H448z M464 432h2v2H464z M468 432h2v2H468z M472 432h2v2H472z M480 432h2v2H480z M484 432h2v2H484z M488 432h2v2H488z M492 432h2v2H492z M496 432h2v2H496z M500 432h2v2H500z M360 434h2v2H360z M364 434h2v2H364z M368 434h6v2H368z M386 434h2v2H386z M400 434h2v2H400z M404 434h2v2H404z M408 434h6v2H408z M416 434h2v2H416z M424 434h6v2H424z M434 434h2v2H434z M440 434h2v2H440z M444 434h2v2H444z M448 434h6v2H448z M464 434h4v2H464z M472 434h6v2H472z M480 434h6v2H480z M488 434h2v2H488z M492 434h2v2H492z M496 434h6v2H496z M360 436h2v2H360z M364 436h2v2H364z M372 436h2v2H372z M384 436h2v2H384z M400 436h2v2H400z M404 436h2v2H404z M408 436h2v2H408z M412 436h2v2H412z M416 436h2v2H416z M424 436h2v2H424z M428 436h2v2H428z M434 436h2v2H434z M440 436h2v2H440z M444 436h2v2H444z M448 436h2v2H448z M464 436h2v2H464z M468 436h2v2H468z M472 436h2v2H472z M480 436h2v2H480z M484 436h2v2H484z M488 436h2v2H488z M492 436h2v2H492z M498 436h2v2H498z M360 438h6v2H360z M372 438h2v2H372z M384 438h2v2H384z M400 438h2v2H400z M404 438h2v2H404z M408 438h2v2H408z M412 438h2v2H412z M416 438h6v2H416z M424 438h2v2H424z M428 438h2v2H428z M432 438h6v2H432z M440 438h2v2H440z M444 438h2v2H444z M448 438h6v2H448z M464 438h2v2H464z M468 438h2v2H468z M472 438h6v2H472z M480 438h2v2H480z M484 438h2v2H484z M488 438h4v2H488z M498 438h2v2H498z" />
+  </g>
+  <g data-font="MD_F3" data-text="T = 340 MS / FINAL HOLD" data-scale="1">
+    <title>T = 340 MS / FINAL HOLD</title>
+    <path fill="#635758" d="M360 448h3v1H360z M376 448h3v1H376z M380 448h1v1H380z M382 448h1v1H382z M384 448h3v1H384z M392 448h1v1H392z M394 448h1v1H394z M396 448h3v1H396z M406 448h1v1H406z M412 448h3v1H412z M416 448h3v1H416z M420 448h2v1H420z M424 448h3v1H424z M428 448h1v1H428z M436 448h1v1H436z M438 448h1v1H438z M440 448h3v1H440z M444 448h1v1H444z M448 448h2v1H448z M361 449h1v1H361z M368 449h3v1H368z M378 449h1v1H378z M380 449h1v1H380z M382 449h1v1H382z M384 449h1v1H384z M386 449h1v1H386z M392 449h3v1H392z M396 449h1v1H396z M406 449h1v1H406z M412 449h1v1H412z M417 449h1v1H417z M420 449h1v1H420z M422 449h1v1H422z M424 449h1v1H424z M426 449h1v1H426z M428 449h1v1H428z M436 449h1v1H436z M438 449h1v1H438z M440 449h1v1H440z M442 449h1v1H442z M444 449h1v1H444z M448 449h1v1H448z M450 449h1v1H450z M361 450h1v1H361z M376 450h3v1H376z M380 450h3v1H380z M384 450h1v1H384z M386 450h1v1H386z M392 450h1v1H392z M394 450h1v1H394z M396 450h3v1H396z M405 450h1v1H405z M412 450h3v1H412z M417 450h1v1H417z M420 450h1v1H420z M422 450h1v1H422z M424 450h3v1H424z M428 450h1v1H428z M436 450h3v1H436z M440 450h1v1H440z M442 450h1v1H442z M444 450h1v1H444z M448 450h1v1H448z M450 450h1v1H450z M361 451h1v1H361z M368 451h3v1H368z M378 451h1v1H378z M382 451h1v1H382z M384 451h1v1H384z M386 451h1v1H386z M392 451h1v1H392z M394 451h1v1H394z M398 451h1v1H398z M404 451h1v1H404z M412 451h1v1H412z M417 451h1v1H417z M420 451h1v1H420z M422 451h1v1H422z M424 451h1v1H424z M426 451h1v1H426z M428 451h1v1H428z M436 451h1v1H436z M438 451h1v1H438z M440 451h1v1H440z M442 451h1v1H442z M444 451h1v1H444z M448 451h1v1H448z M450 451h1v1H450z M361 452h1v1H361z M376 452h3v1H376z M382 452h1v1H382z M384 452h3v1H384z M392 452h1v1H392z M394 452h1v1H394z M396 452h3v1H396z M404 452h1v1H404z M412 452h1v1H412z M416 452h3v1H416z M420 452h1v1H420z M422 452h1v1H422z M424 452h1v1H424z M426 452h1v1H426z M428 452h3v1H428z M436 452h1v1H436z M438 452h1v1H438z M440 452h3v1H440z M444 452h3v1H444z M448 452h2v1H448z" />
+  </g>
+  <g id="panel-ready" transform="translate(360 464)" data-native-width="240" data-native-height="240" data-time-ms="340">
+    <title>MACHINE READY at 340 milliseconds</title>
+    <rect x="0" y="0" width="240" height="240" fill="#080808" data-role="panel-background" />
+    <rect x="8" y="8" width="224" height="1" fill="#311819" />
+    <rect x="8" y="231" width="224" height="1" fill="#311819" />
+    <rect x="8" y="8" width="1" height="224" fill="#311819" />
+    <rect x="231" y="8" width="1" height="224" fill="#311819" />
+    <g data-font="MD_F3" data-text="GRIND" data-scale="8" data-role="grind-title">
+      <title>GRIND</title>
+      <path fill="#F7F3EF" d="M44 44h24v8H44z M76 44h24v8H76z M108 44h24v8H108z M140 44h16v8H140z M172 44h16v8H172z M44 52h8v8H44z M76 52h8v8H76z M92 52h8v8H92z M116 52h8v8H116z M140 52h8v8H140z M156 52h8v8H156z M172 52h8v8H172z M188 52h8v8H188z M44 60h8v8H44z M60 60h8v8H60z M76 60h16v8H76z M116 60h8v8H116z M140 60h8v8H140z M156 60h8v8H156z M172 60h8v8H172z M188 60h8v8H188z M44 68h8v8H44z M60 68h8v8H60z M76 68h8v8H76z M92 68h8v8H92z M116 68h8v8H116z M140 68h8v8H140z M156 68h8v8H156z M172 68h8v8H172z M188 68h8v8H188z M44 76h24v8H44z M76 76h8v8H76z M92 76h8v8H92z M108 76h24v8H108z M140 76h8v8H140z M156 76h8v8H156z M172 76h16v8H172z" />
+    </g>
+    <g data-font="MD_F3" data-text="MACHINE" data-scale="4" data-role="machine-title">
+      <title>MACHINE</title>
+      <path fill="#F7F3EF" d="M66 96h4v4H66z M74 96h4v4H74z M82 96h12v4H82z M98 96h12v4H98z M114 96h4v4H114z M122 96h4v4H122z M130 96h12v4H130z M146 96h8v4H146z M162 96h12v4H162z M66 100h12v4H66z M82 100h4v4H82z M90 100h4v4H90z M98 100h4v4H98z M114 100h4v4H114z M122 100h4v4H122z M134 100h4v4H134z M146 100h4v4H146z M154 100h4v4H154z M162 100h4v4H162z M66 104h4v4H66z M74 104h4v4H74z M82 104h12v4H82z M98 104h4v4H98z M114 104h12v4H114z M134 104h4v4H134z M146 104h4v4H146z M154 104h4v4H154z M162 104h12v4H162z M66 108h4v4H66z M74 108h4v4H74z M82 108h4v4H82z M90 108h4v4H90z M98 108h4v4H98z M114 108h4v4H114z M122 108h4v4H122z M134 108h4v4H134z M146 108h4v4H146z M154 108h4v4H154z M162 108h4v4H162z M66 112h4v4H66z M74 112h4v4H74z M82 112h4v4H82z M90 112h4v4H90z M98 112h12v4H98z M114 112h4v4H114z M122 112h4v4H122z M130 112h12v4H130z M146 112h4v4H146z M154 112h4v4H154z M162 112h12v4H162z" />
+    </g>
+    <rect x="24" y="124" width="192" height="2" fill="#BD2429" data-role="rail" />
+    <rect x="25" y="138" width="10" height="4" fill="#BD2429" data-role="grid-cell" data-row="0" data-col="0" />
+    <rect x="37" y="138" width="10" height="4" fill="#311819" data-role="grid-cell" data-row="0" data-col="1" />
+    <rect x="49" y="138" width="10" height="4" fill="#BD2429" data-role="grid-cell" data-row="0" data-col="2" />
+    <rect x="61" y="138" width="10" height="4" fill="#311819" data-role="grid-cell" data-row="0" data-col="3" />
+    <rect x="73" y="138" width="10" height="4" fill="#BD2429" data-role="grid-cell" data-row="0" data-col="4" />
+    <rect x="85" y="138" width="10" height="4" fill="#311819" data-role="grid-cell" data-row="0" data-col="5" />
+    <rect x="97" y="138" width="10" height="4" fill="#BD2429" data-role="grid-cell" data-row="0" data-col="6" />
+    <rect x="109" y="138" width="10" height="4" fill="#311819" data-role="grid-cell" data-row="0" data-col="7" />
+    <rect x="121" y="138" width="10" height="4" fill="#BD2429" data-role="grid-cell" data-row="0" data-col="8" />
+    <rect x="133" y="138" width="10" height="4" fill="#311819" data-role="grid-cell" data-row="0" data-col="9" />
+    <rect x="145" y="138" width="10" height="4" fill="#BD2429" data-role="grid-cell" data-row="0" data-col="10" />
+    <rect x="157" y="138" width="10" height="4" fill="#311819" data-role="grid-cell" data-row="0" data-col="11" />
+    <rect x="169" y="138" width="10" height="4" fill="#BD2429" data-role="grid-cell" data-row="0" data-col="12" />
+    <rect x="181" y="138" width="10" height="4" fill="#311819" data-role="grid-cell" data-row="0" data-col="13" />
+    <rect x="193" y="138" width="10" height="4" fill="#BD2429" data-role="grid-cell" data-row="0" data-col="14" />
+    <rect x="205" y="138" width="10" height="4" fill="#311819" data-role="grid-cell" data-row="0" data-col="15" />
+    <rect x="25" y="145" width="10" height="4" fill="#311819" data-role="grid-cell" data-row="1" data-col="0" />
+    <rect x="37" y="145" width="10" height="4" fill="#BD2429" data-role="grid-cell" data-row="1" data-col="1" />
+    <rect x="49" y="145" width="10" height="4" fill="#311819" data-role="grid-cell" data-row="1" data-col="2" />
+    <rect x="61" y="145" width="10" height="4" fill="#BD2429" data-role="grid-cell" data-row="1" data-col="3" />
+    <rect x="73" y="145" width="10" height="4" fill="#311819" data-role="grid-cell" data-row="1" data-col="4" />
+    <rect x="85" y="145" width="10" height="4" fill="#BD2429" data-role="grid-cell" data-row="1" data-col="5" />
+    <rect x="97" y="145" width="10" height="4" fill="#311819" data-role="grid-cell" data-row="1" data-col="6" />
+    <rect x="109" y="145" width="10" height="4" fill="#BD2429" data-role="grid-cell" data-row="1" data-col="7" />
+    <rect x="121" y="145" width="10" height="4" fill="#311819" data-role="grid-cell" data-row="1" data-col="8" />
+    <rect x="133" y="145" width="10" height="4" fill="#BD2429" data-role="grid-cell" data-row="1" data-col="9" />
+    <rect x="145" y="145" width="10" height="4" fill="#311819" data-role="grid-cell" data-row="1" data-col="10" />
+    <rect x="157" y="145" width="10" height="4" fill="#BD2429" data-role="grid-cell" data-row="1" data-col="11" />
+    <rect x="169" y="145" width="10" height="4" fill="#311819" data-role="grid-cell" data-row="1" data-col="12" />
+    <rect x="181" y="145" width="10" height="4" fill="#BD2429" data-role="grid-cell" data-row="1" data-col="13" />
+    <rect x="193" y="145" width="10" height="4" fill="#311819" data-role="grid-cell" data-row="1" data-col="14" />
+    <rect x="205" y="145" width="10" height="4" fill="#BD2429" data-role="grid-cell" data-row="1" data-col="15" />
+    <rect x="25" y="152" width="10" height="4" fill="#BD2429" data-role="grid-cell" data-row="2" data-col="0" />
+    <rect x="37" y="152" width="10" height="4" fill="#311819" data-role="grid-cell" data-row="2" data-col="1" />
+    <rect x="49" y="152" width="10" height="4" fill="#BD2429" data-role="grid-cell" data-row="2" data-col="2" />
+    <rect x="61" y="152" width="10" height="4" fill="#311819" data-role="grid-cell" data-row="2" data-col="3" />
+    <rect x="73" y="152" width="10" height="4" fill="#BD2429" data-role="grid-cell" data-row="2" data-col="4" />
+    <rect x="85" y="152" width="10" height="4" fill="#311819" data-role="grid-cell" data-row="2" data-col="5" />
+    <rect x="97" y="152" width="10" height="4" fill="#BD2429" data-role="grid-cell" data-row="2" data-col="6" />
+    <rect x="109" y="152" width="10" height="4" fill="#311819" data-role="grid-cell" data-row="2" data-col="7" />
+    <rect x="121" y="152" width="10" height="4" fill="#BD2429" data-role="grid-cell" data-row="2" data-col="8" />
+    <rect x="133" y="152" width="10" height="4" fill="#311819" data-role="grid-cell" data-row="2" data-col="9" />
+    <rect x="145" y="152" width="10" height="4" fill="#BD2429" data-role="grid-cell" data-row="2" data-col="10" />
+    <rect x="157" y="152" width="10" height="4" fill="#311819" data-role="grid-cell" data-row="2" data-col="11" />
+    <rect x="169" y="152" width="10" height="4" fill="#BD2429" data-role="grid-cell" data-row="2" data-col="12" />
+    <rect x="181" y="152" width="10" height="4" fill="#311819" data-role="grid-cell" data-row="2" data-col="13" />
+    <rect x="193" y="152" width="10" height="4" fill="#BD2429" data-role="grid-cell" data-row="2" data-col="14" />
+    <rect x="205" y="152" width="10" height="4" fill="#311819" data-role="grid-cell" data-row="2" data-col="15" />
+    <rect x="25" y="159" width="10" height="4" fill="#311819" data-role="grid-cell" data-row="3" data-col="0" />
+    <rect x="37" y="159" width="10" height="4" fill="#311819" data-role="grid-cell" data-row="3" data-col="1" />
+    <rect x="49" y="159" width="10" height="4" fill="#311819" data-role="grid-cell" data-row="3" data-col="2" />
+    <rect x="61" y="159" width="10" height="4" fill="#BD2429" data-role="grid-cell" data-row="3" data-col="3" />
+    <rect x="73" y="159" width="10" height="4" fill="#311819" data-role="grid-cell" data-row="3" data-col="4" />
+    <rect x="85" y="159" width="10" height="4" fill="#311819" data-role="grid-cell" data-row="3" data-col="5" />
+    <rect x="97" y="159" width="10" height="4" fill="#311819" data-role="grid-cell" data-row="3" data-col="6" />
+    <rect x="109" y="159" width="10" height="4" fill="#BD2429" data-role="grid-cell" data-row="3" data-col="7" />
+    <rect x="121" y="159" width="10" height="4" fill="#311819" data-role="grid-cell" data-row="3" data-col="8" />
+    <rect x="133" y="159" width="10" height="4" fill="#311819" data-role="grid-cell" data-row="3" data-col="9" />
+    <rect x="145" y="159" width="10" height="4" fill="#311819" data-role="grid-cell" data-row="3" data-col="10" />
+    <rect x="157" y="159" width="10" height="4" fill="#BD2429" data-role="grid-cell" data-row="3" data-col="11" />
+    <rect x="169" y="159" width="10" height="4" fill="#311819" data-role="grid-cell" data-row="3" data-col="12" />
+    <rect x="181" y="159" width="10" height="4" fill="#311819" data-role="grid-cell" data-row="3" data-col="13" />
+    <rect x="193" y="159" width="10" height="4" fill="#311819" data-role="grid-cell" data-row="3" data-col="14" />
+    <rect x="205" y="159" width="10" height="4" fill="#BD2429" data-role="grid-cell" data-row="3" data-col="15" />
+    <rect x="25" y="166" width="10" height="4" fill="#311819" data-role="grid-cell" data-row="4" data-col="0" />
+    <rect x="37" y="166" width="10" height="4" fill="#311819" data-role="grid-cell" data-row="4" data-col="1" />
+    <rect x="49" y="166" width="10" height="4" fill="#311819" data-role="grid-cell" data-row="4" data-col="2" />
+    <rect x="61" y="166" width="10" height="4" fill="#311819" data-role="grid-cell" data-row="4" data-col="3" />
+    <rect x="73" y="166" width="10" height="4" fill="#311819" data-role="grid-cell" data-row="4" data-col="4" />
+    <rect x="85" y="166" width="10" height="4" fill="#311819" data-role="grid-cell" data-row="4" data-col="5" />
+    <rect x="97" y="166" width="10" height="4" fill="#311819" data-role="grid-cell" data-row="4" data-col="6" />
+    <rect x="109" y="166" width="10" height="4" fill="#311819" data-role="grid-cell" data-row="4" data-col="7" />
+    <rect x="121" y="166" width="10" height="4" fill="#311819" data-role="grid-cell" data-row="4" data-col="8" />
+    <rect x="133" y="166" width="10" height="4" fill="#311819" data-role="grid-cell" data-row="4" data-col="9" />
+    <rect x="145" y="166" width="10" height="4" fill="#311819" data-role="grid-cell" data-row="4" data-col="10" />
+    <rect x="157" y="166" width="10" height="4" fill="#BD2429" data-role="grid-cell" data-row="4" data-col="11" />
+    <rect x="169" y="166" width="10" height="4" fill="#311819" data-role="grid-cell" data-row="4" data-col="12" />
+    <rect x="181" y="166" width="10" height="4" fill="#311819" data-role="grid-cell" data-row="4" data-col="13" />
+    <rect x="193" y="166" width="10" height="4" fill="#311819" data-role="grid-cell" data-row="4" data-col="14" />
+    <rect x="205" y="166" width="10" height="4" fill="#311819" data-role="grid-cell" data-row="4" data-col="15" />
+    <rect x="25" y="173" width="10" height="4" fill="#311819" data-role="grid-cell" data-row="5" data-col="0" />
+    <rect x="37" y="173" width="10" height="4" fill="#311819" data-role="grid-cell" data-row="5" data-col="1" />
+    <rect x="49" y="173" width="10" height="4" fill="#311819" data-role="grid-cell" data-row="5" data-col="2" />
+    <rect x="61" y="173" width="10" height="4" fill="#311819" data-role="grid-cell" data-row="5" data-col="3" />
+    <rect x="73" y="173" width="10" height="4" fill="#311819" data-role="grid-cell" data-row="5" data-col="4" />
+    <rect x="85" y="173" width="10" height="4" fill="#311819" data-role="grid-cell" data-row="5" data-col="5" />
+    <rect x="97" y="173" width="10" height="4" fill="#311819" data-role="grid-cell" data-row="5" data-col="6" />
+    <rect x="109" y="173" width="10" height="4" fill="#311819" data-role="grid-cell" data-row="5" data-col="7" />
+    <rect x="121" y="173" width="10" height="4" fill="#311819" data-role="grid-cell" data-row="5" data-col="8" />
+    <rect x="133" y="173" width="10" height="4" fill="#311819" data-role="grid-cell" data-row="5" data-col="9" />
+    <rect x="145" y="173" width="10" height="4" fill="#311819" data-role="grid-cell" data-row="5" data-col="10" />
+    <rect x="157" y="173" width="10" height="4" fill="#311819" data-role="grid-cell" data-row="5" data-col="11" />
+    <rect x="169" y="173" width="10" height="4" fill="#311819" data-role="grid-cell" data-row="5" data-col="12" />
+    <rect x="181" y="173" width="10" height="4" fill="#BD2429" data-role="grid-cell" data-row="5" data-col="13" />
+    <rect x="193" y="173" width="10" height="4" fill="#311819" data-role="grid-cell" data-row="5" data-col="14" />
+    <rect x="205" y="173" width="10" height="4" fill="#311819" data-role="grid-cell" data-row="5" data-col="15" />
+    <rect x="25" y="180" width="10" height="4" fill="#311819" data-role="grid-cell" data-row="6" data-col="0" />
+    <rect x="37" y="180" width="10" height="4" fill="#311819" data-role="grid-cell" data-row="6" data-col="1" />
+    <rect x="49" y="180" width="10" height="4" fill="#311819" data-role="grid-cell" data-row="6" data-col="2" />
+    <rect x="61" y="180" width="10" height="4" fill="#311819" data-role="grid-cell" data-row="6" data-col="3" />
+    <rect x="73" y="180" width="10" height="4" fill="#311819" data-role="grid-cell" data-row="6" data-col="4" />
+    <rect x="85" y="180" width="10" height="4" fill="#311819" data-role="grid-cell" data-row="6" data-col="5" />
+    <rect x="97" y="180" width="10" height="4" fill="#311819" data-role="grid-cell" data-row="6" data-col="6" />
+    <rect x="109" y="180" width="10" height="4" fill="#311819" data-role="grid-cell" data-row="6" data-col="7" />
+    <rect x="121" y="180" width="10" height="4" fill="#311819" data-role="grid-cell" data-row="6" data-col="8" />
+    <rect x="133" y="180" width="10" height="4" fill="#311819" data-role="grid-cell" data-row="6" data-col="9" />
+    <rect x="145" y="180" width="10" height="4" fill="#311819" data-role="grid-cell" data-row="6" data-col="10" />
+    <rect x="157" y="180" width="10" height="4" fill="#311819" data-role="grid-cell" data-row="6" data-col="11" />
+    <rect x="169" y="180" width="10" height="4" fill="#311819" data-role="grid-cell" data-row="6" data-col="12" />
+    <rect x="181" y="180" width="10" height="4" fill="#311819" data-role="grid-cell" data-row="6" data-col="13" />
+    <rect x="193" y="180" width="10" height="4" fill="#311819" data-role="grid-cell" data-row="6" data-col="14" />
+    <rect x="205" y="180" width="10" height="4" fill="#BD2429" data-role="grid-cell" data-row="6" data-col="15" />
+    <rect x="25" y="187" width="10" height="4" fill="#BD2429" data-role="grid-cell" data-row="7" data-col="0" />
+    <rect x="37" y="187" width="10" height="4" fill="#311819" data-role="grid-cell" data-row="7" data-col="1" />
+    <rect x="49" y="187" width="10" height="4" fill="#311819" data-role="grid-cell" data-row="7" data-col="2" />
+    <rect x="61" y="187" width="10" height="4" fill="#311819" data-role="grid-cell" data-row="7" data-col="3" />
+    <rect x="73" y="187" width="10" height="4" fill="#311819" data-role="grid-cell" data-row="7" data-col="4" />
+    <rect x="85" y="187" width="10" height="4" fill="#311819" data-role="grid-cell" data-row="7" data-col="5" />
+    <rect x="97" y="187" width="10" height="4" fill="#311819" data-role="grid-cell" data-row="7" data-col="6" />
+    <rect x="109" y="187" width="10" height="4" fill="#311819" data-role="grid-cell" data-row="7" data-col="7" />
+    <rect x="121" y="187" width="10" height="4" fill="#311819" data-role="grid-cell" data-row="7" data-col="8" />
+    <rect x="133" y="187" width="10" height="4" fill="#311819" data-role="grid-cell" data-row="7" data-col="9" />
+    <rect x="145" y="187" width="10" height="4" fill="#311819" data-role="grid-cell" data-row="7" data-col="10" />
+    <rect x="157" y="187" width="10" height="4" fill="#311819" data-role="grid-cell" data-row="7" data-col="11" />
+    <rect x="169" y="187" width="10" height="4" fill="#311819" data-role="grid-cell" data-row="7" data-col="12" />
+    <rect x="181" y="187" width="10" height="4" fill="#311819" data-role="grid-cell" data-row="7" data-col="13" />
+    <rect x="193" y="187" width="10" height="4" fill="#311819" data-role="grid-cell" data-row="7" data-col="14" />
+    <rect x="205" y="187" width="10" height="4" fill="#BD2429" data-role="grid-cell" data-row="7" data-col="15" />
+    <g data-font="MD_F3" data-text="FM-1 EDITION" data-scale="2" data-role="footer">
+      <title>FM-1 EDITION</title>
+      <path fill="#F7F3EF" d="M73 210h6v2H73z M81 210h2v2H81z M85 210h2v2H85z M97 210h4v2H97z M113 210h6v2H113z M121 210h4v2H121z M129 210h6v2H129z M137 210h6v2H137z M145 210h6v2H145z M153 210h6v2H153z M161 210h4v2H161z M73 212h2v2H73z M81 212h6v2H81z M99 212h2v2H99z M113 212h2v2H113z M121 212h2v2H121z M125 212h2v2H125z M131 212h2v2H131z M139 212h2v2H139z M147 212h2v2H147z M153 212h2v2H153z M157 212h2v2H157z M161 212h2v2H161z M165 212h2v2H165z M73 214h6v2H73z M81 214h2v2H81z M85 214h2v2H85z M89 214h6v2H89z M99 214h2v2H99z M113 214h6v2H113z M121 214h2v2H121z M125 214h2v2H125z M131 214h2v2H131z M139 214h2v2H139z M147 214h2v2H147z M153 214h2v2H153z M157 214h2v2H157z M161 214h2v2H161z M165 214h2v2H165z M73 216h2v2H73z M81 216h2v2H81z M85 216h2v2H85z M99 216h2v2H99z M113 216h2v2H113z M121 216h2v2H121z M125 216h2v2H125z M131 216h2v2H131z M139 216h2v2H139z M147 216h2v2H147z M153 216h2v2H153z M157 216h2v2H157z M161 216h2v2H161z M165 216h2v2H165z M73 218h2v2H73z M81 218h2v2H81z M85 218h2v2H85z M97 218h6v2H97z M113 218h6v2H113z M121 218h4v2H121z M129 218h6v2H129z M139 218h2v2H139z M145 218h6v2H145z M153 218h6v2H153z M161 218h2v2H161z M165 218h2v2H165z" />
+    </g>
+  </g>
+  <rect x="40" y="732" width="560" height="1" fill="#C9BFB9" />
+  <g data-font="MD_F3" data-text="RGB565 QUANTIZED. MD_F3 FONT FROM THE PINNED SOURCE." data-scale="1">
+    <title>RGB565 QUANTIZED. MD_F3 FONT FROM THE PINNED SOURCE.</title>
+    <path fill="#635758" d="M40 750h3v1H40z M44 750h3v1H44z M48 750h2v1H48z M52 750h3v1H52z M56 750h3v1H56z M60 750h3v1H60z M68 750h3v1H68z M72 750h1v1H72z M74 750h1v1H74z M76 750h3v1H76z M80 750h2v1H80z M84 750h3v1H84z M88 750h3v1H88z M92 750h3v1H92z M96 750h3v1H96z M100 750h2v1H100z M110 750h1v1H110z M112 750h1v1H112z M114 750h2v1H114z M122 750h3v1H122z M126 750h3v1H126z M134 750h3v1H134z M138 750h3v1H138z M142 750h2v1H142z M146 750h3v1H146z M154 750h3v1H154z M158 750h3v1H158z M162 750h3v1H162z M166 750h1v1H166z M168 750h1v1H168z M174 750h3v1H174z M178 750h1v1H178z M180 750h1v1H180z M182 750h3v1H182z M190 750h3v1H190z M194 750h3v1H194z M198 750h2v1H198z M202 750h2v1H202z M206 750h3v1H206z M210 750h2v1H210z M218 750h3v1H218z M222 750h3v1H222z M226 750h1v1H226z M228 750h1v1H228z M230 750h3v1H230z M234 750h3v1H234z M238 750h3v1H238z M40 751h1v1H40z M42 751h1v1H42z M44 751h1v1H44z M48 751h1v1H48z M50 751h1v1H50z M52 751h1v1H52z M56 751h1v1H56z M60 751h1v1H60z M68 751h1v1H68z M70 751h1v1H70z M72 751h1v1H72z M74 751h1v1H74z M76 751h1v1H76z M78 751h1v1H78z M80 751h1v1H80z M82 751h1v1H82z M85 751h1v1H85z M89 751h1v1H89z M94 751h1v1H94z M96 751h1v1H96z M100 751h1v1H100z M102 751h1v1H102z M110 751h3v1H110z M114 751h1v1H114z M116 751h1v1H116z M122 751h1v1H122z M128 751h1v1H128z M134 751h1v1H134z M138 751h1v1H138z M140 751h1v1H140z M142 751h1v1H142z M144 751h1v1H144z M147 751h1v1H147z M154 751h1v1H154z M158 751h1v1H158z M160 751h1v1H160z M162 751h1v1H162z M164 751h1v1H164z M166 751h3v1H166z M175 751h1v1H175z M178 751h1v1H178z M180 751h1v1H180z M182 751h1v1H182z M190 751h1v1H190z M192 751h1v1H192z M195 751h1v1H195z M198 751h1v1H198z M200 751h1v1H200z M202 751h1v1H202z M204 751h1v1H204z M206 751h1v1H206z M210 751h1v1H210z M212 751h1v1H212z M218 751h1v1H218z M222 751h1v1H222z M224 751h1v1H224z M226 751h1v1H226z M228 751h1v1H228z M230 751h1v1H230z M232 751h1v1H232z M234 751h1v1H234z M238 751h1v1H238z M40 752h2v1H40z M44 752h1v1H44z M46 752h1v1H46z M48 752h2v1H48z M52 752h3v1H52z M56 752h3v1H56z M60 752h3v1H60z M68 752h1v1H68z M70 752h1v1H70z M72 752h1v1H72z M74 752h1v1H74z M76 752h3v1H76z M80 752h1v1H80z M82 752h1v1H82z M85 752h1v1H85z M89 752h1v1H89z M93 752h1v1H93z M96 752h3v1H96z M100 752h1v1H100z M102 752h1v1H102z M110 752h1v1H110z M112 752h1v1H112z M114 752h1v1H114z M116 752h1v1H116z M122 752h3v1H122z M126 752h3v1H126z M134 752h3v1H134z M138 752h1v1H138z M140 752h1v1H140z M142 752h1v1H142z M144 752h1v1H144z M147 752h1v1H147z M154 752h3v1H154z M158 752h2v1H158z M162 752h1v1H162z M164 752h1v1H164z M166 752h1v1H166z M168 752h1v1H168z M175 752h1v1H175z M178 752h3v1H178z M182 752h3v1H182z M190 752h3v1H190z M195 752h1v1H195z M198 752h1v1H198z M200 752h1v1H200z M202 752h1v1H202z M204 752h1v1H204z M206 752h3v1H206z M210 752h1v1H210z M212 752h1v1H212z M218 752h3v1H218z M222 752h1v1H222z M224 752h1v1H224z M226 752h1v1H226z M228 752h1v1H228z M230 752h2v1H230z M234 752h1v1H234z M238 752h3v1H238z M40 753h1v1H40z M42 753h1v1H42z M44 753h1v1H44z M46 753h1v1H46z M48 753h1v1H48z M50 753h1v1H50z M54 753h1v1H54z M56 753h1v1H56z M58 753h1v1H58z M62 753h1v1H62z M68 753h3v1H68z M72 753h1v1H72z M74 753h1v1H74z M76 753h1v1H76z M78 753h1v1H78z M80 753h1v1H80z M82 753h1v1H82z M85 753h1v1H85z M89 753h1v1H89z M92 753h1v1H92z M96 753h1v1H96z M100 753h1v1H100z M102 753h1v1H102z M110 753h1v1H110z M112 753h1v1H112z M114 753h1v1H114z M116 753h1v1H116z M122 753h1v1H122z M128 753h1v1H128z M134 753h1v1H134z M138 753h1v1H138z M140 753h1v1H140z M142 753h1v1H142z M144 753h1v1H144z M147 753h1v1H147z M154 753h1v1H154z M158 753h1v1H158z M160 753h1v1H160z M162 753h1v1H162z M164 753h1v1H164z M166 753h1v1H166z M168 753h1v1H168z M175 753h1v1H175z M178 753h1v1H178z M180 753h1v1H180z M182 753h1v1H182z M190 753h1v1H190z M195 753h1v1H195z M198 753h1v1H198z M200 753h1v1H200z M202 753h1v1H202z M204 753h1v1H204z M206 753h1v1H206z M210 753h1v1H210z M212 753h1v1H212z M220 753h1v1H220z M222 753h1v1H222z M224 753h1v1H224z M226 753h1v1H226z M228 753h1v1H228z M230 753h1v1H230z M232 753h1v1H232z M234 753h1v1H234z M238 753h1v1H238z M40 754h1v1H40z M42 754h1v1H42z M44 754h3v1H44z M48 754h2v1H48z M52 754h3v1H52z M56 754h3v1H56z M60 754h3v1H60z M70 754h1v1H70z M72 754h3v1H72z M76 754h1v1H76z M78 754h1v1H78z M80 754h1v1H80z M82 754h1v1H82z M85 754h1v1H85z M88 754h3v1H88z M92 754h3v1H92z M96 754h3v1H96z M100 754h2v1H100z M104 754h1v1H104z M110 754h1v1H110z M112 754h1v1H112z M114 754h2v1H114z M118 754h3v1H118z M122 754h1v1H122z M126 754h3v1H126z M134 754h1v1H134z M138 754h3v1H138z M142 754h1v1H142z M144 754h1v1H144z M147 754h1v1H147z M154 754h1v1H154z M158 754h1v1H158z M160 754h1v1H160z M162 754h3v1H162z M166 754h1v1H166z M168 754h1v1H168z M175 754h1v1H175z M178 754h1v1H178z M180 754h1v1H180z M182 754h3v1H182z M190 754h1v1H190z M194 754h3v1H194z M198 754h1v1H198z M200 754h1v1H200z M202 754h1v1H202z M204 754h1v1H204z M206 754h3v1H206z M210 754h2v1H210z M218 754h3v1H218z M222 754h3v1H222z M226 754h3v1H226z M230 754h1v1H230z M232 754h1v1H232z M234 754h3v1H234z M238 754h3v1H238z M242 754h1v1H242z" />
+  </g>
+  <rect x="39" y="765" width="14" height="14" fill="#B1A7A2" />
+  <rect x="40" y="766" width="12" height="12" fill="#080808" />
+  <g data-font="MD_F3" data-text="BG #080808" data-scale="1">
+    <title>BG #080808</title>
+    <path fill="#635758" d="M58 770h2v1H58z M62 770h3v1H62z M71 770h1v1H71z M73 770h1v1H73z M76 770h3v1H76z M80 770h3v1H80z M84 770h3v1H84z M88 770h3v1H88z M92 770h3v1H92z M96 770h3v1H96z M58 771h1v1H58z M60 771h1v1H60z M62 771h1v1H62z M70 771h5v1H70z M76 771h1v1H76z M78 771h1v1H78z M80 771h1v1H80z M82 771h1v1H82z M84 771h1v1H84z M86 771h1v1H86z M88 771h1v1H88z M90 771h1v1H90z M92 771h1v1H92z M94 771h1v1H94z M96 771h1v1H96z M98 771h1v1H98z M58 772h2v1H58z M62 772h1v1H62z M64 772h1v1H64z M71 772h1v1H71z M73 772h1v1H73z M76 772h1v1H76z M78 772h1v1H78z M80 772h3v1H80z M84 772h1v1H84z M86 772h1v1H86z M88 772h3v1H88z M92 772h1v1H92z M94 772h1v1H94z M96 772h3v1H96z M58 773h1v1H58z M60 773h1v1H60z M62 773h1v1H62z M64 773h1v1H64z M70 773h5v1H70z M76 773h1v1H76z M78 773h1v1H78z M80 773h1v1H80z M82 773h1v1H82z M84 773h1v1H84z M86 773h1v1H86z M88 773h1v1H88z M90 773h1v1H90z M92 773h1v1H92z M94 773h1v1H94z M96 773h1v1H96z M98 773h1v1H98z M58 774h2v1H58z M62 774h3v1H62z M71 774h1v1H71z M73 774h1v1H73z M76 774h3v1H76z M80 774h3v1H80z M84 774h3v1H84z M88 774h3v1H88z M92 774h3v1H92z M96 774h3v1H96z" />
+  </g>
+  <rect x="151" y="765" width="14" height="14" fill="#B1A7A2" />
+  <rect x="152" y="766" width="12" height="12" fill="#311819" />
+  <g data-font="MD_F3" data-text="DIM #311819" data-scale="1">
+    <title>DIM #311819</title>
+    <path fill="#635758" d="M170 770h2v1H170z M174 770h3v1H174z M178 770h1v1H178z M180 770h1v1H180z M187 770h1v1H187z M189 770h1v1H189z M192 770h3v1H192z M196 770h2v1H196z M200 770h2v1H200z M204 770h3v1H204z M208 770h2v1H208z M212 770h3v1H212z M170 771h1v1H170z M172 771h1v1H172z M175 771h1v1H175z M178 771h3v1H178z M186 771h5v1H186z M194 771h1v1H194z M197 771h1v1H197z M201 771h1v1H201z M204 771h1v1H204z M206 771h1v1H206z M209 771h1v1H209z M212 771h1v1H212z M214 771h1v1H214z M170 772h1v1H170z M172 772h1v1H172z M175 772h1v1H175z M178 772h1v1H178z M180 772h1v1H180z M187 772h1v1H187z M189 772h1v1H189z M192 772h3v1H192z M197 772h1v1H197z M201 772h1v1H201z M204 772h3v1H204z M209 772h1v1H209z M212 772h3v1H212z M170 773h1v1H170z M172 773h1v1H172z M175 773h1v1H175z M178 773h1v1H178z M180 773h1v1H180z M186 773h5v1H186z M194 773h1v1H194z M197 773h1v1H197z M201 773h1v1H201z M204 773h1v1H204z M206 773h1v1H206z M209 773h1v1H209z M214 773h1v1H214z M170 774h2v1H170z M174 774h3v1H174z M178 774h1v1H178z M180 774h1v1H180z M187 774h1v1H187z M189 774h1v1H189z M192 774h3v1H192z M196 774h3v1H196z M200 774h3v1H200z M204 774h3v1H204z M208 774h3v1H208z M212 774h3v1H212z" />
+  </g>
+  <rect x="263" y="765" width="14" height="14" fill="#B1A7A2" />
+  <rect x="264" y="766" width="12" height="12" fill="#BD2429" />
+  <g data-font="MD_F3" data-text="RED #BD2429" data-scale="1">
+    <title>RED #BD2429</title>
+    <path fill="#635758" d="M282 770h3v1H282z M286 770h3v1H286z M290 770h2v1H290z M299 770h1v1H299z M301 770h1v1H301z M304 770h2v1H304z M308 770h2v1H308z M312 770h3v1H312z M316 770h1v1H316z M318 770h1v1H318z M320 770h3v1H320z M324 770h3v1H324z M282 771h1v1H282z M284 771h1v1H284z M286 771h1v1H286z M290 771h1v1H290z M292 771h1v1H292z M298 771h5v1H298z M304 771h1v1H304z M306 771h1v1H306z M308 771h1v1H308z M310 771h1v1H310z M314 771h1v1H314z M316 771h1v1H316z M318 771h1v1H318z M322 771h1v1H322z M324 771h1v1H324z M326 771h1v1H326z M282 772h2v1H282z M286 772h3v1H286z M290 772h1v1H290z M292 772h1v1H292z M299 772h1v1H299z M301 772h1v1H301z M304 772h2v1H304z M308 772h1v1H308z M310 772h1v1H310z M312 772h3v1H312z M316 772h3v1H316z M320 772h3v1H320z M324 772h3v1H324z M282 773h1v1H282z M284 773h1v1H284z M286 773h1v1H286z M290 773h1v1H290z M292 773h1v1H292z M298 773h5v1H298z M304 773h1v1H304z M306 773h1v1H306z M308 773h1v1H308z M310 773h1v1H310z M312 773h1v1H312z M318 773h1v1H318z M320 773h1v1H320z M326 773h1v1H326z M282 774h1v1H282z M284 774h1v1H284z M286 774h3v1H286z M290 774h2v1H290z M299 774h1v1H299z M301 774h1v1H301z M304 774h2v1H304z M308 774h2v1H308z M312 774h3v1H312z M318 774h1v1H318z M320 774h3v1H320z M324 774h3v1H324z" />
+  </g>
+  <rect x="375" y="765" width="14" height="14" fill="#B1A7A2" />
+  <rect x="376" y="766" width="12" height="12" fill="#F74D52" />
+  <g data-font="MD_F3" data-text="HOT #F74D52" data-scale="1">
+    <title>HOT #F74D52</title>
+    <path fill="#635758" d="M394 770h1v1H394z M396 770h1v1H396z M398 770h3v1H398z M402 770h3v1H402z M411 770h1v1H411z M413 770h1v1H413z M416 770h3v1H416z M420 770h3v1H420z M424 770h1v1H424z M426 770h1v1H426z M428 770h2v1H428z M432 770h3v1H432z M436 770h3v1H436z M394 771h1v1H394z M396 771h1v1H396z M398 771h1v1H398z M400 771h1v1H400z M403 771h1v1H403z M410 771h5v1H410z M416 771h1v1H416z M422 771h1v1H422z M424 771h1v1H424z M426 771h1v1H426z M428 771h1v1H428z M430 771h1v1H430z M432 771h1v1H432z M438 771h1v1H438z M394 772h3v1H394z M398 772h1v1H398z M400 772h1v1H400z M403 772h1v1H403z M411 772h1v1H411z M413 772h1v1H413z M416 772h3v1H416z M422 772h1v1H422z M424 772h3v1H424z M428 772h1v1H428z M430 772h1v1H430z M432 772h3v1H432z M436 772h3v1H436z M394 773h1v1H394z M396 773h1v1H396z M398 773h1v1H398z M400 773h1v1H400z M403 773h1v1H403z M410 773h5v1H410z M416 773h1v1H416z M422 773h1v1H422z M426 773h1v1H426z M428 773h1v1H428z M430 773h1v1H430z M434 773h1v1H434z M436 773h1v1H436z M394 774h1v1H394z M396 774h1v1H396z M398 774h3v1H398z M403 774h1v1H403z M411 774h1v1H411z M413 774h1v1H413z M416 774h1v1H416z M422 774h1v1H422z M426 774h1v1H426z M428 774h2v1H428z M432 774h3v1H432z M436 774h3v1H436z" />
+  </g>
+  <rect x="487" y="765" width="14" height="14" fill="#B1A7A2" />
+  <rect x="488" y="766" width="12" height="12" fill="#F7F3EF" />
+  <g data-font="MD_F3" data-text="PAPER #F7F3EF" data-scale="1">
+    <title>PAPER #F7F3EF</title>
+    <path fill="#635758" d="M506 770h3v1H506z M510 770h3v1H510z M514 770h3v1H514z M518 770h3v1H518z M522 770h3v1H522z M531 770h1v1H531z M533 770h1v1H533z M536 770h3v1H536z M540 770h3v1H540z M544 770h3v1H544z M548 770h3v1H548z M552 770h3v1H552z M556 770h3v1H556z M506 771h1v1H506z M508 771h1v1H508z M510 771h1v1H510z M512 771h1v1H512z M514 771h1v1H514z M516 771h1v1H516z M518 771h1v1H518z M522 771h1v1H522z M524 771h1v1H524z M530 771h5v1H530z M536 771h1v1H536z M542 771h1v1H542z M544 771h1v1H544z M550 771h1v1H550z M552 771h1v1H552z M556 771h1v1H556z M506 772h3v1H506z M510 772h3v1H510z M514 772h3v1H514z M518 772h3v1H518z M522 772h2v1H522z M531 772h1v1H531z M533 772h1v1H533z M536 772h3v1H536z M542 772h1v1H542z M544 772h3v1H544z M548 772h3v1H548z M552 772h3v1H552z M556 772h3v1H556z M506 773h1v1H506z M510 773h1v1H510z M512 773h1v1H512z M514 773h1v1H514z M518 773h1v1H518z M522 773h1v1H522z M524 773h1v1H524z M530 773h5v1H530z M536 773h1v1H536z M542 773h1v1H542z M544 773h1v1H544z M550 773h1v1H550z M552 773h1v1H552z M556 773h1v1H556z M506 774h1v1H506z M510 774h1v1H510z M512 774h1v1H512z M514 774h1v1H514z M518 774h3v1H518z M522 774h1v1H522z M524 774h1v1H524z M531 774h1v1H531z M533 774h1v1H533z M536 774h1v1H536z M542 774h1v1H542z M544 774h1v1H544z M548 774h3v1H548z M552 774h3v1H552z M556 774h1v1H556z" />
+  </g>
+  <g data-font="MD_F3" data-text="SOURCE 67BE119A / GPL-3.0-ONLY" data-scale="1">
+    <title>SOURCE 67BE119A / GPL-3.0-ONLY</title>
+    <path fill="#635758" d="M40 798h3v1H40z M44 798h3v1H44z M48 798h1v1H48z M50 798h1v1H50z M52 798h3v1H52z M56 798h3v1H56z M60 798h3v1H60z M68 798h3v1H68z M72 798h3v1H72z M76 798h2v1H76z M80 798h3v1H80z M84 798h2v1H84z M88 798h2v1H88z M92 798h3v1H92z M96 798h3v1H96z M106 798h1v1H106z M112 798h3v1H112z M116 798h3v1H116z M120 798h1v1H120z M128 798h3v1H128z M134 798h3v1H134z M142 798h3v1H142z M146 798h2v1H146z M150 798h1v1H150z M154 798h1v1H154z M156 798h1v1H156z M40 799h1v1H40z M44 799h1v1H44z M46 799h1v1H46z M48 799h1v1H48z M50 799h1v1H50z M52 799h1v1H52z M54 799h1v1H54z M56 799h1v1H56z M60 799h1v1H60z M68 799h1v1H68z M74 799h1v1H74z M76 799h1v1H76z M78 799h1v1H78z M80 799h1v1H80z M85 799h1v1H85z M89 799h1v1H89z M92 799h1v1H92z M94 799h1v1H94z M96 799h1v1H96z M98 799h1v1H98z M106 799h1v1H106z M112 799h1v1H112z M116 799h1v1H116z M118 799h1v1H118z M120 799h1v1H120z M130 799h1v1H130z M134 799h1v1H134z M136 799h1v1H136z M142 799h1v1H142z M144 799h1v1H144z M146 799h1v1H146z M148 799h1v1H148z M150 799h1v1H150z M154 799h1v1H154z M156 799h1v1H156z M40 800h3v1H40z M44 800h1v1H44z M46 800h1v1H46z M48 800h1v1H48z M50 800h1v1H50z M52 800h2v1H52z M56 800h1v1H56z M60 800h3v1H60z M68 800h3v1H68z M74 800h1v1H74z M76 800h2v1H76z M80 800h3v1H80z M85 800h1v1H85z M89 800h1v1H89z M92 800h3v1H92z M96 800h3v1H96z M105 800h1v1H105z M112 800h1v1H112z M114 800h1v1H114z M116 800h3v1H116z M120 800h1v1H120z M124 800h3v1H124z M128 800h3v1H128z M134 800h1v1H134z M136 800h1v1H136z M138 800h3v1H138z M142 800h1v1H142z M144 800h1v1H144z M146 800h1v1H146z M148 800h1v1H148z M150 800h1v1H150z M154 800h3v1H154z M42 801h1v1H42z M44 801h1v1H44z M46 801h1v1H46z M48 801h1v1H48z M50 801h1v1H50z M52 801h1v1H52z M54 801h1v1H54z M56 801h1v1H56z M60 801h1v1H60z M68 801h1v1H68z M70 801h1v1H70z M74 801h1v1H74z M76 801h1v1H76z M78 801h1v1H78z M80 801h1v1H80z M85 801h1v1H85z M89 801h1v1H89z M94 801h1v1H94z M96 801h1v1H96z M98 801h1v1H98z M104 801h1v1H104z M112 801h1v1H112z M114 801h1v1H114z M116 801h1v1H116z M120 801h1v1H120z M130 801h1v1H130z M134 801h1v1H134z M136 801h1v1H136z M142 801h1v1H142z M144 801h1v1H144z M146 801h1v1H146z M148 801h1v1H148z M150 801h1v1H150z M155 801h1v1H155z M40 802h3v1H40z M44 802h3v1H44z M48 802h3v1H48z M52 802h1v1H52z M54 802h1v1H54z M56 802h3v1H56z M60 802h3v1H60z M68 802h3v1H68z M74 802h1v1H74z M76 802h2v1H76z M80 802h3v1H80z M84 802h3v1H84z M88 802h3v1H88z M92 802h3v1H92z M96 802h1v1H96z M98 802h1v1H98z M104 802h1v1H104z M112 802h3v1H112z M116 802h1v1H116z M120 802h3v1H120z M128 802h3v1H128z M132 802h1v1H132z M134 802h3v1H134z M142 802h3v1H142z M146 802h1v1H146z M148 802h1v1H148z M150 802h3v1H150z M155 802h1v1H155z" />
+  </g>
+</svg>
