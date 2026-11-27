@@ -32,6 +32,11 @@ static uint32_t host_blit_px;                        /* pixels sent to the LCD b
 static void lcd_blit(uint32_t x, uint32_t y, uint32_t w, uint32_t h, const uint16_t *px)
 {
     uint32_t i, j;
+#ifdef GRIND_BOOT_LCD_ASSERT
+    if (w && h) {                                   /* (a zero-size blit is legal on the device: lcd.c) */
+        assert(x < 240u && y < 240u && w <= 240u - x && h <= 240u - y && w * h <= 240u * 124u);
+    }
+#endif
     if (y < 181u && y + h > 61u)
         host_graph_blits++;
     host_blit_px += w * h;
