@@ -234,18 +234,22 @@ case $lane in
                 report FAIL 'prepare Grind WASM output'
             fi
         fi
-        preview_status=0
-        check wasm-preview bash tools/build_sim.sh --preview || preview_status=$?
+        browser=${GRIND_CHROMIUM:-$(command -v google-chrome || command -v chromium || true)}
+        # both modes (the default build last, as the web tests expect), each smoke straight after its own build (both write build/sim/preview): the GRIND-on run covers the
+        # ?boot=1 preview, the off run the fallback
+        for native in 1 0; do
+            preview_status=0
+            check "wasm-preview-native$native" env GRIND_NATIVE=$native bash tools/build_sim.sh --preview || preview_status=$?
+            if (( preview_status != 0 )); then
+                report BLOCKED "browser smoke (GRIND_NATIVE=$native) requires successful WASM preview build"
+            elif [[ -x $browser && -f build/grind-browser/node_modules/playwright-core/index.mjs ]]; then
+                check "browser-smoke-native$native" env GRIND_NATIVE=$native GRIND_CHROMIUM="$browser" node tests/grind/browser_smoke.mjs
+            else
+                report BLOCKED "browser smoke (GRIND_NATIVE=$native) requires Chromium and Playwright Core"
+            fi
+        done
         suite web-regression wasm node web/test_web.mjs
         check web-editor node web/editor/test_editor.mjs
-        browser=${GRIND_CHROMIUM:-$(command -v google-chrome || command -v chromium || true)}
-        if (( preview_status != 0 )); then
-            report BLOCKED 'browser smoke requires successful WASM preview build'
-        elif [[ -x $browser && -f build/grind-browser/node_modules/playwright-core/index.mjs ]]; then
-            check browser-smoke env GRIND_CHROMIUM="$browser" node tests/grind/browser_smoke.mjs
-        else
-            report BLOCKED 'browser smoke requires Chromium and Playwright Core'
-        fi
         ;;
     native) native ;;
     t03) t03 ;;

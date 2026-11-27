@@ -71,6 +71,7 @@ try {
     const boot = await browser.newPage({ reducedMotion: 'reduce' });
     boot.setDefaultTimeout(15_000);
     boot.on('pageerror', error => errors.push(error.message));
+    await boot.route('**/reel.bin.gz', route => route.fulfill({ status: 404 }));   // no reel: black is the baseline
     await boot.goto(`${base}/?boot=1`);
     await boot.waitForFunction(() => {                    // reduced motion: READY directly (the red rule at y 124)
       const c = document.querySelector('canvas.lcd').getContext('2d').getImageData(120, 124, 1, 1).data;

@@ -111,6 +111,7 @@ case "${1:-all}" in
     golden) run_golden ;;
     all)
         run_test grid "$CORE/grid.c"
+        run_test boot_anim "$CORE/boot_anim.c"
         run_test hit_variation
         run_rng
         run_test codec "$CORE/serialize.c" "$CORE/grid.c"
