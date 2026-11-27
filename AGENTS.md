@@ -23,7 +23,7 @@
 ## Gotchas
 - App RAM is at 95,160 of 98,304 B on the native build. Check CI's `RAM .data+.bss` line before adding static state. If a change would push it above 98,304 B, stop, report the measured total and ask the user; do not shrink the voice cap or pool floor. Features that need more than ~3 KB (ANCHOR, Tape) were deferred for that reason.
 - The native firmware build needs the pinned JieLi toolchain and SDK (`BUILDING.md`; CI's native lane is the reference for the RAM figures). Host tests do not need them.
-- WASM, `sim_glue.mjs` and `browser_smoke.mjs` need Emscripten and Chromium; they only run in CI. The simulator host test (`tests/sim_test.c`) builds locally with `-DSIGALRM=14 '-Dalarm(x)=0'` on Windows.
+- The WASM build (`tools/build_sim.sh`, which then runs `sim_glue.mjs` in Node) needs Emscripten via Docker; `browser_smoke.mjs` also needs Chromium. Neither is available on a plain Windows setup, so they first run in CI. The simulator host test (`tests/sim_test.c`) builds locally with `-DSIGALRM=14 '-Dalarm(x)=0'` on Windows.
 - `.vscode/`, `compile_commands.json` and `.clangd` are git-ignored; do not commit them.
 - Before opening or merging a PR, check its base branch (`gh pr view N --json baseRefName`). A PR whose base is another feature branch merges into that branch, not main.
 - Do not merge, release, or write to a connected FM-1 without the user's explicit instruction.
