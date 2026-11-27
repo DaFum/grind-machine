@@ -73,6 +73,7 @@ run_boot_existing() {
     boot_source=$2
     [ "$WASM" = 1 ] && { echo "$suite: native fixture is host-only"; return 0; }
     "${PYTHON:-python3}" tools/build.py --gen-only > /dev/null
+    mkdir -p build/ui_shots/fixes build/ui_shots/themes   # (the upstream fixtures write screenshots)
     $CC -std=gnu11 -O1 -g -Wall -Wno-unused-function -Wno-int-to-pointer-cast         -Wno-macro-redefined -Wno-date-time         ${GRIND_SAN_FLAGS:+${GRIND_SAN_FLAGS} -fno-sanitize=shift-base}         -UNDEBUG -DGRIND_NATIVE=1 -Ibuild/gen -Ifirmware/src -Itests -I"$CORE"         "$boot_source" -o "$OUT/test_$suite" -lm
     "$OUT/test_$suite"
 }

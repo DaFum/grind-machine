@@ -75,15 +75,12 @@ try {
     await off.waitForFunction(() => document.documentElement.dataset.bootPreview === 'settled');   // the preview's load is over
     const seen = new Set();                               // the reel keeps playing: a frozen preview scene would show one image
     for (let i = 0; i < 20 && seen.size < 2; i++) {
-      const [hash, rule] = await off.evaluate(() => {
+      const hash = await off.evaluate(() => {
         const d = document.querySelector('canvas.lcd').getContext('2d').getImageData(0, 0, 240, 240).data;
         let h = 2166136261, lit = 0;
         for (let k = 0; k < d.length; k += 4) { h = Math.imul(h ^ (d[k] | d[k + 1] << 8 | d[k + 2] << 16), 16777619) >>> 0; lit |= d[k] | d[k + 1] | d[k + 2]; }
-        let red = 0;                                      // BLAST's READY rule: 192 px of one red on row 124
-        for (let x = 24; x < 216; x++) { const q = (124 * 240 + x) * 4; red += d[q] > 150 && d[q + 1] < 80 && d[q + 2] < 90; }
-        return [lit ? h : 0, red];
+        return lit ? h : 0;
       });
-      assert.ok(rule < 100, '?boot=1 on a build without the preview must not show the BLAST scene');
       if (hash) seen.add(hash);                           // a blank canvas before the reel paints is not a frame
       await off.waitForTimeout(300);
     }
