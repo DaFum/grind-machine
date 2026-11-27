@@ -85,6 +85,19 @@ try {
       if (owner === 'reel') frames.add(hash);              // only frames the reel painted count as moving
       await off.waitForTimeout(200);
     }
+    const first = frames.size;                            // the observation continues: still the reel, still moving
+    for (let i = 0; i < 20 && frames.size < first + 2; i++) {
+      const [owner, hash] = await off.evaluate(() => {
+        const d = document.querySelector('canvas.lcd').getContext('2d').getImageData(0, 0, 240, 240).data;
+        let h = 2166136261;
+        for (let k = 0; k < d.length; k += 4) h = Math.imul(h ^ (d[k] | d[k + 1] << 8 | d[k + 2] << 16), 16777619) >>> 0;
+        return [document.documentElement.dataset.lcdOwner ?? '', h];
+      });
+      owners.add(owner);
+      if (owner === 'reel') frames.add(hash);
+      await off.waitForTimeout(200);
+    }
+    assert.ok(frames.size >= first + 1, 'the demo reel must still be changing the LCD after its first images');
     assert.ok(!owners.has('boot'), '?boot=1 on a build without the preview must never paint a preview frame');
     assert.ok(owners.has('reel'), '?boot=1 on a build without the preview must leave the demo reel on screen');
     assert.ok(frames.size >= 2, 'the demo reel must keep playing (the LCD image changes), not freeze after one frame');

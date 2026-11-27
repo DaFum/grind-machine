@@ -82,6 +82,14 @@ static void input_cancels_and_counts_once(void)
     at(1020u);
     shown_armed = ui.home;
     ok &= shown_armed == shown_base;                   /* ... and acts exactly once, as without the presentation */
+    model_boot(1);                                     /* and from PENDING: before the scene's first draw */
+    ok &= gm_boot_ui.clock.state == GM_BOOT_PENDING;
+    press(B_EDIT);
+    at(1000u);
+    ok &= gm_boot_ui.clock.state == GM_BOOT_DONE && PX(25, 138) != 0x30C3;
+    release_all();
+    at(1010u);
+    ok &= ui.home == shown_base;                       /* the same single action */
     check("the first button press cancels the presentation and plays as without it", ok);
 
     model_boot(0);
