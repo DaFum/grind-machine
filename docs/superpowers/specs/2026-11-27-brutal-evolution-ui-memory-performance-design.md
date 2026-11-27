@@ -15,6 +15,8 @@ BRUTAL EVOLUTION erweitert die vorhandene GRIND-Engine an ihren bestehenden Übe
 
 Die erste Sound-Integration unterstützt das generische Zweoperator-FM-Modell ausdrücklich. Weitere Modelle erhalten Unterstützung erst mit einer überprüften Parametertabelle. Ein vollständiger Vieroperator-Port, eine zweite Audioengine, globale Überabtastung und zusätzliche Delay-Puffer gehören nicht zu diesem Umfang.
 
+**Lizenzvorgabe:** BRUTAL FM steht unter GPL-3.0-only wie dieses Projekt. Die Vorbilddateien tragen SPDX-Vermerke mit Copyright Hiro Ikezawa (Felucca-Anteile Leo Kuroshita / Hügelton Instruments). Portierte Formeln aus `bfm_dsp.c` erhalten deshalb in den betroffenen Quelldateien die entsprechenden Copyright- und SPDX-Zeilen und bei Erreichen der Implementierungsschritte BE03/BE04/BE06 einen Eintrag unter LICENSES/ beziehungsweise in der CREDITS-Dokumentation. Das ist vor der ersten Portierung zu erledigen, nicht nachträglich.
+
 | Erweiterung | Entscheidung für die erste Ausbaustufe | Wichtigste Grenze |
 | --- | --- | --- |
 | LAYER LOCKS | Drei unabhängige Mutationssperren je Track | Sperren schützen vor Generierung, nicht vor bewusster Live-Bedienung |
@@ -34,7 +36,7 @@ Die bestehende DNA-Spezifikation beschreibt außerdem BREED, BRAIN und INPUT. Da
 
 **Quellbefund:** Die Sektionstaste öffnet die zuletzt verwendete Seite ihrer Familie; wiederholtes Drücken blättert weiter. SELECT navigiert innerhalb der Familie, ALGORITHM wählt den Track. Die vier Parameterregler sind Drehregler. OCT+ öffnet aus SOUND die vorhandene Sample-Seite LAYER; OCT− führt zurück. [Panel][panel] · [Seitennavigation][navigation] · [SOUND/LAYER][pages]
 
-**Entwurfsentscheidung:** Die vorhandene Reihenfolge bleibt erhalten. Neue Seiten werden an die passende Familie angehängt. Das Wort LAYER bleibt für die Sample-Schicht reserviert; die neuen Mutationssperren heißen auf dem Gerät LOCKS. MOTION bleibt der Name der aufgezeichneten Automation; der neue Live-Regler heißt MOVE, ausgeschrieben MOVEMENT.
+**Entwurfsentscheidung:** Die vorhandene Reihenfolge bleibt erhalten. Neue Seiten werden an die passende Familie angehängt. Die vierte bisherige GRIND-Seite mit SINK/SWELL/CUT heißt in diesem Entwurf LIVE. Heute tragen alle fünf GRIND-Seiten denselben Titel. Weil die Familie zusätzlich die neue LOCKS-Seite erhält und alle Generation-Seiten weiterhin GRIND heißen, wird diese Live-Performance-Seite zur Unterscheidung bewusst umbenannt und zeigt im Kopf beziehungsweise in der Fußzeile LIVE. Das Wort LAYER bleibt für die Sample-Schicht reserviert; die neuen Mutationssperren heißen auf dem Gerät LOCKS. MOTION bleibt der Name der aufgezeichneten Automation; der neue Live-Regler heißt MOVE, ausgeschrieben MOVEMENT.
 
 | Zugang / Seite | Geltung | Regler 1 | Regler 2 | Regler 3 | Regler 4 |
 | --- | --- | --- | --- | --- | --- |
@@ -51,7 +53,7 @@ BRUTAL bietet OFF, METAL, GROWL, CHAOS und NOISE als alternative Modi. BRUT best
 
 TIMBRE zeigt den vollständigen Zielnamen in Graph oder Fußzeile. Die erste FM-Zielliste besteht aus INDEX, MDEC und FBK. MORPH zeigt A/B jeweils als EMPTY oder READY sowie Modell und BRUTAL-Modus. Unvereinbare Endpunkte ergeben MODEL MISMATCH. Nicht unterstützte Klangmodelle zeigen eine eindeutige Nichtverfügbarkeit; die Bedienung ändert dabei keine versteckten Parameter. MORPH startet mit ON=OFF und lässt sich erst mit zwei gültigen, kompatiblen Endpunkten aktivieren.
 
-**Quellbefund:** LIVE besitzt bereits SINK/SWELL/CUT und eine freie vierte Spalte. Die ARP-Familie enthält zwei GRIDS- und fünf GRIND-Seiten. Die Fußzeile zählt die ganze Familie. Deshalb werden keine dauerhaft gültigen Seitenzahlen versprochen; LOCKS und spätere DNA-Seiten verändern den Nenner. [Seitentabelle][pages] · [Fußzeile][footer]
+**Quellbefund:** Die heute vierte GRIND-Seite besitzt bereits SINK/SWELL/CUT und eine freie vierte Spalte. Die ARP-Familie enthält zwei GRIDS- und fünf GRIND-Seiten. Die Fußzeile zählt die ganze Familie. Deshalb werden keine dauerhaft gültigen Seitenzahlen versprochen; LOCKS und spätere DNA-Seiten verändern den Nenner. [Seitentabelle][pages] · [Fußzeile][footer]
 
 ### 2.2 Aktionen und Eingabepriorität
 
@@ -208,7 +210,7 @@ Bei 0 % laufen die aufgrund ihrer Routings aktiven LFOs einschließlich ihrer Zu
 
 ### 6.1 Belastbarer Ausgangspunkt
 
-**Dokumentierter Wert:** Die aktuelle AGENTS.md nennt 95.160 von 98.304 Byte App-RAM. Daraus folgen rechnerisch 3.144 Byte Rest. Das ist kein in dieser Untersuchung neu gemessener Buildwert. Vor der ersten Implementierung ist die native CI-Zeile für den dann tatsächlich integrierten Commit maßgeblich. Die Buildprüfung hält außerdem mindestens 8.192 Byte Pool-Reserve frei. [Projektvorgaben][agents] · [Buildprüfung][build-memory]
+**Dokumentierter Wert:** Die aktuelle AGENTS.md nennt 95.160 von 98.304 Byte App-RAM. Daraus folgen rechnerisch 3.144 Byte Rest. Das ist kein in dieser Untersuchung neu gemessener Buildwert. Vor der ersten Implementierung ist die native CI-Zeile für den dann tatsächlich integrierten Commit maßgeblich. Die Buildprüfung hält außerdem mindestens 8.192 Byte Pool-Reserve frei. Seit dem Referenzstand hat main die BLAST-IGNITION-Bootanimation mit eigenem Zustand sowie UI-Änderungen eingeführt; der dokumentierte Rest ist deshalb als Obergrenze zu lesen und in BE00 zwingend neu zu messen. [Projektvorgaben][agents] · [Buildprüfung][build-memory]
 
 App-RAM, .pool, RAM-Code und Stacks sind getrennt zu betrachten. Der normale Linker hat eigene Stackregionen mit Guard-Bereichen. Freie .bss-Bytes sind deshalb weder Stack-High-Water noch CPU-Reserve. Neue DNA- und BRUTAL-Funktionen teilen sich denselben verbleibenden Speicher; jede Planung darf ihn nicht erneut vollständig für sich beanspruchen. [Native Speicherkarte][app-ld]
 
@@ -254,16 +256,17 @@ Ein vollständiger per-Step-Klangcache wäre teuer: bereits 8 Tracks × 64 Steps
 | Track-Rezepte | 8 × angenommene 24 B | 192 |
 | A/B-Endpunkte | 8 × 2 × angenommene 20 B | 320 |
 | Globale Zustandsdaten | angenommene 32 B | 32 |
-| **Ein Snapshot** | | **544** |
+| Morph POS/ON je Track | 8 × 2 B, noch nicht im Rezeptansatz belegt | 16 |
+| **Ein Snapshot** | | **560** |
 
-Die angenommenen 20 Byte eines Endpunkts bestehen aus acht 16-Bit-Parametern plus je einem Byte für Modell, BRUTAL-Modus, BRUTAL-Intensität und Flags; die Schema-Version steht im gemeinsamen Header. Die genaue Feldbelegung ist erst bei der Implementierung festzulegen. Der 24-Byte-Rezeptansatz ist ebenfalls ein Planungswert; die je Track benötigten Morph-Felder POS und ON müssen darin nachweislich Platz finden oder als zusätzlicher Bedarf in der Ressourcenrechnung ausgewiesen werden.
+Die angenommenen 20 Byte eines Endpunkts bestehen aus acht 16-Bit-Parametern plus je einem Byte für Modell, BRUTAL-Modus, BRUTAL-Intensität und Flags; die Schema-Version steht im gemeinsamen Header. Die genaue Feldbelegung ist erst bei der Implementierung festzulegen. Der 24-Byte-Rezeptansatz ist ebenfalls ein Planungswert; die je Track benötigten Morph-Felder POS und ON finden darin nicht nachweislich Platz und sind deshalb oben als eigene 16-Byte-Zeile ausgewiesen (je 1 Byte POS und ON pro Track). Sollten sie doch im Rezept untergebracht werden, sinkt der Snapshot entsprechend.
 
 | Gleichzeitig benötigte Zustände | Angenommener Bruttobedarf |
 | --- | ---: |
-| ACTIVE + STAGED/WRITING + LATEST-PENDING + UNDO | **2.176 B** |
-| Zusätzlich ein unabhängiger DRAFT | **2.720 B** |
+| ACTIVE + STAGED/WRITING + LATEST-PENDING + UNDO | **2.240 B** |
+| Zusätzlich ein unabhängiger DRAFT | **2.800 B** |
 
-Gegen den dokumentierten Rest von 3.144 Byte würden damit rechnerisch nur 968 beziehungsweise 424 Byte übrig bleiben, noch vor zusätzlichem DSP-Zustand, Alignment, Verwaltungsdaten oder neuen Stack-Kopien. Diese Rechnung zeigt die Empfindlichkeit des Entwurfs; sie beweist nicht, dass alle sechs Funktionen bereits passen.
+Gegen den dokumentierten Rest von 3.144 Byte würden damit rechnerisch nur 904 beziehungsweise 344 Byte übrig bleiben, noch vor zusätzlichem DSP-Zustand, Alignment, Verwaltungsdaten oder neuen Stack-Kopien. Diese Rechnung zeigt die Empfindlichkeit des Entwurfs; sie beweist nicht, dass alle sechs Funktionen bereits passen.
 
 Der vorhandene Controller enthält active_config, pending.config und stage_req.config. Die Runtime hält außerdem lokale Requests während der Generierung. Eine große Beschreibung einfach in gm_config einzubauen vervielfacht deren Speicher und erhöht den Stackbedarf. Große neue Metadaten sollen deshalb über feste Slots mit klarer Eigentümerschaft und Revision transportiert werden. Der vorhandene Pattern-Undo von 2.080 Byte bleibt bestehen und ist nicht Teil der 544-Byte-Beispielbeschreibung. [Controller][controller] · [Runtime][runtime]
 
@@ -329,7 +332,7 @@ Alte Projekte müssen in der neuen Firmware mit neutralen Defaults weiterlaufen.
 
 BE05 hängt von der Parameterauflösung und den Schutzregeln ab, nicht grundsätzlich von SINE. MOVEMENT kann parallel vorbereitet werden, sobald die einbezogenen Beiträge feststehen. Die Nummerierung beschreibt eine sinnvolle Lieferfolge, keine unnötig starre Abhängigkeit.
 
-Die Umsetzung verwendet die bestehenden Host-, WASM-, Native- und Performance-Prüfungen. Neue Tests richten sich auf die konkreten Risiken: Zustandsbesitz, Lock-Isolation, unveränderte Legacy-Ausgabe, Endpunktgenauigkeit, Bias/DC, Integergrenzen, Typwechsel und Ressourcenänderungen. Host-Ergebnisse belegen keine auf Hardware gemessenen Audiofristen. [Projektvorgaben][agents]
+Die Umsetzung verwendet die bestehenden Host-, WASM-, Native- und Performance-Prüfungen. Seit dem Referenzstand gilt zusätzlich die aktualisierte Projektvorgabe: Jeder neue Hook in ui.c, ui_draw.c oder ui_input.c benötigt eine Definition in beiden Host-Harnesses `tests/ui_host.h` und `tests/sim_host.h`, sonst schlägt der Simulator-Build fehl. Das betrifft die neuen Seiten LOCKS, BRUTAL, TIMBRE und MORPH direkt und ist je Integrationsschritt mitzuliefern. Neue Tests richten sich auf die konkreten Risiken: Zustandsbesitz, Lock-Isolation, unveränderte Legacy-Ausgabe, Endpunktgenauigkeit, Bias/DC, Integergrenzen, Typwechsel und Ressourcenänderungen. Host-Ergebnisse belegen keine auf Hardware gemessenen Audiofristen. [Projektvorgaben][agents]
 
 **Abnahmeszenario:** Einen Blastbeat mit belegten Steps jenseits der später verkürzten Tracklänge vorbereiten; native Step- und Timingdaten aller Tracks vorab sichern. Rhythmus und Timing sperren; ausschließlich TIMBRE mutieren; am nativen END erscheint der neue Klangverlauf ohne Änderung eines nativen Steps oder Timingfelds. UNDO und REDO unmittelbar danach prüfen (Pattern und Rezeptidentität kohärent). Track wieder verlängern: die zuvor dormanten Noten einschließlich ihrer Attribute sind unverändert vorhanden. Nach einer weiteren Mutation einen manuellen Step-Edit durchführen: UNDO/REDO ist nicht mehr verfügbar und der Edit bleibt erhalten. MORPH bewegen, MOVE auf 0 und wieder 100 % stellen und einen Slotwechsel durchführen. Bei bereitgestelltem Performance-Export zusätzlich die folgenden gezielten Roundtrip-Prüfungen ausführen; ungültiges ON ohne zwei kompatible Endpunkte wird ohne Teiländerung abgelehnt. Pattern, wirksames Rezept, Statusanzeige und gespeicherte Automation müssen dabei konsistent bleiben.
 
