@@ -1885,9 +1885,9 @@ static uint32_t graph_signature(void)
         h = (h ^ (uint32_t)song.g[G_CRATE] * 23u ^ (uint32_t)song.g[G_CDEPTH] * 7919u) * 16777619u;
     if (pg->graph == GR_DLY || pg->graph == GR_REV)    /* the buses' globals (and the tempo: TIME in ms) */
         for (i = G_DTIME; i <= G_DMIX; i++)
-            h = (h ^ ((uint32_t)song.g[i] + (uint32_t)song.g[G_DMODE] * 7u + (uint32_t)song.g[G_RTYPE] * 11u +
-                      (uint32_t)song.g[G_RSIZE] * 13u + (uint32_t)song.g[G_RDAMP] * 17u + (uint32_t)song.g[G_BPM] * 19u)) *
-                16777619u;           /* (+ binds tighter than ^: written as it always evaluated) */
+            h = (h ^ (uint32_t)song.g[i] + (uint32_t)song.g[G_DMODE] * 7u + (uint32_t)song.g[G_RTYPE] * 11u +
+                 (uint32_t)song.g[G_RSIZE] * 13u + (uint32_t)song.g[G_RDAMP] * 17u + (uint32_t)song.g[G_BPM] * 19u) *
+                16777619u;
     if (pg->graph == GR_SLCR && t->p[P_SLCR])
         h ^= (sl[song.sel].idx + 1u) * 2654435761u;
     if (pg->graph == GR_SLOTS) {
@@ -1901,7 +1901,7 @@ static uint32_t graph_signature(void)
     }
     if (pg->graph == GR_STEPS || pg->graph == GR_GRID)
         h ^= steps_hash(t) + (song.playing ? view_idx(t) + 1u : 0u) * 31u;
-    h ^= (held_step() + 1u) * 977u;                    /* (every page: a held step's LOCK columns / marks are drawn on the others too) */
+        h ^= (held_step() + 1u) * 977u;
     if (pg->graph == GR_GRID)                         /* step record's cursor, the key sounding, KEYS (the roll's view
                                                        * follows from these: draw_graph) */
         h ^= (ui.srec ? ui.sr_cur + 1u : 0u) * 1543u +
