@@ -151,7 +151,7 @@ Backup and restore are not interchangeable with undo or KEEP. Preserve your pres
 
 ### MIDI and USB audio
 
-The inherited connection options include USB MIDI, TRS MIDI input where built/enabled, MIDI LEARN (up to 32 bindings), MIDI clock input/output and THRU. The non-BLE build supports stereo USB audio or 10-channel modes (master plus eight tracks). The USB names retain the upstream Hortator/Felucca update conventions; the GRIND package identity is **FM-1_984**, distinct from Hortator's FM-1_900. Do not infer package identity from a cached USB port name.
+The inherited connection options include USB MIDI, TRS MIDI input where built/enabled, MIDI LEARN (up to 32 bindings), MIDI clock input/output and THRU. The non-BLE build supports **2 CH** (stereo master), **10 CH MIX** (eight mono tracks on channels 1–8, stereo master on 9–10) and **10 CH FX** (the same eight tracks, with chorus, delay and reverb returns on channels 9–10 instead of the master). The USB names retain the upstream Hortator/Felucca update conventions; the GRIND package identity is **FM-1_984**, distinct from Hortator's FM-1_900. Do not infer package identity from a cached USB port name.
 
 Read [MIDI](docs/manual/10-midi.md) and [USB audio](docs/manual/11-usb-audio.md). The inherited experimental Bluetooth build offers BLE-MIDI, FM-Link and SMC-Mixer integration, with stereo USB audio only and lower audio headroom; it is not the qualified target of the current GRIND preview. Disconnected saved BLE devices can cause stutter. Bluetooth is off by default unless autostart was configured; see the [Bluetooth manual](docs/manual/12-bluetooth.md).
 
@@ -161,7 +161,7 @@ Color themes, metronome, knob acceleration, key backlight, speaker EQ, panel cal
 
 ## Web editor
 
-The local USB web editor exposes the device's capabilities via SysEx. Use a Web-MIDI-capable browser (Chrome or Edge recommended), grant SysEx permission and connect the device by USB.
+The USB web editor exposes the device's capabilities via SysEx. Use a Web-MIDI-capable browser (Chrome or Edge recommended), grant SysEx permission and connect the device by USB.
 
 | Tab | Capabilities |
 | --- | --- |
@@ -174,7 +174,7 @@ The local USB web editor exposes the device's capabilities via SysEx. Use a Web-
 
 The new panel-only VARY and LIVE controls and dedicated native style-preview page are not advertised as new editor controls. Older firmware without the GRIND capability keeps the existing tabs. Restores and sample uploads are stopped-only. A canceled sample upload can leave the slot empty; keep the source file. Backups cover saved data, so save edits first. Big transfers while clocking a DAW may introduce clock jitter. The editor yields to updates and does not use Bluetooth as an editor link.
 
-**Current GRIND site:** the preview workflow publishes the installer/package, not a hosted GRIND editor or simulator. Build the site from this repository for the matching editor. The original [Hortator editor](https://deadactive.github.io/hortator/webapp/editor/) and [Hortator manual](https://deadactive.github.io/hortator/manual/) are upstream references, not the current GRIND build. See [editor manual](docs/manual/14-web-editor.md) and [wire protocol](web/EDITOR_PROTOCOL.md).
+**Current GRIND site:** the preview workflow publishes the [GRIND USB editor](https://dafum.github.io/grind-machine/webapp/editor/) alongside the [preview installer](https://dafum.github.io/grind-machine/webapp/installer/) and firmware package, but not the simulator. Build the site locally only if you need an editor matching unreleased source changes. The original [Hortator editor](https://deadactive.github.io/hortator/webapp/editor/) and [Hortator manual](https://deadactive.github.io/hortator/manual/) are upstream references, not the current GRIND build. See [editor manual](docs/manual/14-web-editor.md) and [wire protocol](web/EDITOR_PROTOCOL.md).
 
 ## Song patterns
 
