@@ -287,6 +287,7 @@ function blankLcd() {                              // the no-reel / off baseline
   for (let b = 0; b < 14; b++) els.ctl[`btn:${b}`].classList.remove('lit');
   for (let n = 0; n < 27; n++) els.ctl[`key:${n}`].classList.remove('lit');
   paintedOwner = null;
+  document.documentElement.dataset.lcdOwner = '';
 }
 function paint(now) {
   if (!(bootPreview && bootPreview.tick(now))) reelTick(now);
@@ -297,6 +298,7 @@ function paint(now) {
   if (frame) {
     const { fb, leds, keyLeds } = frame;
     paintedOwner = frameOwner;
+    document.documentElement.dataset.lcdOwner = paintedOwner;      // 'boot' | 'reel' | 'live' (the smoke test reads it)
     frame = null;
     handBack = false;
     rgb565(fb, px);

@@ -73,18 +73,17 @@ try {
     off.on('pageerror', error => errors.push(error.message));
     await off.goto(`${base}/?boot=1`);
     await off.waitForFunction(() => document.documentElement.dataset.bootPreview === 'settled');   // the preview's load is over
-    const seen = new Set();                               // the reel keeps playing: a frozen preview scene would show one image
-    for (let i = 0; i < 20 && seen.size < 2; i++) {
-      const hash = await off.evaluate(() => {
-        const d = document.querySelector('canvas.lcd').getContext('2d').getImageData(0, 0, 240, 240).data;
-        let h = 2166136261, lit = 0;
-        for (let k = 0; k < d.length; k += 4) { h = Math.imul(h ^ (d[k] | d[k + 1] << 8 | d[k + 2] << 16), 16777619) >>> 0; lit |= d[k] | d[k + 1] | d[k + 2]; }
-        return lit ? h : 0;
-      });
-      if (hash) seen.add(hash);                           // a blank canvas before the reel paints is not a frame
-      await off.waitForTimeout(300);
+    const owners = new Set();                             // who painted the LCD: never the preview here, the reel at some point
+    for (let i = 0; i < 25 && !owners.has('reel'); i++) {
+      owners.add(await off.evaluate(() => document.documentElement.dataset.lcdOwner ?? ''));
+      await off.waitForTimeout(200);
     }
-    assert.ok(seen.size >= 2, '?boot=1 on a build without the preview must leave the moving demo reel on screen');
+    for (let i = 0; i < 5; i++) {                         // and it stays that way after the reel has started
+      owners.add(await off.evaluate(() => document.documentElement.dataset.lcdOwner ?? ''));
+      await off.waitForTimeout(100);
+    }
+    assert.ok(!owners.has('boot'), '?boot=1 on a build without the preview must never paint a preview frame');
+    assert.ok(owners.has('reel'), '?boot=1 on a build without the preview must leave the demo reel on screen');
     await off.close();
   }
   if (native) {

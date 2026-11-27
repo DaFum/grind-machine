@@ -67,6 +67,8 @@ static void gm_boot_ui_input(uint32_t pressed, uint32_t notes)
 static int gm_boot_ui_draw(uint32_t now_ms)
 {
     gm_boot_frame f;
+    if (gm_boot_ui.clock.state == GM_BOOT_DONE && !gm_boot_ui.has_pixels)
+        return 0;                                   /* finished and cleaned up: no per-frame eligibility checks */
     if (gm_boot_step(&gm_boot_ui.clock, now_ms, gm_boot_ui_blocked(), &f)) {
         if (!gm_boot_ui.previous_valid)
             gm_boot_draw_full(f);
