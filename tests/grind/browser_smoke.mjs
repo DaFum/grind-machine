@@ -123,6 +123,7 @@ try {
     await boot.close();
     const plain = await browser.newPage({ reducedMotion: 'reduce' });      // the ordinary URL is unchanged
     await plain.goto(base);
+    await plain.waitForFunction(() => document.querySelector('canvas.lcd').getContext('2d').getImageData(120, 124, 1, 1).data[3] === 255);   // the reel has painted
     assert.notDeepEqual((await lcdPixel(plain, 120, 124)).slice(0, 3), [188, 37, 45]);
     await plain.close();
   }

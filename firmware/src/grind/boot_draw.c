@@ -62,7 +62,7 @@ static void gm_boot_draw_changed(gm_boot_frame old, gm_boot_frame f)
     if (gm_boot_key(old) == gm_boot_key(f))
         return;
     if (old.phase != f.phase || old.impact != f.impact)
-        gm_boot_window(f, 20, 36, 201, 84);
+        gm_boot_window(f, 20, 36, 201, 88);               /* to y 124: abuts the lower window, no unrefreshed strip */
     if (old.phase != f.phase || old.revealed != f.revealed || old.cursor != f.cursor)
         gm_boot_window(f, 24, 124, 192, 70);
 }
