@@ -455,7 +455,8 @@ if (new URLSearchParams(location.search).get('boot') === '1') {   // opt-in scen
   bootPreview = createBootPreview(
     async () => Fm1Sim.create(await wasmBytes),                    // a fresh instance: never booted, no audio, no flash
     fb => { frame = { fb, leds: 0, keyLeds: 0 }; frameOwner = 'boot'; });
-  bootPreview.begin(still.matches).catch(() => { bootPreview = null; });   // a load failure leaves the normal reel
+  bootPreview.begin(still.matches).catch(() => { bootPreview = null; })     // a load failure leaves the normal reel
+    .finally(() => { document.documentElement.dataset.bootPreview = 'settled'; });   // (the smoke test waits for this)
   still.addEventListener?.('change', () => { if (still.matches) bootPreview?.reduce(); });
 }
 let arrived = false, heroQueued = false, lastFilter = '';

@@ -72,6 +72,7 @@ try {
     off.setDefaultTimeout(15_000);
     off.on('pageerror', error => errors.push(error.message));
     await off.goto(`${base}/?boot=1`);
+    await off.waitForFunction(() => document.documentElement.dataset.bootPreview === 'settled');   // the preview's load is over
     const seen = new Set();                               // the reel keeps playing: a frozen preview scene would show one image
     for (let i = 0; i < 20 && seen.size < 2; i++) {
       const [hash, rule] = await off.evaluate(() => {
@@ -95,6 +96,7 @@ try {
     boot.on('pageerror', error => errors.push(error.message));
     await boot.route('**/reel.bin.gz*', route => route.fulfill({ status: 404 }));   // no reel: black is the baseline
     await boot.goto(`${base}/?boot=1`);
+    await boot.waitForFunction(() => document.documentElement.dataset.bootPreview === 'settled');
     await boot.waitForFunction(() => {                    // reduced motion: READY directly (the red rule at y 124)
       const c = document.querySelector('canvas.lcd').getContext('2d').getImageData(120, 124, 1, 1).data;
       return c[0] > 150 && c[1] < 80 && c[3] === 255;
