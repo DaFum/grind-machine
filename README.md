@@ -2,6 +2,8 @@
 
 [![License: GPL-3.0-only](https://img.shields.io/badge/license-GPL--3.0--only-blue.svg)](LICENSE)
 
+[![GRIND Foundation](https://github.com/DaFum/grind-machine/actions/workflows/grind.yml/badge.svg)](https://github.com/DaFum/grind-machine/actions/workflows/grind.yml)
+
 **Drum-machine firmware for the M-VAVE FM-1.** Eight tracks of drums, a step sequencer, Grids, a pumping
 compressor, LFOs, resonators and live effects, all on the FM-1's own keys, knobs and screen. By DEADACTIVE, built
 on [Felucca](https://github.com/hugelton/Felucca) by Leo Kuroshita.
