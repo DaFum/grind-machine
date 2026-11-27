@@ -68,6 +68,15 @@ run_boot_native() {
     done
 }
 
+run_boot_existing() {
+    suite=$1
+    boot_source=$2
+    [ "$WASM" = 1 ] && { echo "$suite: native fixture is host-only"; return 0; }
+    "${PYTHON:-python3}" tools/build.py --gen-only > /dev/null
+    $CC -std=gnu11 -O1 -g -Wall -Wno-unused-function -Wno-int-to-pointer-cast         -Wno-macro-redefined -Wno-date-time         ${GRIND_SAN_FLAGS:+${GRIND_SAN_FLAGS} -fno-sanitize=shift-base}         -UNDEBUG -DGRIND_NATIVE=1 -Ibuild/gen -Ifirmware/src -Itests -I"$CORE"         "$boot_source" -o "$OUT/test_$suite" -lm
+    "$OUT/test_$suite"
+}
+
 run_grind_editor() {
     [ "$WASM" = 1 ] && return 0
     "${PYTHON:-python3}" tools/build.py --gen-only > /dev/null
@@ -91,6 +100,8 @@ case "${1:-all}" in
     boot_anim) run_test boot_anim "$CORE/boot_anim.c" ;;
     boot_draw) run_boot_native boot_draw ;;
     boot_ui) run_boot_native boot_ui ;;
+    boot_recovery) run_boot_existing boot_recovery tests/boot_test.c ;;
+    boot_restore) run_boot_existing boot_restore tests/editor_backup_test.c ;;
     hit_variation) run_test hit_variation ;;
     rng) run_rng ;;
     codec) run_test codec "$CORE/serialize.c" "$CORE/grid.c" ;;
@@ -119,6 +130,8 @@ case "${1:-all}" in
         run_native menu
         run_boot_native boot_draw
         run_boot_native boot_ui
+        run_boot_existing boot_recovery tests/boot_test.c
+        run_boot_existing boot_restore tests/editor_backup_test.c
         run_grind_editor
         ;;
     *) echo "unknown suite: $1" >&2; exit 2 ;;

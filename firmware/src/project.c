@@ -1056,10 +1056,6 @@ static int proj_load(uint32_t slot, int irq)
     ui_message(irq && ((lk_lost >> (slot & 3u)) & 1u)    ? "LOCKS LOST"
                : irq && ((var_lost >> (slot & 3u)) & 1u) ? "VARIATIONS LOST"
                                                          : "LOADED");   /* (power-on: the boot's note) */
-#if GRIND_NATIVE
-    if (!irq)
-        gm_boot_ui_defer_loaded();                      /* (the boot's LOADED does not cancel BLAST IGNITION) */
-#endif
     if (irq) {
         lk_lost &= (uint8_t)~(1u << (slot & 3u));
         var_lost &= (uint8_t)~(1u << (slot & 3u));
@@ -1787,6 +1783,9 @@ static void project_boot(void)
         return;
     if (proj_load(lastp.slot, 0)) {
         song.g[G_SLOT] = (int16_t)(lastp.slot + 1u);
+#if GRIND_NATIVE
+        gm_boot_ui_defer_loaded();                      /* the boot's LOADED note keeps BLAST IGNITION */
+#endif
         return;
     }
     ui.confirm = 5;
