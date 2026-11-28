@@ -75,13 +75,14 @@ def crc_cipher(buf, key=0xFFFFFFFF):   # jl_crc_cipher ("MengLi"), jl-uboot-tool
 
 
 def backend():
-    for path in (ctypes.util.find_library("usb-1.0"), "/opt/homebrew/lib/libusb-1.0.0.dylib",
-                 "/usr/local/lib/libusb-1.0.0.dylib"):
-        if path and (os.path.exists(path) or not path.startswith("/")):
+    # FM1_LIBUSB: the path of the libusb-1.0 library (on Windows its libusb-1.0.dll, see docs/RECOVERY_WINDOWS.md)
+    for path in (os.environ.get("FM1_LIBUSB"), ctypes.util.find_library("usb-1.0"), ctypes.util.find_library("libusb-1.0"),
+                 "/opt/homebrew/lib/libusb-1.0.0.dylib", "/usr/local/lib/libusb-1.0.0.dylib"):
+        if path and (os.path.exists(path) or not os.path.isabs(path) and not path.startswith("/")):
             be = usb.backend.libusb1.get_backend(find_library=lambda x, p=path: p)
             if be is not None:
                 return be
-    sys.exit("fm1_uboot: libusb not found (brew install libusb)")
+    sys.exit("fm1_uboot: libusb not found (macOS: brew install libusb; Windows: docs/RECOVERY_WINDOWS.md; or set FM1_LIBUSB)")
 
 
 class UBoot:
@@ -100,7 +101,7 @@ class UBoot:
         except NotImplementedError:
             pass
         except usb.core.USBError as e:
-            sys.exit(f"cannot take the device from macOS ({e}): run with sudo")
+            sys.exit(f"cannot take the device ({e}): on macOS run with sudo; on Windows the device needs the WinUSB driver (docs/RECOVERY_WINDOWS.md)")
         usb.util.claim_interface(self.dev, intf.bInterfaceNumber)
         out = lambda e: usb.util.endpoint_direction(e.bEndpointAddress) == usb.util.ENDPOINT_OUT
         self.ep_in = usb.util.find_descriptor(intf, custom_match=lambda e: not out(e))
