@@ -508,7 +508,7 @@ const sayK = (k, arg = "") => { lastKey = k; lastArg = arg; $("status").textCont
 const say = (txt) => { lastKey = null; $("status").textContent = txt; };
 const log = (t) => { $("log").textContent += t + "\n"; };
 let image = null;
-const meta = {"version": "drum-1.0.1+10ba8ea", "product": "FM-1_984", "pkg": "../../firmware/felucca-drum-1.0.1-10ba8ea.fwsc"};
+const meta = {"version": "drum-1.0.1+c9857e4", "product": "FM-1_984", "pkg": "../../firmware/felucca-drum-1.0.1-c9857e4.fwsc"};
 
 let writing = false;
 window.addEventListener("beforeunload", (e) => { if (writing) { e.preventDefault(); e.returnValue = t("leave"); } });
