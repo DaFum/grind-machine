@@ -235,10 +235,31 @@ static void mutation_after_undone_style(void)
     check("MUT after an undone STYLE change mutates on the restored grid", ok);
 }
 
+static void undo_restores_counter_and_saves_style(void)
+{
+    uint32_t ok = 1;
+    fresh();
+    gm_v[GU_MUT] = 3;
+    gm_ui_changed(GU_MUT);                                        /* the generator config now carries mutation 3 */
+    frames(3);
+    ok &= gmrt.ctl.active_config.mutation == 3u;
+    gm_v[GU_STYLE] = 4;
+    gm_ui_changed(GU_STYLE);                                      /* a style change resets the counter */
+    frames(3);
+    ok &= gm_v[GU_MUT] == 0;
+    gm_save_t = 0;
+    gm_v[GU_UNDO] = 1;
+    gm_ui_changed(GU_UNDO);
+    ok &= gm_v[GU_STYLE] == 0 && gm_v[GU_MUT] == 3;               /* the undone panel: style and counter of the live pattern */
+    ok &= gm_save_t != 0;                                         /* and the style that is live again gets written */
+    check("undoing a style change restores the panel's MUT counter and schedules the style save", ok);
+}
+
 int main(void)
 {
     mutation_follows_the_panel_style();
     mutation_after_undone_style();
+    undo_restores_counter_and_saves_style();
     mutation_works_straight_after_boot();
     navigation();
     locks_are_per_track();

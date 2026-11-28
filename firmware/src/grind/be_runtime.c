@@ -11,6 +11,7 @@ static be_recipe be_act[NTRK];        /* the recipes of the live pattern */
 static be_recipe be_undo[NTRK];       /* the recipes that belong to gmrt.undo (swapped with it) */
 static be_patch be_pend, be_stage;    /* the one request's scope (main loop writes both), and what its stage publishes */
 static gm_config be_undo_cfg;         /* the generator config that belongs to gmrt.undo (swapped with it) */
+static uint64_t be_events_seen;       /* the steps of the selected track the pending mutation already protects as events */
 static gm_config be_gen;              /* the style and controls the rhythm of the pending request is generated from */
 
 static void be_reset(void)
@@ -56,6 +57,7 @@ static gm_result be_submit_cfg(uint8_t track, uint8_t layers, const gm_config *g
         be_pend.request = r.revision;
         be_pend.base_revision = r.base_revision;
         be_pend.track = track;
+        be_events_seen = 0;                               /* (not known until the candidate is made: any new event drops it) */
         be_pend.layers = layers;
         if (gmrt.ctl.stage_state == GM_STAGE_FREE) {
             cue.q_gm = 0;                                 /* (the older stage is gone: nothing waits for a boundary) */
@@ -159,6 +161,7 @@ static gm_result be_build(const gm_request *r)
     len = gmrt.u.base.timing[tr].length;
     swing = gmrt.u.base.timing[tr].swing;
     events = be_event_mask(tr, len);
+    be_events_seen = events;
     cfg.grid.division = gmrt.u.base.timing[tr].division;  /* (the micro span follows the grid the track really has) */
     for (s = 0; s < len; s++) {
         int pairedstep = (int)((paired >> s) & 1u);       /* kick and snare share this hit: its presence is not ours to change */
@@ -245,11 +248,12 @@ static void be_drop_pending(uint8_t track, uint8_t layers)
         gm_runtime_stop();
 }
 
-/* A parameter lock or motion event was added to a track (IRQ off): the protection mask a queued mutation was made with
- * is out of date, so it would silence the new lock's step. */
-static void be_events_changed_isr(uint32_t track)
+/* A parameter lock or motion event was written to step s of a track (IRQ off). Only the FIRST event of a step changes
+ * what a queued mutation must protect: the candidate already keeps every step in be_events_seen whole, so a new value on
+ * such a step is safe, and a step that had no event would be silenced. */
+static void be_events_changed_isr(uint32_t track, uint32_t step)
 {
-    if (track < NTRK)
+    if (track < NTRK && !(track == be_pend.track && step < 64u && ((be_events_seen >> step) & 1u)))
         be_drop_pending((uint8_t)track, BE_ALL);
 }
 

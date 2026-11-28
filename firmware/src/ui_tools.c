@@ -114,7 +114,7 @@ static void tl_lock_in(uint32_t k, uint32_t s, uint32_t id, int32_t v)
     if (lk_put(&mo.b, lk_key(k, s, id), v, 1) < 0)
         tl.full = 1;                                /* the bank full: this one refused (LOCKS FULL) */
     else
-        gm_events_changed_isr(k);
+        gm_events_changed_isr(k, s);
     fm1_irq_on();
 }
 static void tl_clip_in(uint32_t k, uint32_t s, uint32_t j)   /* the clipboard's step j -> track k's step s */

@@ -307,6 +307,24 @@ static void queued_mutation_honours_new_events(void)
     check("a parameter lock added while a mutation waits for the END drops it (other tracks' locks do not)", ok);
 }
 
+static void editing_an_existing_event_keeps_the_mutation(void)
+{
+    uint32_t ok = 1;
+    fresh();
+    lock_set(SEL, 3, P_E1, 20);                                   /* step 3 already carries an event */
+    ok &= be_submit(SEL, BE_RHY | BE_TIME) == GM_OK;
+    song.playing = 1;
+    gm_runtime_poll();
+    ok &= gmrt.ctl.stage_state == GM_STAGE_READY && cue.q_gm == 1;
+    lock_set(SEL, 3, P_E1, 40);                                   /* a new value on a step the candidate keeps whole */
+    lock_set(SEL, 3, P_E2, 40);                                   /* another knob of the same step */
+    ok &= gmrt.ctl.stage_state == GM_STAGE_READY && cue.q_gm == 1;
+    lock_set(SEL, 5, P_E1, 20);                                   /* the first event of another step: the candidate is stale */
+    ok &= gmrt.ctl.stage_state != GM_STAGE_READY && cue.q_gm == 0;
+    song.playing = 0;
+    check("editing a step that already had an event keeps a queued mutation; the first event of another step drops it", ok);
+}
+
 static void undo_restores_the_generator_config(void)
 {
     gm_config c0, c1;
@@ -436,6 +454,7 @@ int main(void)
     recorded_hit_survives();
     queued_mutation_honours_new_locks();
     queued_mutation_honours_new_events();
+    editing_an_existing_event_keeps_the_mutation();
     undo_restores_the_generator_config();
     parameter_locks_protect_cells();
     paired_hits_stay_paired();
