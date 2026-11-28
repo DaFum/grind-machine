@@ -1,5 +1,7 @@
 # Recovering an FM-1 from a Mac (boot mode, no extra hardware)
 
+On Windows: [RECOVERY_WINDOWS.md](RECOVERY_WINDOWS.md) (German).
+
 Use this when the web installer and M-VAVE's updater no longer reach the FM-1. That happens when the firmware on
 it starts but its update entry does not answer. The guide puts M-VAVE's stock firmware back through the chip's
 built-in boot mode, from a Mac, with the usual USB cable. Then install Hortator again from the web installer.
