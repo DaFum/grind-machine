@@ -191,6 +191,62 @@ static void mutation_works_straight_after_boot(void)
     check("MUT works right after power-on, before any other GRIND request", ok);
 }
 
+/* a MUT whose build says nothing changed, or that the track does not fit, says so: both used to read GRIND ? */
+static void mutation_says_why_it_did_nothing(void)
+{
+    gm_config c;
+    gm_pattern p;
+    uint32_t ok = 1, before, commits;
+    ui_host_init();
+    memset(&gmrt, 0, sizeof gmrt);
+    drum_boot_init();                                             /* a restart on MATH: the kick has nothing the rhythm layer can move */
+    gm_v[GU_STYLE] = (int16_t)GM_ALGORITHM_COUNT;
+    assert(gm_ui_style_config((uint32_t)gm_v[GU_STYLE], &c) == GM_OK && gm_generate(&c, NULL, &p) == GM_OK &&
+           gm_native_publish(&p) == GM_OK);
+    song.sel = 0;
+    open_locks();
+    frames(2);
+    be_lock_set(0, BE_TIME, 1);
+    be_lock_set(0, BE_TMBR, 1);
+    before = track_sig(0);
+    commits = gm_runtime_commits();
+    turn(EN_K4, 1);
+    frames(6);
+    ok &= gm_runtime_commits() == commits && track_sig(0) == before && gm_last_result == GM_NO_CHANGE;   /* (it did nothing...) */
+    ok &= str_eq(ui.msg, "NO CHANGE");                            /* ...and says that, not GRIND ? */
+    check("MUT that changes nothing says NO CHANGE", ok);
+
+    ui_host_init();
+    memset(&gmrt, 0, sizeof gmrt);
+    drum_boot_init();
+    assert(gm_factory_pattern(1, &p) == GM_OK && gm_native_publish(&p) == GM_OK);
+    song.sel = 2;
+    trk[2].p[P_SRC] = 1;                                          /* this track plays another source: the build says UNSUPPORTED */
+    open_locks();
+    frames(2);
+    before = track_sig(2);
+    commits = gm_runtime_commits();
+    turn(EN_K4, 1);
+    frames(6);
+    ok = gm_runtime_commits() == commits && track_sig(2) == before && gm_last_result == GM_UNSUPPORTED;
+    ok &= str_eq(ui.msg, "TRACK DIFFERS");
+    check("MUT on a track the build cannot take says TRACK DIFFERS", ok);
+
+    ui_host_init();                                               /* a whole-pattern turn with a track on a triplet (16T: id 5) */
+    memset(&gmrt, 0, sizeof gmrt);
+    drum_boot_init();
+    assert(gm_factory_pattern(1, &p) == GM_OK && gm_native_publish(&p) == GM_OK);
+    trk[0].p[P_SDIV] = 5;                                         /* the portable core knows 1/8 1/16 1/32 only */
+    before = track_sig(0);
+    commits = gm_runtime_commits();
+    gm_v[GU_AGGR] = 90;
+    gm_ui_changed(GU_AGGR);
+    frames(6);
+    ok = gm_runtime_commits() == commits && track_sig(0) == before && gm_last_result == GM_UNSUPPORTED;
+    ok &= str_eq(ui.msg, "TRACK DIFFERS");
+    check("a whole-pattern change refused for a triplet track says TRACK DIFFERS, not GRIND ?", ok);
+}
+
 /* The recipe keys are not saved: after a restart the first RHY key is the one the saved mutation already used, which
  * generates what is in the project. The build tries a few more keys before it calls that no change. */
 static void first_mutation_after_a_restart_still_changes_something(void)
@@ -480,6 +536,7 @@ int main(void)
     commit_message_names_the_commit_not_the_next_stage();
     undo_to_an_unknown_config_keeps_the_panel();
     live_config_beats_an_uncommitted_panel();
+    mutation_says_why_it_did_nothing();
     first_mutation_after_a_restart_still_changes_something();
     mutation_works_straight_after_boot();
     navigation();
