@@ -40,8 +40,10 @@ static const char *const N_GUNDO[] = {"--", "UNDO"};
 static const char *const N_GFREE[] = {"--", "ALL"};
 static const char *const N_GOK[] = {"--", "OK"};
 static const char *const N_GCUT[] = {"--", "CUT"};
+static const char *const N_GLOCK[] = {"FREE", "LOCK"};   /* BRUTAL EVOLUTION: a layer of the selected track, free or locked */
+static const char *const N_GMUTA[] = {"--", "MUT"};
 
-enum { GU_STYLE, GU_AGGR, GU_DENS, GU_CHAOS, GU_HUMAN, GU_MUT, GU_WHEN, GU_KIT, GU_KEEP, GU_UNDO, GU_FREE, GU_BROWSE, GU_PVBANK, GU_OK, GU_VARY, GU_SINK, GU_SWELL, GU_CUT, GU_N };
+enum { GU_STYLE, GU_AGGR, GU_DENS, GU_CHAOS, GU_HUMAN, GU_MUT, GU_WHEN, GU_KIT, GU_KEEP, GU_UNDO, GU_FREE, GU_BROWSE, GU_PVBANK, GU_OK, GU_VARY, GU_SINK, GU_SWELL, GU_CUT, GU_LRHY, GU_LTIME, GU_LTMBR, GU_LMUT, GU_N };
 static const param_desc_t GP_GRIND[GU_N] = {
     [GU_STYLE] = PE("STYLE", N_GSTYLE, 0),
     [GU_AGGR] = PD("AGGR", F_PCT, 0, 100, 75),
@@ -62,8 +64,12 @@ static const param_desc_t GP_GRIND[GU_N] = {
     [GU_SWELL] = PD("SWELL", F_INT, 0, 100, 0),       /* B3: more of the mix into the delay and reverb; back to 0, as before */
     [GU_CUT] = PE("CUT", N_GCUT, 0),                  /* B3: a performance stop: the transport, a pending change and the voices */
     [GU_OK] = PE("APPLY", N_GOK, 0),                  /* an action: the browsed style becomes the committed one */
+    [GU_LRHY] = PE("RHY", N_GLOCK, 0),                /* LOCKS: the selected track's rhythm (hits, accents, ratchets, notes) is protected from MUT */
+    [GU_LTIME] = PE("TIME", N_GLOCK, 0),              /* its micro-timing */
+    [GU_LTMBR] = PE("TMBR", N_GLOCK, 0),              /* its timbre contour (not there yet: the lock is kept for when it is) */
+    [GU_LMUT] = PE("MUT", N_GMUTA, 0),                /* an action (right detent): mutate the free layers of the selected track only */
 };
-static int16_t gm_v[GU_N] = {0, 75, 65, 20, 25, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0};   /* = the descriptors' defaults: the factory voicing of style 1 */
+static int16_t gm_v[GU_N] = {0, 75, 65, 20, 25, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0};   /* = the descriptors' defaults: the factory voicing of style 1 */
 
 /* KIT: the eight tracks' sounds for the eight roles the generator writes (gm_role order: K S H R C X TH TL), from the
  * models the default kit already has. The cymbals share one model and the toms another, told apart by TUNE and
@@ -242,6 +248,26 @@ static void gm_ui_changed(uint32_t id)
         gm_vary = (uint8_t)gm_v[GU_VARY];
         return;
     }
+    if (id == GU_LRHY || id == GU_LTIME || id == GU_LTMBR) {   /* a layer lock of the selected track (the track is read once) */
+        be_lock_set((uint8_t)song.sel, id == GU_LRHY ? BE_RHY : id == GU_LTIME ? BE_TIME : BE_TMBR, gm_v[id]);
+        return;
+    }
+    if (id == GU_LMUT) {                               /* the right detent acts, the left one is nothing */
+        uint8_t track = (uint8_t)song.sel;
+        if (!gm_v[GU_LMUT])
+            return;
+        gm_v[GU_LMUT] = 0;
+        r = be_submit(track, BE_ALL);
+        if (r == GM_OK)
+            ui_message(song.playing ? "PENDING END" : "MUTATING");
+        else if (r == GM_NO_CHANGE)
+            ui_message("LOCKED");
+        else if (r == GM_UNSUPPORTED)
+            ui_message(chain.running ? "STOP THE SONG" : "TIMBRE SOON");
+        else
+            ui_message("GRIND ?");
+        return;
+    }
     if (id == GU_BROWSE || id == GU_PVBANK)
         return;                                        /* looking: nothing live changes, the frame makes the preview */
     if (id == GU_OK) {                                 /* APPLY: the browsed style, as a STYLE turn (its factory controls) */
@@ -346,6 +372,9 @@ static void gm_ui_frame(int browsing)                  /* browsing: the STYLE BR
     if (gm_save_t && !--gm_save_t)
         settings_save();
     gm_v[GU_KEEP] = (int16_t)gm_keep_count(song.sel);  /* (the selected track's: it follows the selection) */
+    gm_v[GU_LRHY] = (be_act[song.sel % NTRK].locks & BE_RHY) != 0;     /* (the LOCKS page shows the selected track's own locks) */
+    gm_v[GU_LTIME] = (be_act[song.sel % NTRK].locks & BE_TIME) != 0;
+    gm_v[GU_LTMBR] = (be_act[song.sel % NTRK].locks & BE_TMBR) != 0;
     gm_runtime_poll();
     if (browsing) {
         gm_pv_update();
@@ -357,7 +386,7 @@ static void gm_ui_frame(int browsing)                  /* browsing: the STYLE BR
     n = gm_runtime_commits();
     if (n != seen) {
         seen = n;
-        ui_message(gm_ui_style_name((uint32_t)gm_v[GU_STYLE]));   /* (the full name: the column has four letters) */
+        ui_message(gmrt.ctl.stage_req.kind == GM_REQUEST_BE_LAYER ? "MUTATED" : gm_ui_style_name((uint32_t)gm_v[GU_STYLE]));   /* (the full name: the column has four letters) */
         return;
     }
     st = gm_runtime_status();

@@ -93,6 +93,7 @@ case "${1:-all}" in
     ui) run_native ui ;;
     vary) run_native vary ;;
     be_runtime) run_native be_runtime ;;
+    be_ui) run_native be_ui ;;
     master_fx) run_native master_fx ;;
     persist) run_native persist ;;
     menu) run_native menu ;;
@@ -133,6 +134,7 @@ case "${1:-all}" in
         run_native ui
         run_native vary
         run_native be_runtime
+        run_native be_ui
         run_native master_fx
         run_native persist
         run_native menu

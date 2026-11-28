@@ -142,15 +142,36 @@ static void be_commit_hook(void)
 {
     memcpy(be_undo, be_act, sizeof be_undo);
     if (gmrt.ctl.stage_req.kind == GM_REQUEST_BE_LAYER && be_stage.request == gmrt.ctl.stage_req.revision &&
-        be_stage.track < NTRK)
+        be_stage.track < NTRK) {
+        uint8_t locks = be_act[be_stage.track].locks;     /* (a lock set while the candidate was made is the player's, not the patch's) */
         be_act[be_stage.track] = be_stage.next;
+        be_act[be_stage.track].locks = locks;
+    }
 }
 
 /* UNDO / REDO (IRQ off): the recipes swap with the bytes, so a second one undoes the first. */
 static void be_undo_hook(void)
 {
     be_recipe tmp[NTRK];
+    uint32_t k;
     memcpy(tmp, be_act, sizeof tmp);
     memcpy(be_act, be_undo, sizeof tmp);
     memcpy(be_undo, tmp, sizeof tmp);
+    for (k = 0; k < NTRK; k++) {                          /* the locks are the player's setting, not part of the pattern's history */
+        be_act[k].locks = tmp[k].locks;
+        be_undo[k].locks = tmp[k].locks;
+    }
+}
+
+/* A layer lock of one track (main loop). The IRQ is off: the commit hook rewrites the recipes at the boundary. */
+static void be_lock_set(uint8_t track, uint8_t bit, int on)
+{
+    if (track >= NTRK)
+        return;
+    fm1_irq_off();
+    if (on)
+        be_act[track].locks |= bit;
+    else
+        be_act[track].locks &= (uint8_t)~bit;
+    fm1_irq_on();
 }
