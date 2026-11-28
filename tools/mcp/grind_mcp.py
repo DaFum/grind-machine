@@ -34,6 +34,8 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[2]
 EXE = ROOT / "build" / "sim" / "host" / ("sim_cli.exe" if os.name == "nt" else "sim_cli")
 GEN = ROOT / "build" / "sim" / "gen"
+MODE = EXE.with_name("sim_cli.mode")                  # what the binary was built as: "grind" or "stock"
+MAX_FRAMES = 4_800_000                                # 100 s of audio: more is a mistake, not a request
 MAX_TEXT = 24000                      # characters a tool returns at most (the rest is said to be cut)
 
 BUTTONS = ["FX", "SCL", "ENV", "LFO", "EDIT", "GLO", "HOME", "SAVE", "ARP", "SEQ", "PLAY", "REC", "OCTDN", "OCTUP"]
@@ -72,6 +74,14 @@ class Sim:
         if r.returncode:
             raise RuntimeError("build failed:\n" + (r.stderr or r.stdout)[-3000:])
         cls.native = native
+        MODE.write_text("grind" if native else "stock", encoding="utf-8")
+
+    @classmethod
+    def built_native(cls):
+        try:
+            return {"grind": True, "stock": False}.get(MODE.read_text(encoding="utf-8").strip())
+        except OSError:
+            return None                                # unknown: a binary with no marker is rebuilt
 
     @classmethod
     def start(cls, native=None, rebuild=False):
@@ -79,8 +89,9 @@ class Sim:
         if cls.proc and cls.proc.poll() is None and not rebuild and want == cls.native:
             return
         cls.stop()
-        if rebuild or not EXE.exists() or want != cls.native:
+        if rebuild or not EXE.exists() or cls.built_native() != want:
             cls.build(want)
+        cls.native = want
         cls.proc = subprocess.Popen([str(EXE)], cwd=ROOT, stdin=subprocess.PIPE, stdout=subprocess.PIPE,
                                     stderr=subprocess.DEVNULL, text=True, bufsize=1)
 
@@ -137,6 +148,17 @@ def scale(w, h, pix, k):
     return w * k, h * k, b"".join(rows)
 
 
+def frames_arg(a, key, default=None):
+    """A frame count from a tool's arguments: 0 .. MAX_FRAMES, never negative (it would wrap in the C parser)."""
+    v = a.get(key, default)
+    if v is None:
+        raise ValueError(f"{key} is required")
+    v = int(v)
+    if v < 0 or v > MAX_FRAMES:
+        raise ValueError(f"{key} must be 0..{MAX_FRAMES} frames")
+    return v
+
+
 def need_ok(reply):
     if not reply.get("ok"):
         raise RuntimeError(reply.get("error", "failed"))
@@ -154,9 +176,10 @@ def t_sim_press(a):
     b = str(a["button"]).upper()
     if b not in BUTTONS:
         raise ValueError(f"button must be one of {BUTTONS}")
-    if a.get("hold"):
+    hold = frames_arg(a, "hold", 0)
+    if hold:
         need_ok(Sim.ask(f"btn {b} 1"))
-        need_ok(Sim.ask(f"run {int(a['hold'])}"))
+        need_ok(Sim.ask(f"run {hold}"))
         need_ok(Sim.ask(f"btn {b} 0"))
         need_ok(Sim.ask("run 2048"))
     else:
@@ -174,15 +197,16 @@ def t_sim_turn(a):
 
 def t_sim_key(a):
     k = int(a["key"])
+    hold = frames_arg(a, "hold_frames", 2048)
     need_ok(Sim.ask(f"key {k} 1"))
-    need_ok(Sim.ask(f"run {int(a.get('hold_frames', 2048))}"))
+    need_ok(Sim.ask(f"run {hold}"))
     need_ok(Sim.ask(f"key {k} 0"))
     need_ok(Sim.ask("run 2048"))
     return text(json.dumps(Sim.ask("state")))
 
 
 def t_sim_run(a):
-    need_ok(Sim.ask(f"run {max(0, int(a['frames']))}"))
+    need_ok(Sim.ask(f"run {frames_arg(a, 'frames')}"))
     return text(json.dumps(Sim.ask("state")))
 
 
@@ -193,7 +217,8 @@ def t_sim_state(a):
 
 
 def t_sim_audio(a):
-    return text(json.dumps(need_ok(Sim.ask(f"audio {max(1, int(a.get('frames', 4096)))}"))))
+    frames = frames_arg(a, "frames", 4096)
+    return text(json.dumps(need_ok(Sim.ask(f"audio {max(1, frames)}"))))
 
 
 def t_sim_screenshot(a):
@@ -284,8 +309,10 @@ def t_emu_fetch_package(a):
     tag = str(a["tag"])
     if not re.fullmatch(r"[A-Za-z0-9._-]+", tag):
         raise ValueError("tag has characters a release tag does not")
-    dest = ROOT / "build" / "emu"
+    dest = ROOT / "build" / "emu" / tag               # one directory a release: a later call cannot list an earlier one's files
     dest.mkdir(parents=True, exist_ok=True)
+    for old in list(dest.glob("*.fwsc")) + list(dest.glob("SHA256SUMS.txt")):
+        old.unlink()
     for pat in ("*.fwsc", "SHA256SUMS.txt"):
         r = subprocess.run(["gh", "release", "download", tag, "-R", a.get("repo", "DaFum/grind-machine"), "-p", pat, "--dir",
                             str(dest), "--clobber"], cwd=ROOT, capture_output=True, text=True)

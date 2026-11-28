@@ -107,6 +107,50 @@ def main():
     r, t = c.call("emu_fetch_package", tag="v1; rm -rf /")
     check("emu_fetch_package rejects a tag with odd characters", r["isError"] and "characters" in t)
 
+    # review findings: the build mode survives a restart, negative durations are refused, releases do not mix
+    c.close()
+    c = Client()
+    c.call("sim_reset", grind_native=False)
+    check("sim_reset with grind_native=false builds the stock path", json.loads(c.call("sim_state")[1])["grind"] is False)
+    c.close()
+    c = Client()                                      # (a new server: it must not reuse the stock binary as GRIND)
+    r, t = c.call("sim_reset")
+    check("a new server's default sim_reset is a GRIND build even after a stock build", json.loads(t)["grind"] is True)
+    r, t = c.call("sim_press", button="EDIT", hold=-5)
+    check("a negative hold is refused, not run as billions of frames", r["isError"] and "hold" in t)
+    r, t = c.call("sim_key", key=2, hold_frames=-1)
+    check("a negative key hold is refused", r["isError"] and "hold" in t)
+    r, t = c.call("sim_run", frames=-1)
+    check("a negative frame count is refused", r["isError"] and "frames" in t)
+    sys.path.insert(0, str(ROOT / "tools" / "mcp"))
+    import shutil
+    import grind_mcp
+    real_run = grind_mcp.subprocess.run
+
+    def fake_gh(cmd, **kw):
+        if cmd[0] != "gh":
+            return real_run(cmd, **kw)
+        tag, dest, pat = cmd[3], Path(cmd[cmd.index("--dir") + 1]), cmd[cmd.index("-p") + 1]
+        dest.mkdir(parents=True, exist_ok=True)
+        if pat == "*.fwsc":
+            (dest / f"{tag}.fwsc").write_bytes(tag.encode())
+        else:
+            import hashlib
+            (dest / "SHA256SUMS.txt").write_text(hashlib.sha256(tag.encode()).hexdigest() + f" *{tag}.fwsc\n")
+        return subprocess.CompletedProcess(cmd, 0, "", "")
+    grind_mcp.subprocess.run = fake_gh
+    try:
+        first = grind_mcp.t_emu_fetch_package({"tag": "relA"})[0]["text"]
+        second = grind_mcp.t_emu_fetch_package({"tag": "relB"})[0]["text"]
+        again = grind_mcp.t_emu_fetch_package({"tag": "relA"})[0]["text"]
+    finally:
+        grind_mcp.subprocess.run = real_run
+        shutil.rmtree(ROOT / "build" / "emu" / "relA", ignore_errors=True)
+        shutil.rmtree(ROOT / "build" / "emu" / "relB", ignore_errors=True)
+    check("emu_fetch_package: a second release does not list the first one's package",
+          "relB.fwsc" in second and "relA.fwsc" not in second and "matches SHA256SUMS" in second)
+    check("emu_fetch_package: the first release is still just its own", "relA.fwsc" in first and "relB.fwsc" not in again)
+
     # logs
     with tempfile.TemporaryDirectory() as d:
         j = Path(d) / "m-upgrade.jsonl"
