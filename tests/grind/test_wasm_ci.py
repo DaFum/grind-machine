@@ -30,7 +30,7 @@ class WasmCiTests(unittest.TestCase):
                     '    test -f "$2/index.html" || exit 1\n'
                     '    set -- "$1 --packaged"\n'
                     'fi\n'
-                    'printf "%s\\n" "$1" >> "$PWD/node-invocations"\n')
+                    'printf "%s GRIND_NATIVE=%s\\n" "$1" "${GRIND_NATIVE-unset}" >> "$PWD/node-invocations"\n')
             for name, script in (('docker', f'exit {core_exit}\n'), ('chromium', 'exit 0\n'), ('node', node)):
                 path = root / 'bin' / name
                 path.write_text('#!/bin/sh\n' + script, encoding='utf-8')
@@ -51,8 +51,12 @@ class WasmCiTests(unittest.TestCase):
         self.assertIn('PASS: browser-smoke-native1', lines, result.stdout)
         self.assertIn('PASS: browser-smoke-native1-packaged', lines, result.stdout)
         self.assertIn('PASS: browser-smoke-native0', lines, result.stdout)
-        self.assertEqual(invoked.count('tests/grind/browser_smoke.mjs'), 2)
-        self.assertEqual(invoked.count('tests/grind/browser_smoke.mjs --packaged'), 1)
+        smoke = [call for call in invoked if call.startswith('tests/grind/browser_smoke.mjs')]
+        self.assertEqual(sorted(smoke), [
+            'tests/grind/browser_smoke.mjs --packaged GRIND_NATIVE=1',
+            'tests/grind/browser_smoke.mjs GRIND_NATIVE=0',
+            'tests/grind/browser_smoke.mjs GRIND_NATIVE=1',
+        ])
 
     def test_failed_preview_blocks_browser(self):
         result, status, invoked = self.run_lane(0, 1)
