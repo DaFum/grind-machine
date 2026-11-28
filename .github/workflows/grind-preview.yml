@@ -8,6 +8,7 @@ name: GRIND MACHINE preview
 # Only the installer, the package and the licence files go on Pages: no simulator, editor or manual.
 
 on:
+  pull_request:   # TEMPORARY: dry-run test of the vendor cache on this PR; reverted before merge
   push:
     tags: ['grind-v*']
   workflow_dispatch:
