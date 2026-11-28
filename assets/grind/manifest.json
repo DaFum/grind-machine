@@ -788,7 +788,7 @@
       "kind": "tracked",
       "origin": "https://github.com/kagaimiq/jl-uboot-tool",
       "license": "GPL-3.0-only AND MIT",
-      "sha256": "510d932d09fefc9aed0a918218d00e9db653556ae2fcc46a316cdc199769d93a",
+      "sha256": "d29eecf0e653c07f4337ef9ad7e2ff48d862d379971e05d897225e94b13bde0d",
       "status": "cleared",
       "notices": [
         "LICENSE",
