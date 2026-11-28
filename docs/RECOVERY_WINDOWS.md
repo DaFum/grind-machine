@@ -28,10 +28,38 @@ Its status: according to its own README the GUI release is not confirmed on real
 command-line route ran on the developer's FM-1. I have not run the app or inspected its payload. Check the source of
 the EXE yourself before you start it.
 
-Its way into boot mode works **without running firmware**: switch the FM-1 off, hold **OCT−**, switch it on while
-holding, connect USB, release (the screen stays black). That helps when your firmware no longer starts at all. A
-device in boot mode shows up in Device Manager under "Disk drives". If Windows asks whether to format a disk, always
-click **Cancel**.
+Its README says the way into boot mode works **without running firmware**: switch the FM-1 off, hold **OCT−**, switch
+it on while holding, connect USB, release (the screen stays black). **This is disputed**: M-Flasher's README (below)
+says a unit with the stock bootloader and stock firmware cannot enter download mode from its keys. I have verified
+neither; treat the OCT− power-on route as unconfirmed on a unit running M-VAVE's own firmware. A device in boot mode
+shows up in Device Manager under "Disk drives". If Windows asks whether to format a disk, always click **Cancel**.
+
+## Another Windows way: M-Flasher
+
+[M-Flasher](https://github.com/jvitkauskas/m-flasher) (Windows, macOS, Linux; window and command line) backs up,
+restores and installs firmware on the FM-1 through the chip's USB download mode. That mode is built into the chip's ROM
+and works even when the firmware does not, **but the unit has to be in it first**: M-Flasher cannot start a unit whose
+firmware does not run. Per its README it saves a backup before it writes, checks that the package is for this model,
+writes only what changes and verifies every write. How the unit gets into download mode:
+
+- with the unit **running** (M-VAVE's firmware or Felucca), just connect it: M-Flasher finds it on USB MIDI and its
+  **DOWNLOAD MODE** button switches it over (this also works on stock firmware);
+- with Felucca, SLOOP or Snoop37 running: hold **OCT−** and **OCT+** for 5 s;
+- with its own **m-bootloader already installed**: hold **REC** while switching on. This is the key route that still
+  works when the firmware does not start;
+- a unit whose firmware is damaged often ends up in download mode by itself (per M-Flasher's usage doc), so connect
+  it and see whether M-Flasher finds it.
+
+**If the firmware does not start and the unit is not in download mode**, and it still has M-VAVE's stock bootloader
+(no m-bootloader), there is no key route: M-Flasher's usage doc says its keys cannot put such a unit into download
+mode, and that the USB_KEY dongle (a Raspberry Pi Pico) still reaches it. The FM-1 Transporter mentioned below is
+the same kind of hardware route. M-Flasher offers to install m-bootloader once per unit, which gives the unit a key
+route for next time.
+
+The apps are not signed, so Windows and Defender warn on the first start. Its README gives the licence as MIT, with
+some bundled files under their own licences (listed in its `data/NOTICE.md` and `assets/README.md`). I have not run it.
+The same goes for
+[Slipway](https://github.com/Discodave-Glitch/slipway), a Windows app with a rescue flow for a black-screen FM-1.
 
 The rest of this guide describes the route with the tool from this repository (libusb instead of a disk).
 
@@ -80,8 +108,9 @@ Use one of these:
   countdown appears; letting go cancels it. At 5 s the screen shows `UBOOT`.
 - **From the computer:** send the SysEx message `F0 22 24 35 7D F7` to the FM-1's MIDI port (works with M-VAVE's
   V15 too). A Windows program for that is MIDI-OX, for example; I have not tried it this way.
-- **Without running firmware:** switch the FM-1 off, hold **OCT−**, switch it on while holding, connect USB, then
-  release (as the SikkenWorks project describes it; I have not verified this myself).
+- **Without running firmware (unconfirmed):** switch the FM-1 off, hold **OCT−**, switch it on while holding,
+  connect USB, then release. The SikkenWorks project describes it; M-Flasher's README says a unit with the stock
+  bootloader and stock firmware cannot do this from its keys. I have verified neither.
 - **The firmware crashes right after start:** two crashes within 30 s of starting lead into boot mode by
   themselves (Felucca-based firmware).
 
