@@ -429,7 +429,9 @@ static void gm_ui_frame(int browsing)                  /* browsing: the STYLE BR
     st = gm_runtime_status();
     if (st != GM_OK) {
         gm_last_result = st;
-        ui_message(st == GM_STALE ? "NOT APPLIED" : st == GM_LOCK_CONFLICT ? "KEEP DOES NOT FIT" : "GRIND ?");
+        ui_message(st == GM_STALE ? "NOT APPLIED" : st == GM_LOCK_CONFLICT ? "KEEP DOES NOT FIT" :
+                   st == GM_NO_CHANGE ? "NO CHANGE" :
+                   st == GM_UNSUPPORTED ? "TRACK DIFFERS" : "GRIND ?");   /* (UNSUPPORTED: a track on another source, or a division the core does not know, 16T for one) */
         gm_runtime_ack_status();
     }
 }
