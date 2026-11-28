@@ -3,6 +3,9 @@
 #define GRIND_NATIVE 1
 #undef NDEBUG
 #include <assert.h>
+/* The window between "undo observed a valid snapshot" and "undo takes the guard": a test runs real code in it. */
+static void (*race_hook)(void);
+#define GM_UNDO_RACE_HOOK() do { if (race_hook) race_hook(); } while (0)
 #include "../drum_host.h"
 
 static int fails;
@@ -193,6 +196,65 @@ static void undo_restores(void)
     check("UNDO restores the bytes and the recipe together, REDO returns both", ok);
 }
 
+static void hook_edit(void) { gm_touch(); }               /* a native edit (what REC and every manual step write do) */
+static void hook_replace(void)                                 /* a real replacement commit by another request */
+{
+    assert(be_submit(SEL, BE_TIME) == GM_OK);
+    settle();
+}
+
+static void undo_is_atomic(void)
+{
+    snap_t a, b;
+    uint32_t ok = 1;
+    fresh();
+    take(&a);
+    ok &= be_submit(SEL, BE_RHY) == GM_OK;
+    settle();
+    take(&b);
+    ok &= !track_same(&a, SEL);
+    gm_touch();                                                   /* a manual edit after the publish: nothing to undo */
+    ok &= gm_runtime_undo() == 0 && track_same(&b, SEL);
+    check("an edit after a publish ends the undo: it refuses and changes nothing", ok);
+
+    fresh();
+    take(&a);
+    ok = be_submit(SEL, BE_RHY) == GM_OK;
+    settle();
+    take(&b);
+    race_hook = hook_edit;                                        /* the edit lands between the observation and the swap */
+    ok &= gm_runtime_undo() == 0;
+    race_hook = NULL;
+    ok &= track_same(&b, SEL) && others_same(&b, SEL);
+    check("an edit between the undo's check and its swap stops the swap (the recorded hit stands)", ok);
+
+    fresh();
+    take(&a);
+    ok = be_submit(SEL, BE_RHY) == GM_OK;
+    settle();
+    take(&b);
+    race_hook = hook_replace;                                     /* another publish replaces the snapshot meanwhile */
+    ok &= gm_runtime_undo() == 0;
+    race_hook = NULL;
+    {
+        snap_t c;
+        take(&c);
+        ok &= !track_same(&b, SEL);                               /* B's own commit is live, untouched by the old undo */
+        ok &= gm_runtime_undo() == 1 && track_same(&b, SEL);      /* a fresh undo restores B's predecessor */
+    }
+    check("a snapshot replaced between check and swap is refused; a fresh undo restores the replacement's predecessor", ok);
+
+    fresh();
+    take(&a);
+    ok = be_submit(SEL, BE_RHY) == GM_OK;
+    settle();
+    fm1_irq_off();
+    gm_keep_set(SEL, 4, 1);                                       /* a KEEP is not a pattern byte: undo stays */
+    fm1_irq_on();
+    ok &= gm_runtime_undo() == 1 && track_same(&a, SEL);
+    check("a KEEP change does not end the undo", ok);
+}
+
 int main(void)
 {
     rhythm_only();
@@ -200,6 +262,7 @@ int main(void)
     locks_and_keep();
     refusals_and_stale();
     undo_restores();
+    undo_is_atomic();
     printf(fails ? "test_be_runtime: %d FAILED\n" : "test_be_runtime: all passed\n", fails);
     return fails != 0;
 }

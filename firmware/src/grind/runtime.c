@@ -10,6 +10,10 @@
 #ifndef GRIND_RUNTIME_C
 #define GRIND_RUNTIME_C
 
+#ifndef GM_UNDO_RACE_HOOK
+#define GM_UNDO_RACE_HOOK() ((void)0)   /* the undo's check-to-swap window: a host test may put code here */
+#endif
+
 /* BRUTAL EVOLUTION hooks (be_runtime.c, included at the end of this file) */
 static gm_result gm_runtime_base(void);
 static void be_reset(void);
@@ -32,6 +36,7 @@ static struct {
     uint8_t lock[GM_LOCK_BYTES];                          /* KEEP: the cells the generator leaves as they are */
     gm_native_stage undo;                                 /* the pattern before the last GRIND publish (or, after an UNDO, the one it undid) */
     uint8_t undo_ok, undo_was_undo;
+    uint32_t undo_id;                                     /* which snapshot undo_ok speaks of: advanced by every publish, edit and reset */
     gm_pattern out;
     union {
         gm_pattern base;
@@ -54,12 +59,22 @@ static uint32_t gm_runtime_commits(void) { return gmrt.ctl.commits; }
 static gm_result gm_runtime_status(void) { return gmrt.ctl.status; }
 static void gm_runtime_ack_status(void) { gmrt.ctl.status = GM_OK; }   /* (shown: said once) */
 
-/* A native write of a step happened (or is about to): any candidate made from the old pattern is dropped. */
-static void gm_touch_isr(void)
+/* The live pattern is another one for the controller (a KEEP changed, an undo swapped): any candidate made from the old
+ * pattern is dropped. The undo snapshot is not touched: KEEP is not a pattern byte, and an undo keeps its own. */
+static void gm_stage_touch_isr(void)
 {
     gm_ctl_native_edit(&gmrt.ctl);
     if (gmrt.ctl.stage_state != GM_STAGE_READY && gmrt.ctl.stage_state != GM_STAGE_READING)
         cue.q_gm = 0;
+}
+/* A native write of a step happened (or is about to): a candidate made from the old pattern is dropped, and so is the
+ * undo, which would put back bytes the edit has replaced (a recorded hit, a manual step stand). One invalidation per
+ * edit, in the same guard as the edit. */
+static void gm_touch_isr(void)
+{
+    gmrt.undo_ok = 0;
+    gmrt.undo_id++;
+    gm_stage_touch_isr();
 }
 static void gm_touch(void)
 {
@@ -111,6 +126,7 @@ static int gm_runtime_commit(void)
     }
     be_commit_hook();
     gmrt.undo_ok = 1;
+    gmrt.undo_id++;                                       /* (a new snapshot: an undo that observed the old one must refuse) */
     gmrt.undo_was_undo = 0;
     gm_ctl_commit(&gmrt.ctl, rev);
     return 0;
@@ -121,13 +137,24 @@ static int gm_runtime_commit(void)
  * the swap: the audio ISR sees the old pattern or the new one, never a mix. */
 static int gm_runtime_undo(void)
 {
-    uint32_t k;
+    uint32_t k, wanted;
+    int observed;
     step_t tmp[NSTEP];
+    fm1_irq_off();
+    wanted = gmrt.undo_id;                            /* the snapshot this call is about to swap, observed in a guard */
+    observed = gmrt.undo_ok;
+    fm1_irq_on();
     if (chain.running)
         return -1;
-    if (!gmrt.undo_ok)
+    if (!observed)
         return 0;
+    GM_UNDO_RACE_HOOK();                              /* (host tests only: real code runs in this window) */
     fm1_irq_off();
+    if (chain.running || !gmrt.undo_ok || gmrt.undo_id != wanted) {   /* an edit or a publish took the snapshot meanwhile */
+        int rc = chain.running ? -1 : 0;
+        fm1_irq_on();
+        return rc;
+    }
     gm_runtime_stop();
     for (k = 0; k < NTRK; k++) {
         uint8_t t8;
@@ -141,7 +168,8 @@ static int gm_runtime_undo(void)
     }
     be_undo_hook();
     gmrt.undo_was_undo ^= 1u;
-    gm_touch_isr();                                   /* the live pattern is another one: a revision (the browser's cached preview, a stage) */
+    gmrt.undo_id++;                                   /* (its own snapshot stays valid for the REDO, as a new identity) */
+    gm_stage_touch_isr();                             /* the live pattern is another one: a revision (the browser's cached preview, a stage) */
     fm1_irq_on();
     return 1;
 }
@@ -167,7 +195,7 @@ static int gm_keep_bit(uint32_t t, uint32_t s, int on)
 static void gm_keep_set(uint32_t t, uint32_t s, int on)
 {
     if (gm_keep_bit(t, s, on))
-        gm_touch_isr();
+        gm_stage_touch_isr();
 }
 static uint32_t gm_keep_count(uint32_t t)
 {
@@ -183,7 +211,7 @@ static void gm_keep_track(uint32_t t, int on)             /* the steps the track
     for (s = 0; s < NSTEP; s++)
         changed |= gm_keep_bit(t, s, on && s < n);
     if (changed)
-        gm_touch_isr();
+        gm_stage_touch_isr();
 }
 static void gm_keep_free(void)
 {
@@ -191,7 +219,7 @@ static void gm_keep_free(void)
     for (i = 0; i < sizeof gmrt.lock; i++)
         if (gmrt.lock[i]) {
             memset(gmrt.lock, 0, sizeof gmrt.lock);
-            gm_touch_isr();
+            gm_stage_touch_isr();
             break;
         }
 }
