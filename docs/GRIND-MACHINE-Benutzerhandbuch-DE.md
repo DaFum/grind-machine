@@ -239,7 +239,7 @@ Stoppe die Wiedergabe. Verwende zwei belegte Slots, beispielsweise A und B. Drü
 
 ### Spieltiming und Reglerbewegungen aufnehmen
 
-Für eingespielte Noten wähle vor der Aufnahme unter **GLO → GLOBAL 3/7** mit **KNOB 4** das Raster **QUANT**. **1/16** legt jeden Treffer auf den nächsten Schritt. **OFF** erhält den zeitlichen Versatz als **NUDGE**. Spiele denselben Rhythmus mit beiden Einstellungen ein und vergleiche die versetzten Schritte auf **STEP**.
+Für eingespielte Noten wähle vor der Aufnahme unter **GLO → GLOBAL 3/7** mit **KNOB 4** das Raster **QUANT**. **1/16** legt jeden Treffer auf den nächstgelegenen Schritt: auf den laufenden, solange der Treffer vor dessen Mitte kommt, sonst auf den folgenden. **OFF** erhält den zeitlichen Versatz als **NUDGE**. Spiele denselben Rhythmus mit beiden Einstellungen ein und vergleiche die versetzten Schritte auf **STEP**.
 
 Für eine Reglerfahrt wähle auf **TRACKS** mit **ALGORITHM** eine hörbare Spur. Drücke **REC**, starte mit **PLAY** und drehe auf **LFO 1/4** den Regler **RATE** des ersten LFO. Stoppe nach einem Durchlauf. Öffne mit **SEQ** die Seite **MOTION 3/4**. Der Zähler **MOTION** zeigt aufgezeichnete Ereignisse. Mit **KNOB 1** schaltest du ihre Wiedergabe aus und wieder ein. Für einen hörbaren Vergleich weise dem LFO wie unten beschrieben ein Ziel zu.
 
