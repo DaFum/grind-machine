@@ -291,6 +291,22 @@ static void queued_mutation_honours_new_locks(void)
     check("locking a layer a queued mutation carries drops it; other locks leave it", ok);
 }
 
+static void queued_mutation_honours_new_events(void)
+{
+    uint32_t ok = 1;
+    fresh();
+    ok &= be_submit(SEL, BE_RHY | BE_TIME) == GM_OK;
+    song.playing = 1;
+    gm_runtime_poll();
+    ok &= gmrt.ctl.stage_state == GM_STAGE_READY && cue.q_gm == 1;
+    lock_set(SEL + 1u, 3, P_E1, 20);                              /* another track's new lock leaves it queued */
+    ok &= gmrt.ctl.stage_state == GM_STAGE_READY && cue.q_gm == 1;
+    lock_set(SEL, 3, P_E1, 20);                                   /* this track gains a locked step: the candidate is stale */
+    ok &= gmrt.ctl.stage_state != GM_STAGE_READY && cue.q_gm == 0;
+    song.playing = 0;
+    check("a parameter lock added while a mutation waits for the END drops it (other tracks' locks do not)", ok);
+}
+
 static void undo_restores_the_generator_config(void)
 {
     gm_config c0, c1;
@@ -419,6 +435,7 @@ int main(void)
 {
     recorded_hit_survives();
     queued_mutation_honours_new_locks();
+    queued_mutation_honours_new_events();
     undo_restores_the_generator_config();
     parameter_locks_protect_cells();
     paired_hits_stay_paired();

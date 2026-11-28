@@ -76,7 +76,7 @@ static gm_result be_submit(uint8_t track, uint8_t layers)
 /* The portable base of ONE track: its own playable steps, timing and KEEP cells. The other tracks are inert filler (a
  * valid empty timing, no cells, no KEEP): their grids and KEEPs are none of this mutation's business and must neither
  * block it nor be validated by it. A track that plays another source (GRIDS) is not mutated. */
-static gm_result be_base_track(unsigned tr, const gm_config *cfg, const gm_rule_masks *rules)
+static gm_result be_base_track(unsigned tr, const gm_config *cfg, const gm_rule_masks *rules)   /* rules: NULL when only TIME runs */
 {
     uint32_t t, s, len = (uint32_t)clamp(trk[tr].p[P_SLEN], 1, NSTEP);
     uint8_t mus;
@@ -88,7 +88,7 @@ static gm_result be_base_track(unsigned tr, const gm_config *cfg, const gm_rule_
         return res;
     memset(&gmrt.u.base, 0, sizeof gmrt.u.base);
     for (t = 0; t < NTRK; t++)
-        gmrt.u.base.timing[t] = (gm_timing){rules->length[t], cfg->grid.division, 0, 0};   /* (what the rules expect: valid, empty) */
+        gmrt.u.base.timing[t] = (gm_timing){rules ? rules->length[t] : 16u, cfg->grid.division, 0, 0};   /* (what the rules expect: valid, empty) */
     gmrt.u.base.timing[tr] = (gm_timing){(uint8_t)len, mus, (uint8_t)trk[tr].p[P_SSWING], 0};
     for (s = 0; s < len; s++) {
         gmrt.u.base.cell[tr][s] = gm_from_native(&trk[tr].step[s]);
@@ -137,10 +137,12 @@ static gm_result be_build(const gm_request *r)
         p.next.key[0] = be_key_next(p.next.key[0]);
     if (layers & BE_TIME)
         p.next.key[1] = be_key_next(p.next.key[1]);
-    res = gm_rules_build(&cfg, &rules);
-    if (res != GM_OK)
-        return res;
-    res = be_base_track(tr, &cfg, &rules);
+    if (layers & BE_RHY) {                                /* (TIME alone retimes this track's own grid: no rule pass) */
+        res = gm_rules_build(&cfg, &rules);
+        if (res != GM_OK)
+            return res;
+    }
+    res = be_base_track(tr, &cfg, (layers & BE_RHY) ? &rules : NULL);
     if (res != GM_OK)
         return res;
     if (layers & BE_RHY) {                                /* the rhythm: the generator, keyed by the RHY layer alone */
@@ -232,7 +234,25 @@ static void be_undo_hook(void)
     }
 }
 
-/* A layer lock of one track (main loop). The IRQ is off: the commit hook rewrites the recipes at the boundary. */
+/* A request that carries one of these layers of this track and is not live yet (pending, being made, or waiting for the
+ * END) must not publish any more: it is dropped, the player asks again. IRQ off. */
+static void be_drop_pending(uint8_t track, uint8_t layers)
+{
+    if (be_pend.track == track && (be_pend.layers & layers) &&
+        ((gmrt.ctl.has_pending && gmrt.ctl.pending.kind == GM_REQUEST_BE_LAYER && gmrt.ctl.pending.revision == be_pend.request) ||
+         ((gmrt.ctl.stage_state == GM_STAGE_WRITING || gmrt.ctl.stage_state == GM_STAGE_READY) &&
+          gmrt.ctl.stage_req.kind == GM_REQUEST_BE_LAYER && gmrt.ctl.stage_req.revision == be_pend.request)))
+        gm_runtime_stop();
+}
+
+/* A parameter lock or motion event was added to a track (IRQ off): the protection mask a queued mutation was made with
+ * is out of date, so it would silence the new lock's step. */
+static void be_events_changed_isr(uint32_t track)
+{
+    if (track < NTRK)
+        be_drop_pending((uint8_t)track, BE_ALL);
+}
+
 static void be_lock_set(uint8_t track, uint8_t bit, int on)
 {
     if (track >= NTRK)
@@ -240,13 +260,7 @@ static void be_lock_set(uint8_t track, uint8_t bit, int on)
     fm1_irq_off();
     if (on) {
         be_act[track].locks |= bit;
-        /* a mutation that carries this layer and is not live yet (pending, being made, or waiting for the END) must
-         * not publish it any more: it is dropped, the player asks again */
-        if (be_pend.track == track && (be_pend.layers & bit) &&
-            ((gmrt.ctl.has_pending && gmrt.ctl.pending.kind == GM_REQUEST_BE_LAYER && gmrt.ctl.pending.revision == be_pend.request) ||
-             ((gmrt.ctl.stage_state == GM_STAGE_WRITING || gmrt.ctl.stage_state == GM_STAGE_READY) &&
-              gmrt.ctl.stage_req.kind == GM_REQUEST_BE_LAYER && gmrt.ctl.stage_req.revision == be_pend.request)))
-            gm_runtime_stop();
+        be_drop_pending(track, bit);
     } else {
         be_act[track].locks &= (uint8_t)~bit;
     }

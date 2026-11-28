@@ -129,6 +129,29 @@ static void gm_settings_unpack(uint32_t v)
     }
     gm_v[GU_MUT] = 0;
 }
+/* UNDO / REDO swap the generator config with the pattern: when it changed (a STYLE turn was undone), the panel shows the
+ * style and controls of the pattern that is live again, so MUT and the next turn start from what the player hears. */
+static void gm_ui_follow_config(const gm_config *was)
+{
+    const gm_config *now = &gmrt.ctl.active_config;
+    gm_config f;
+    uint32_t i;
+    if (now->algorithm == was->algorithm && now->seed == was->seed && now->grid.num == was->grid.num &&
+        now->grid.den == was->grid.den && now->grid.division == was->grid.division && now->aggression == was->aggression &&
+        now->density == was->density && now->chaos == was->chaos && now->humanize == was->humanize)
+        return;
+    for (i = 0; i < GM_UI_STYLES; i++)
+        if (gm_ui_style_config(i, &f) == GM_OK && f.algorithm == now->algorithm && f.seed == now->seed &&
+            f.grid.num == now->grid.num && f.grid.den == now->grid.den && f.grid.division == now->grid.division) {
+            gm_v[GU_STYLE] = (int16_t)i;
+            gm_v[GU_AGGR] = now->aggression;
+            gm_v[GU_DENS] = now->density;
+            gm_v[GU_CHAOS] = now->chaos;
+            gm_v[GU_HUMAN] = now->humanize;
+            gm_v[GU_MUT] = 0;
+            return;
+        }
+}
 static gm_result gm_last_result;                     /* retained for the USB editor after the panel reports it */
 static uint8_t gm_save_t;                              /* frames until a changed style / WHEN is written (a turn through
                                                         * the list writes once, not at every detent) */
@@ -333,10 +356,14 @@ static void gm_ui_changed(uint32_t id)
     }
     if (id == GU_UNDO) {
         int u;
+        gm_config before;
         if (!gm_v[GU_UNDO])
             return;
         gm_v[GU_UNDO] = 0;
+        before = gmrt.ctl.active_config;
         u = gm_runtime_undo();
+        if (u > 0)
+            gm_ui_follow_config(&before);
         ui_message(u < 0 ? "STOP THE SONG" : !u ? "NOTHING TO UNDO" : gmrt.undo_was_undo ? "UNDONE" : "REDONE");
         return;
     }

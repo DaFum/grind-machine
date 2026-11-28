@@ -184,6 +184,7 @@ static void motion_add(uint32_t k, uint32_t s, uint32_t id, int32_t v)   /* repl
         return;
     }
     mo.b.on |= (uint8_t)(1u << k);
+    gm_events_changed_isr(k);                      /* (a queued BRUTAL mutation made without this event is dropped) */
 }
 static void motion_forget(void)                   /* new knobs (a project load, INIT ALL): nothing to put back */
 {
@@ -266,6 +267,8 @@ static void lock_set(uint32_t k, uint32_t s, uint32_t id, int32_t v)   /* track 
     fm1_irq_off();
     if (lk_put(&mo.b, lk_key(k, s, id), v, 1) < 0)
         mo.lfull = 1;                              /* the bank full: refused (LOCKS FULL) */
+    else
+        gm_events_changed_isr(k);
     fm1_irq_on();
 }
 static int lock_get(uint32_t k, uint32_t s, uint32_t id, int16_t *v)   /* 1: step s of track k locks id (*v) */

@@ -22,11 +22,14 @@ static void gm_context_isr(void);
 static void gm_runtime_stop(void);
 static int gm_runtime_commit(void);
 static void gm_runtime_cancel(void);
+static void be_events_changed_isr(uint32_t track);   /* a parameter lock / motion event was added (IRQ off) */
+#define gm_events_changed_isr(k) be_events_changed_isr(k)
 #define GM_TIMING_ID(id) ((id) == P_SLEN || (id) == P_SDIV || (id) == P_SSWING || (id) == P_SRC)
 #define gm_touch_param(id) do { if (GM_TIMING_ID(id)) gm_touch(); } while (0)          /* LEN DIV SWG SRC */
 #define gm_touch_param_isr(id) do { if (GM_TIMING_ID(id)) gm_touch_isr(); } while (0)
 #else
 #define gm_touch() ((void)0)
+#define gm_events_changed_isr(k) ((void)0)
 #define gm_touch_isr() ((void)0)
 #define gm_context_isr() ((void)0)
 #define gm_touch_param(id) ((void)0)

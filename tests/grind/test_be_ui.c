@@ -212,9 +212,33 @@ static void mutation_follows_the_panel_style(void)
     check("MUT after a reboot with a non-default STYLE follows the panel's style", ok);
 }
 
+static void mutation_after_undone_style(void)
+{
+    uint32_t ok = 1, before, commits;
+    fresh();
+    song.sel = 0;
+    gm_v[GU_STYLE] = (int16_t)GM_ALGORITHM_COUNT;                 /* MATH: 7/4 over 28 steps */
+    gm_ui_changed(GU_STYLE);
+    frames(3);
+    ok &= gm_runtime_commits() == 1u && trk[0].p[P_SLEN] == 28;
+    gm_v[GU_UNDO] = 1;
+    gm_ui_changed(GU_UNDO);                                       /* the style change undone: style 1's 16 steps are live again */
+    frames(2);
+    ok &= trk[0].p[P_SLEN] == 16 && gm_v[GU_STYLE] == 0;          /* the panel shows the style that is live */
+    open_locks();
+    frames(2);
+    before = track_sig(0);
+    commits = gm_runtime_commits();
+    turn(EN_K4, 1);
+    frames(4);
+    ok &= gm_runtime_commits() == commits + 1u && track_sig(0) != before && trk[0].p[P_SLEN] == 16;
+    check("MUT after an undone STYLE change mutates on the restored grid", ok);
+}
+
 int main(void)
 {
     mutation_follows_the_panel_style();
+    mutation_after_undone_style();
     mutation_works_straight_after_boot();
     navigation();
     locks_are_per_track();
