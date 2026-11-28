@@ -415,18 +415,21 @@ static void song_start_between_submit_and_commit(void)
 
 static void tempo_follows_the_panel(void)
 {
-    gm_config c;
-    uint32_t ok = 1;
+    gm_config c, live;
+    uint32_t ok = 1, commits;
     fresh();
     ok &= gm_runtime_submit(&gmrt.ctl.active_config, GM_BOUNDARY_PATTERN, GM_REQUEST_MORPH) == GM_OK;
     settle();
     ok &= be_cfg_known;
+    live = gmrt.ctl.active_config;
+    commits = gm_runtime_commits();
     c = gmrt.ctl.active_config;
     c.bpm = (uint16_t)(c.bpm == 240u ? 100u : 240u);              /* the tempo changed without a generation */
     ok &= be_submit_cfg(SEL, BE_TIME, &c) == GM_OK;
     ok &= gmrt.ctl.pending.config.bpm == c.bpm;                   /* the request scales the micro timing with it */
     settle();
-    ok &= gmrt.ctl.active_config.bpm != c.bpm;
+    ok &= gm_runtime_commits() == commits + 1u;                   /* the mutation went out (a dropped one would pass the rest) */
+    ok &= !memcmp(&gmrt.ctl.active_config, &live, sizeof live) && gmrt.ctl.active_config.bpm != c.bpm;   /* the live config is untouched */
     check("a layer mutation uses the panel's current tempo, the known config's style and controls", ok);
 }
 
@@ -537,6 +540,35 @@ static void a_queued_style_replaced_by_when_still_starts_over(void)
     check("a queued style replaced by a WHEN turn still starts the recipe history over", ok);
 }
 
+static void a_queued_style_with_only_another_grid_starts_over(void)
+{
+    be_recipe fresh_r;
+    gm_config b;
+    uint32_t ok = 1, advanced, tr;
+    fresh();
+    assert(gm_factory_config(9, &b) == GM_OK);                    /* TECH */
+    ok &= gm_runtime_submit(&b, GM_BOUNDARY_PATTERN, GM_REQUEST_STYLE) == GM_OK;
+    settle();
+    for (tr = 0; tr < NTRK && gm_runtime_commits() < 2u; tr++) {   /* the first track whose mutation changes something */
+        if (submit_live((uint8_t)tr, BE_RHY | BE_TIME) == GM_OK)
+            settle();
+        gm_runtime_ack_status();
+    }
+    tr--;
+    ok &= gm_runtime_commits() == 2u;
+    advanced = be_act[tr].key[0];
+    b.grid = (gm_grid){7, 4, 16, 1};                               /* the same algorithm and seed (TECH / MATH): only the grid differs */
+    ok &= gm_validate_config(&b) == GM_OK && b.grid.num != gmrt.ctl.active_config.grid.num &&
+          b.algorithm == gmrt.ctl.active_config.algorithm && b.seed == gmrt.ctl.active_config.seed;
+    be_recipe_init(&fresh_r, b.seed, (uint8_t)tr);
+    ok &= advanced != fresh_r.key[0];
+    ok &= gm_runtime_submit(&b, GM_BOUNDARY_PATTERN, GM_REQUEST_STYLE) == GM_OK;
+    ok &= gm_runtime_submit(&b, GM_BOUNDARY_PATTERN, GM_REQUEST_MORPH) == GM_OK;
+    settle();
+    ok &= be_act[tr].key[0] == fresh_r.key[0];
+    check("a queued style that differs only in its grid starts the recipe history over after a WHEN turn", ok);
+}
+
 static void chain_between_submit_and_commit(void)
 {
     uint32_t ok = 1, before, run, k, len, longest;
@@ -625,6 +657,7 @@ static void paired_hits_stay_paired(void)
     len = (uint32_t)trk[GM_KICK].p[P_SLEN];
     ok &= submit_live(GM_KICK, BE_RHY) == GM_OK;
     settle();
+    ok &= gm_runtime_commits() == 2u;                             /* the style and the mutation both went out (a refused one splits nothing) */
     for (s = 0; s < len; s++)
         if ((m.paired >> s) & 1u)
             ok &= !memcmp(&before.st[GM_KICK][s], &trk[GM_KICK].step[s], sizeof(step_t));   /* a pair is not split */
@@ -707,6 +740,7 @@ int main(void)
     events_before_the_build_and_past_len();
     a_new_style_starts_the_recipe_history();
     a_queued_style_replaced_by_when_still_starts_over();
+    a_queued_style_with_only_another_grid_starts_over();
     chain_between_submit_and_commit();
     mutation_publishes_at_the_pattern_end();
     undo_restores_the_generator_config();

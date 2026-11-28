@@ -237,7 +237,11 @@ static void be_commit_hook(void)
     be_cfg_known = 1;                                     /* a whole pattern was generated from stage_req.config */
     if (gmrt.ctl.stage_req.kind == GM_REQUEST_STYLE ||    /* a new style is a new pattern: the recipe history starts over (the locks stay) */
         gmrt.ctl.stage_req.config.algorithm != gmrt.ctl.active_config.algorithm ||    /* (also when a WHEN turn replaced the queued STYLE request with a MORPH of the new style) */
-        gmrt.ctl.stage_req.config.seed != gmrt.ctl.active_config.seed) {
+        gmrt.ctl.stage_req.config.seed != gmrt.ctl.active_config.seed ||
+        gmrt.ctl.stage_req.config.grid.num != gmrt.ctl.active_config.grid.num ||    /* (TECH and MATH share an algorithm and a seed: the grid tells them apart) */
+        gmrt.ctl.stage_req.config.grid.den != gmrt.ctl.active_config.grid.den ||
+        gmrt.ctl.stage_req.config.grid.division != gmrt.ctl.active_config.grid.division ||
+        gmrt.ctl.stage_req.config.grid.bars != gmrt.ctl.active_config.grid.bars) {
         uint32_t k;
         for (k = 0; k < NTRK; k++) {
             uint8_t locks = be_act[k].locks;
