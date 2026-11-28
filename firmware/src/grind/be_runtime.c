@@ -130,10 +130,12 @@ static uint64_t be_event_mask(unsigned tr, uint32_t len)
 /* Main loop, outside the IRQ: the native stage for the request. The base is the selected track as the core sees it
  * (gmrt.u.base); once it is no longer needed the same bytes become the native stage (gmrt.u.n). A native edit meanwhile
  * bumps the controller's revision, gm_ctl_finish then drops this candidate. */
+#define BE_RETRIES 4u   /* further keys tried when one generates what the track already has (the recipe keys are not saved: after a restart the first one repeats the saved mutation) */
 static gm_result be_build(const gm_request *r)
 {
     be_patch p = be_pend;
-    gm_config cfg = r->config;
+    gm_config cfg = r->config, cfg0;
+    uint32_t attempt;
     gm_cell merged[GM_STEPS];
     gm_rule_masks rules;
     uint64_t paired = 0, events;
@@ -158,36 +160,48 @@ static gm_result be_build(const gm_request *r)
     res = be_base_track(tr, &cfg, (layers & BE_RHY) ? &rules : NULL);
     if (res != GM_OK)
         return res;
-    if (layers & BE_RHY) {                                /* the rhythm: the generator, keyed by the RHY layer alone */
-        cfg.mutation = p.next.key[0];
-        res = gm_generate(&cfg, &gmrt.u.base, &gmrt.out);
-        if (res != GM_OK)
-            return res;
-        if (gmrt.out.timing[tr].length != gmrt.u.base.timing[tr].length ||
-            gmrt.out.timing[tr].division != gmrt.u.base.timing[tr].division)
-            return GM_UNSUPPORTED;                        /* the rules would change this track's grid: not converted */
-        if (tr == GM_KICK || tr == GM_SNARE)
-            paired = rules.paired;                        /* (kick and snare share these hits: this track alone must not split them) */
-    }
-    len = gmrt.u.base.timing[tr].length;
-    swing = gmrt.u.base.timing[tr].swing;
-    events = be_event_mask(tr, len);
-    be_events_seen = events;
-    be_events_known = 1;
-    cfg.grid.division = gmrt.u.base.timing[tr].division;  /* (the micro span follows the grid the track really has) */
-    for (s = 0; s < len; s++) {
-        int pairedstep = (int)((paired >> s) & 1u);       /* kick and snare share this hit: its presence is not ours to change */
-        unsigned lay = pairedstep ? (layers & ~BE_RHY) : layers;
-        gm_cell b = gmrt.u.base.cell[tr][s], c = (lay & BE_RHY) ? gmrt.out.cell[tr][s] : b;
-        int prot = gm_is_locked(&gmrt.u.base, tr, s) || ((events >> s) & 1u);
-        if ((lay & BE_TIME) && (c.flags & GM_ON))         /* (the timing of a hit the merged rhythm keeps; TIME still moves a paired one) */
-            c.micro = be_time_micro(&cfg, p.next.key[1], tr, s, swing);
-        else
-            c.micro = b.micro;                            /* (a step that does not play keeps its dormant timing) */
-        res = be_merge_cell(b, c, lay, prot, &merged[s]);
-        if (res != GM_OK)
-            return res;
-        changed |= memcmp(&b, &merged[s], sizeof b) != 0;
+    cfg0 = cfg;
+    for (attempt = 0;; attempt++) {                       /* (a key that changes nothing is followed by the next, a few times) */
+        cfg = cfg0;
+        paired = 0;
+        changed = 0;
+        if (layers & BE_RHY) {                                /* the rhythm: the generator, keyed by the RHY layer alone */
+            cfg.mutation = p.next.key[0];
+            res = gm_generate(&cfg, &gmrt.u.base, &gmrt.out);
+            if (res != GM_OK)
+                return res;
+            if (gmrt.out.timing[tr].length != gmrt.u.base.timing[tr].length ||
+                gmrt.out.timing[tr].division != gmrt.u.base.timing[tr].division)
+                return GM_UNSUPPORTED;                        /* the rules would change this track's grid: not converted */
+            if (tr == GM_KICK || tr == GM_SNARE)
+                paired = rules.paired;                        /* (kick and snare share these hits: this track alone must not split them) */
+        }
+        len = gmrt.u.base.timing[tr].length;
+        swing = gmrt.u.base.timing[tr].swing;
+        events = be_event_mask(tr, len);
+        be_events_seen = events;
+        be_events_known = 1;
+        cfg.grid.division = gmrt.u.base.timing[tr].division;  /* (the micro span follows the grid the track really has) */
+        for (s = 0; s < len; s++) {
+            int pairedstep = (int)((paired >> s) & 1u);       /* kick and snare share this hit: its presence is not ours to change */
+            unsigned lay = pairedstep ? (layers & ~BE_RHY) : layers;
+            gm_cell b = gmrt.u.base.cell[tr][s], c = (lay & BE_RHY) ? gmrt.out.cell[tr][s] : b;
+            int prot = gm_is_locked(&gmrt.u.base, tr, s) || ((events >> s) & 1u);
+            if ((lay & BE_TIME) && (c.flags & GM_ON))         /* (the timing of a hit the merged rhythm keeps; TIME still moves a paired one) */
+                c.micro = be_time_micro(&cfg, p.next.key[1], tr, s, swing);
+            else
+                c.micro = b.micro;                            /* (a step that does not play keeps its dormant timing) */
+            res = be_merge_cell(b, c, lay, prot, &merged[s]);
+            if (res != GM_OK)
+                return res;
+            changed |= memcmp(&b, &merged[s], sizeof b) != 0;
+        }
+        if (changed || attempt >= BE_RETRIES)
+            break;
+        if (layers & BE_RHY)
+            p.next.key[0] = be_key_next(p.next.key[0]);
+        if (layers & BE_TIME)
+            p.next.key[1] = be_key_next(p.next.key[1]);
     }
     if (!changed)
         return GM_NO_CHANGE;                              /* (a new key alone is not a change: it is not published) */
