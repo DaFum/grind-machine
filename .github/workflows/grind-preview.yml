@@ -38,11 +38,19 @@ jobs:
           fetch-depth: 0
           persist-credentials: false
       - name: Prepare Python (Pillow, as the native lane)
-        run: |
-          python3 -m venv .venv
-          .venv/bin/pip install Pillow==13.0.0
-          echo "$PWD/.venv/bin" >> "$GITHUB_PATH"
-      - name: Fetch the pinned toolchain and SDK
+        uses: ./.github/actions/pillow-venv
+      # The pinned vendor inputs share the native lane's cache entry (grind.yml). A restored copy is not trusted: the
+      # extraction step checks its digests (tools/grind/native_inputs.py). A miss downloads them as before.
+      - id: vendor_cache
+        name: Restore the pinned vendor inputs
+        uses: actions/cache/restore@0400d5f644dc74513175e3cd8d07132dd4860809 # v4.2.4
+        with:
+          path: |
+            ${{ runner.temp }}/jieli-linux-toolchains-20260730.1.tar.xz
+            ${{ runner.temp }}/grind-ac79-sdk
+          key: grind-vendor-v2-${{ hashFiles('tools/grind/native_inputs.py') }}
+      - name: Fetch the pinned toolchain and SDK (cache miss only)
+        if: steps.vendor_cache.outputs.cache-hit != 'true'
         run: |
           archive="$RUNNER_TEMP/jieli-linux-toolchains-20260730.1.tar.xz"
           sdk="$RUNNER_TEMP/grind-ac79-sdk"
@@ -50,6 +58,34 @@ jobs:
             https://jl-update.oss-cn-shenzhen.aliyuncs.com/jieli-linux-toolchains-20260730.1.tar.xz
           git clone --depth 1 --branch AC79NN_SDK_V1.2.1_2023-12-13 \
             https://gitee.com/Jieli-Tech/fw-AC79_AIoT_SDK.git "$sdk"
+      # Cache entries are immutable, so a download is saved only after it matches the pins.
+      - id: vendor_verify
+        name: Verify the downloaded vendor inputs before caching them
+        if: steps.vendor_cache.outputs.cache-hit != 'true'
+        continue-on-error: true
+        run: |
+          python3 - "$RUNNER_TEMP/jieli-linux-toolchains-20260730.1.tar.xz" "$RUNNER_TEMP/grind-ac79-sdk" <<'PY'
+          import sys
+          from pathlib import Path
+          sys.path.insert(0, 'tools/grind')
+          import native_inputs as n
+          archive, sdk = map(Path, sys.argv[1:])
+          if n.sha256(archive) != n.ARCHIVE_SHA:
+              raise SystemExit('JieLi archive digest mismatch')
+          n.verify_sdk(sdk)
+          PY
+      - name: Save the pinned vendor inputs
+        if: steps.vendor_verify.outcome == 'success'
+        uses: actions/cache/save@0400d5f644dc74513175e3cd8d07132dd4860809 # v4.2.4
+        with:
+          path: |
+            ${{ runner.temp }}/jieli-linux-toolchains-20260730.1.tar.xz
+            ${{ runner.temp }}/grind-ac79-sdk
+          key: grind-vendor-v2-${{ hashFiles('tools/grind/native_inputs.py') }}
+      - name: Verify and unpack the pinned toolchain and SDK
+        run: |
+          archive="$RUNNER_TEMP/jieli-linux-toolchains-20260730.1.tar.xz"
+          sdk="$RUNNER_TEMP/grind-ac79-sdk"
           tools="$RUNNER_TEMP/jieli-tools"
           mkdir -p "$tools"
           python3 tools/grind/native_inputs.py "$archive" "$sdk" "$tools"
