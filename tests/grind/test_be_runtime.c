@@ -514,6 +514,29 @@ static void a_new_style_starts_the_recipe_history(void)
     check("a STYLE commit starts the recipe history over (locks stay), a knob turn keeps it, UNDO restores it", ok);
 }
 
+static void a_queued_style_replaced_by_when_still_starts_over(void)
+{
+    be_recipe fresh_r;
+    gm_config b;
+    uint32_t ok = 1, advanced;
+    fresh();
+    ok &= gm_runtime_submit(&gmrt.ctl.active_config, GM_BOUNDARY_PATTERN, GM_REQUEST_MORPH) == GM_OK;
+    settle();
+    ok &= submit_live(SEL, BE_RHY) == GM_OK;
+    settle();
+    advanced = be_act[SEL].key[0];                                /* style A with an advanced recipe */
+    assert(gm_factory_config(5, &b) == GM_OK);
+    be_recipe_init(&fresh_r, b.seed, SEL);
+    ok &= advanced != fresh_r.key[0];
+    song.playing = 1;
+    ok &= gm_runtime_submit(&b, GM_BOUNDARY_PATTERN, GM_REQUEST_STYLE) == GM_OK;   /* style B waits for the END ... */
+    ok &= gm_runtime_submit(&b, GM_BOUNDARY_PATTERN, GM_REQUEST_MORPH) == GM_OK;   /* ... and a WHEN turn replaces it with a MORPH of B */
+    song.playing = 0;
+    settle();
+    ok &= gmrt.ctl.active_config.algorithm == b.algorithm && be_act[SEL].key[0] == fresh_r.key[0];   /* B starts over all the same */
+    check("a queued style replaced by a WHEN turn still starts the recipe history over", ok);
+}
+
 static void chain_between_submit_and_commit(void)
 {
     uint32_t ok = 1, before, run, k, len, longest;
@@ -683,6 +706,7 @@ int main(void)
     tempo_follows_the_panel();
     events_before_the_build_and_past_len();
     a_new_style_starts_the_recipe_history();
+    a_queued_style_replaced_by_when_still_starts_over();
     chain_between_submit_and_commit();
     mutation_publishes_at_the_pattern_end();
     undo_restores_the_generator_config();

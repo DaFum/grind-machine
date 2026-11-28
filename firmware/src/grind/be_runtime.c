@@ -235,7 +235,9 @@ static void be_commit_hook(void)
     }
     be_commit_was_be = 0;
     be_cfg_known = 1;                                     /* a whole pattern was generated from stage_req.config */
-    if (gmrt.ctl.stage_req.kind == GM_REQUEST_STYLE) {    /* a new style is a new pattern: the recipe history starts over (the locks stay) */
+    if (gmrt.ctl.stage_req.kind == GM_REQUEST_STYLE ||    /* a new style is a new pattern: the recipe history starts over (the locks stay) */
+        gmrt.ctl.stage_req.config.algorithm != gmrt.ctl.active_config.algorithm ||    /* (also when a WHEN turn replaced the queued STYLE request with a MORPH of the new style) */
+        gmrt.ctl.stage_req.config.seed != gmrt.ctl.active_config.seed) {
         uint32_t k;
         for (k = 0; k < NTRK; k++) {
             uint8_t locks = be_act[k].locks;
