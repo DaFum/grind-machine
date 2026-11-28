@@ -219,9 +219,6 @@ static void test_demos_and_flash(void)
 {
     uint32_t k, on = 0, i;
     sim_init(1);
-#if GRIND_NATIVE
-    check("demos: slot D can be loaded without a discard confirmation", !slot_dirty(3));
-#endif
     for (k = 0; k < 4u; k++)
         on += (uint32_t)project_used(k);
     check("demos: four used project slots", on == 4u);
@@ -260,17 +257,32 @@ static void test_demos_and_flash(void)
     power_cycle(image);
     run(FS);
     check("hostile flash: boots and runs", fb_lit() > 500u);
-#if GRIND_NATIVE
-    sim_init(1);
-    lastp.slot = 3;
-    settings_save();
-    memcpy(image, sim_flash(), SIM_FLASH_SIZE);
-    power_cycle(image);
-    check("demos: slot D contains the MATH role kit and its 28-step 7/4 pattern",
-          strcmp(chain.name, "MATH 7/4") == 0 && trk[2].model == DM_CHTRX && trk[0].p[P_SLEN] == 28 &&
-          trk[0].step[0].acc && trk[0].step[12].acc && trk[0].step[20].acc);
-#endif
 }
+
+#if GRIND_NATIVE
+static void test_math_demo(void)
+{
+    sim_init(1);
+    run(FS);
+    tap(B_SAVE);
+    sim_enc(EN_K1, 3);                              /* PROJECT: select D */
+    run(2048);
+    check("demos: selecting slot D leaves project A loaded",
+          song.g[G_SLOT] == 4 && proj_loaded() == 0);
+    sim_enc(EN_K3, 1);                              /* first LOAD detent arms */
+    run(2048);
+    check("demos: the first LOAD detent arms without changing the loaded slot", ui.arm == G_LOAD && proj_loaded() == 0);
+    sim_enc(EN_K3, 1);                              /* second LOAD detent loads */
+    run(2048);
+    check("demos: the panel loads slot D with the MATH role kit and its 28-step 7/4 pattern",
+          proj_loaded() == 3 && ui.confirm == 0 && strcmp(chain.name, "MATH 7/4") == 0 &&
+          trk[2].model == DM_CHTRX && trk[0].p[P_SLEN] == 28 &&
+          trk[0].step[0].acc && trk[0].step[12].acc && trk[0].step[20].acc);
+    tap(B_PLAY);
+    check("demos: PLAY starts slot D and produces audio", sim_playing() && proj_loaded() == 3 && peak(FS) > 0.01f);
+    tap(B_PLAY);
+}
+#endif
 
 /* the firmware's source list (felucca.c's #include "X.c") against the simulator's (sim_host.h): a source the
  * firmware gains and the simulator lacks fails here, by name. Run from the repo root (tools/build_sim.sh). */
@@ -423,6 +435,9 @@ static void test_boot_preview(void)                 /* BLAST IGNITION's scene th
 
 int main(void)
 {
+#if GRIND_NATIVE
+    test_math_demo();                                /* a fresh simulator, before the other tests reuse its state */
+#endif
     test_boot_and_input();
     test_boot_preview();
     test_audio();

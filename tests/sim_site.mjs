@@ -108,6 +108,7 @@ test('GRIND controls are gated by the simulator build and point to the current p
   assert.ok(guide, 'the GRIND guide starts hidden');
   for (const feature of ['GRIDS', 'MATH', 'VARY', 'SINK', 'SWELL', 'CUT', 'APPLY']) assert.match(guide, new RegExp(`\\b${feature}\\b`));
   assert.match(guide, /DaFum\/grind-machine\/blob\/main\/docs\/grind\/live-pages\.md/);
+  assert.match(guide, /href="\?boot=1#play" target="_blank" rel="noopener"/);
   assert.match(LANDING, /<span id="sim-build">/);
 });
 

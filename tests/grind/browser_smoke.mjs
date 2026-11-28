@@ -53,6 +53,9 @@ try {
   assert.equal(await page.title(), 'GRIND MACHINE | FM-1 Web Simulator');
   await page.waitForFunction(label => document.querySelector('#sim-build').textContent === label, buildLabel);
   assert.equal(await page.getByRole('heading', { name: 'Generate a GRIND pattern' }).isVisible(), native);
+  const installer = await page.request.get(`${base}/webapp/installer/index.html`);
+  assert.ok(installer.ok(), 'the preview includes the standalone installer');
+  assert.match(await installer.text(), /href="https:\/\/dafum\.github\.io\/grind-machine\/webapp\/editor\/"/);
   const power = page.getByRole('switch', { name: 'Power' });
   await power.click();
   await page.locator('#power-note').waitFor({ state: 'hidden' });
@@ -108,11 +111,18 @@ try {
     await off.close();
   }
   if (native) {
-    const boot = await browser.newPage({ reducedMotion: 'reduce' });
+    // No reel in the popup, so Escape should restore a black screen.
+    await page.context().route('**/reel.bin.gz*', route => route.fulfill({ status: 404 }));
+    const originalUrl = page.url();
+    const [boot] = await Promise.all([
+      page.waitForEvent('popup'),
+      page.getByRole('link', { name: /Preview BLAST IGNITION/ }).click(),
+    ]);
     boot.setDefaultTimeout(15_000);
     boot.on('pageerror', error => errors.push(error.message));
-    await boot.route('**/reel.bin.gz*', route => route.fulfill({ status: 404 }));   // no reel: black is the baseline
-    await boot.goto(`${base}/?boot=1`);
+    await boot.waitForURL(`${base}/?boot=1#play`);
+    assert.equal(page.url(), originalUrl);
+    assert.equal(await power.getAttribute('aria-checked'), 'true', 'the original simulator stays powered on');
     await boot.waitForFunction(() => document.documentElement.dataset.bootPreview === 'settled');
     await boot.waitForFunction(() => {                    // reduced motion: READY directly (the red rule at y 124)
       const c = document.querySelector('canvas.lcd').getContext('2d').getImageData(120, 124, 1, 1).data;

@@ -175,7 +175,9 @@ from pathlib import Path
 web, out, version = Path(sys.argv[1]), Path(sys.argv[2]), sys.argv[3]
 sys.path.insert(0, str(web))
 from make_site import LIB, strip_module
-html = (web / "index_pkg.html").read_text(encoding="utf-8")
+html = (web / "index_pkg.html").read_text(encoding="utf-8").replace(
+    'href="../editor/"', 'href="https://dafum.github.io/grind-machine/webapp/editor/"'
+)
 lib = "\n".join(strip_module((web / f).read_text(encoding="utf-8")) for f in LIB)
 meta = json.dumps({"version": version + " (preview)", "product": "FM-1_984", "pkg": "../../firmware/preview-has-no-package.fwsc"})
 out.write_text(html.replace("/*LIB*/", lib).replace("/*META*/", meta), encoding="utf-8")
