@@ -929,6 +929,19 @@ static void t_grind(void)
     check("GRIND KEEP invalidates the staged pattern", rc_is(grind_set(0, ED_GRIND_KEEP_STEP, 20, 1, 78), ED_OK, 0) &&
           !cue.q_gm && gm_keep_get(0, 20) && gm_runtime_status() == GM_STALE);
     check("GRIND boundary cannot publish the stale pattern", gm_runtime_commit() == CUE_E_SAME && trk[0].p[P_SLEN] == 32);
+    song.playing = 0;
+    ed_reset();
+    gm_runtime_reset();
+    grind_set(0, ED_GRIND_KNOB, GU_STYLE, 3, 90);
+    gm_ui_frame(0);
+    grind_set(0, ED_GRIND_KNOB, GU_STYLE, 6, 91);
+    gm_ui_frame(0);                                               /* two styles committed: the undo has style 3's pattern */
+    song.playing = 1;
+    grind_set(0, ED_GRIND_KNOB, GU_STYLE, 5, 92);                 /* a third turn that waits for the END and never plays */
+    gm_save_t = 0;
+    check("USB GRIND UNDO puts the panel back on the style of the pattern that is live again",
+          gm_v[GU_STYLE] == 5 && rc_is(grind_set(0, ED_GRIND_UNDO, 0, 0, 93), ED_OK, 0) && gm_v[GU_STYLE] == 3 && gm_save_t != 0);
+    song.playing = 0;
 
 }
 #else

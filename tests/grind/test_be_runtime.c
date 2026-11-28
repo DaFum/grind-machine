@@ -516,21 +516,34 @@ static void a_new_style_starts_the_recipe_history(void)
 
 static void chain_between_submit_and_commit(void)
 {
-    uint32_t ok = 1, before;
-    fresh();
-    before = gm_runtime_commits();
-    ok &= submit_live(SEL, BE_TIME) == GM_OK;
-    chain.running = 1;                                            /* a chain starts before the main loop made the candidate (it plays) */
-    song.playing = 1;
-    gm_runtime_poll();
-    cue.now = 0;
-    trk[SEL].seq_pos = 0;
-    trk[SEL].seq_idx = (uint32_t)trk[SEL].p[P_SLEN] - 1u;        /* the end of a pattern */
-    cue_tick(64, 1u << 20, 0);
-    ok &= gm_runtime_commits() == before;                         /* nothing is published under a running chain */
-    chain.running = 0;
-    song.playing = 0;
-    check("a chain that starts between submit and commit publishes nothing", ok);
+    uint32_t ok = 1, before, run, k, len, longest;
+    for (run = 0; run < 2; run++) {                               /* run 0: no chain (the control: the END publishes); run 1: a chain */
+        fresh();
+        len = 0;
+        longest = 0;
+        before = gm_runtime_commits();
+        ok &= submit_live(SEL, BE_TIME) == GM_OK;
+        chain.running = (int)run;                                 /* a chain starts before the main loop made the candidate (it plays) */
+        song.playing = 1;
+        gm_runtime_poll();
+        for (k = 0; k < NTRK; k++) {
+            trk[k].seq_pos = 0;
+            trk[k].seq_idx = 0;
+            trk[k].seq_rem = 0;
+            trk[k].seq_cnt = 0;
+            if ((uint32_t)trk[k].p[P_SLEN] > len) {
+                len = (uint32_t)trk[k].p[P_SLEN];
+                longest = k;
+            }
+        }
+        trk[longest].seq_idx = len - 1u;                          /* the last step of the longest pattern: the END */
+        cue_tick(64, 1u << 20, 0);
+        ok &= run ? gm_runtime_commits() == before                /* nothing is published under a running chain */
+                  : gm_runtime_commits() == before + 1u;          /* ... while without one the same END does publish */
+        chain.running = 0;
+        song.playing = 0;
+    }
+    check("a chain that starts between submit and commit publishes nothing (the same END publishes without one)", ok);
 }
 
 static void undo_restores_the_generator_config(void)

@@ -280,6 +280,21 @@ static void editor_undo_puts_a_cancelled_style_back(void)
     check("UNDO puts a style turn that never played back on the panel (shared by the panel and the USB editor)", ok);
 }
 
+static void mutation_clears_a_stale_result(void)
+{
+    uint32_t ok = 1, commits;
+    fresh();
+    song.sel = 0;
+    open_locks();
+    frames(2);
+    gm_last_result = GM_STALE;                                    /* an earlier request was dropped: the USB editor still says NOT APPLIED */
+    commits = gm_runtime_commits();
+    turn(EN_K4, 1);
+    frames(4);
+    ok &= gm_runtime_commits() == commits + 1u && gm_last_result == GM_OK;
+    check("a MUT that goes out clears a stale NOT APPLIED for the USB editor", ok);
+}
+
 static void undo_to_an_unknown_config_keeps_the_panel(void)
 {
     gm_pattern p;
@@ -356,6 +371,7 @@ int main(void)
     undo_restores_counter_and_saves_style();
     undo_of_a_mutation_counter_alone();
     editor_undo_puts_a_cancelled_style_back();
+    mutation_clears_a_stale_result();
     undo_to_an_unknown_config_keeps_the_panel();
     live_config_beats_an_uncommitted_panel();
     mutation_works_straight_after_boot();
