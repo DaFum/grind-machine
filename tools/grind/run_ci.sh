@@ -244,6 +244,26 @@ case $lane in
                 report BLOCKED "browser smoke (GRIND_NATIVE=$native) requires successful WASM preview build"
             elif [[ -x $browser && -f build/grind-browser/node_modules/playwright-core/index.mjs ]]; then
                 check "browser-smoke-native$native" env GRIND_NATIVE=$native GRIND_CHROMIUM="$browser" node tests/grind/browser_smoke.mjs
+                if (( native == 1 )); then
+                    check browser-smoke-native1-packaged env GRIND_NATIVE=1 GRIND_CHROMIUM="$browser" python3 - <<'PY'
+from pathlib import Path
+import subprocess
+import sys
+import tempfile
+
+sys.path[:0] = ["tools", "web"]
+from fm1pkg_make import ufw
+import make_site
+
+with tempfile.TemporaryDirectory(prefix="grind-packaged-smoke-") as tmp:
+    root = Path(tmp)
+    package = root / "test-only.fwsc"
+    package.write_bytes(ufw(b"FELUCCA-LOADER-1 (test fixture, not firmware)", b"test fixture", "FM-1_984"))
+    site = root / "site"
+    make_site.main(package, "browser-test", site)
+    subprocess.run(["node", "tests/grind/browser_smoke.mjs", str(site)], check=True)
+PY
+                fi
             else
                 report BLOCKED "browser smoke (GRIND_NATIVE=$native) requires Chromium and Playwright Core"
             fi

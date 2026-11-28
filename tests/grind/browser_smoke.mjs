@@ -6,7 +6,8 @@ import { createServer } from 'node:http';
 import { extname, resolve, sep } from 'node:path';
 
 const { chromium } = await import('../../build/grind-browser/node_modules/playwright-core/index.mjs');
-const preview = resolve('build/sim/preview');
+const packagedPreview = process.argv[2];
+const preview = resolve(packagedPreview ?? 'build/sim/preview');
 const web = resolve('web');
 const types = {
   '.css': 'text/css', '.html': 'text/html', '.js': 'text/javascript',
@@ -59,6 +60,7 @@ try {
   const installerHtml = await installer.text();
   const editorHref = installerHtml.match(/<a href="([^"]+)">Open the USB web editor<\/a>/)?.[1];
   const standalone = installerHtml.includes('preview-has-no-package.fwsc');
+  if (packagedPreview) assert.ok(!standalone, 'the supplied site must include a bundled editor');
   const publishedEditor = 'https://dafum.github.io/grind-machine/webapp/editor/';
   const landingHref = standalone ? publishedEditor : 'webapp/editor/';
   const navEditor = page.locator('.hero-nav').getByRole('link', { name: 'Editor', exact: true });
