@@ -697,7 +697,7 @@ static void ed_grind_cmd(uint32_t cmd, const uint8_t *a, uint32_t n)
         fm1_irq_on();
         break;
     case ED_GRIND_UNDO:
-        if (gm_runtime_undo() != 1) {
+        if (gm_ui_undo() != 1) {
             ed_fail(cmd, ED_E_REFUSED, ED_D_NONE, "NOTHING TO UNDO");
             return;
         }

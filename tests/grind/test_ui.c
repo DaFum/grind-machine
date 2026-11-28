@@ -45,7 +45,7 @@ static int grind_page(void)                         /* 0 .. 3 on a GRIND page, e
 {
     if (cur_page()->scope != SC_GRIND)
         return -1;
-    return cur_page()->id[0] == GU_HUMAN ? 1 : cur_page()->id[0] == GU_KEEP ? 2 : cur_page()->id[0] == GU_BROWSE ? 3 : cur_page()->id[0] == GU_SINK ? 4 : 0;
+    return cur_page()->id[0] == GU_HUMAN ? 1 : cur_page()->id[0] == GU_KEEP ? 2 : cur_page()->id[0] == GU_BROWSE ? 3 : cur_page()->id[0] == GU_SINK ? 4 : cur_page()->id[0] == GU_LRHY ? 5 : 0;
 }
 static void open_grind(uint32_t page)               /* ARP, then ARP again until the GRIND page `page` (0 .. 3) shows */
 {

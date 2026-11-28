@@ -666,6 +666,9 @@ static void drum_boot_init(void)
     usb10 = (uint8_t)(usbaud != UA_2CH && !safe_start);   /* MENU > USB AUDIO (usb_start follows; SAFE START: 2 CH) */
     usb_fxpair = (uint8_t)(usbaud == UA_10FX);
 #endif
+#if GRIND_NATIVE
+    gm_runtime_reset();                                /* the GRIND controller starts from style 1's config, as its recipes' keys do */
+#endif
     drum_tracks_init();
     home_tracks();                                     /* HOME's TRACKS mode (spec §3) */
     ui.force = 1;

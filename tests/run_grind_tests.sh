@@ -92,11 +92,15 @@ case "${1:-all}" in
     cue) run_native cue ;;
     ui) run_native ui ;;
     vary) run_native vary ;;
+    be_runtime) run_native be_runtime ;;
+    be_ui) run_native be_ui ;;
     master_fx) run_native master_fx ;;
     persist) run_native persist ;;
     menu) run_native menu ;;
     controller) run_test controller "$CORE/controller.c" "$CORE/grid.c" "$CORE/rules.c" "$CORE/core.c" "$CORE/locks.c" \
         "$CORE/rng.c" "$CORE/serialize.c" ;;
+    be_layers) run_test be_layers "$CORE/be_layers.c" "$CORE/be_math.c" "$CORE/grid.c" "$CORE/rules.c" "$CORE/core.c" \
+        "$CORE/locks.c" "$CORE/rng.c" "$CORE/serialize.c" ;;
     grid) run_test grid "$CORE/grid.c" ;;
     boot_anim) run_test boot_anim "$CORE/boot_anim.c" ;;
     boot_draw) run_boot_native boot_draw ;;
@@ -112,6 +116,8 @@ case "${1:-all}" in
     golden) run_golden ;;
     all)
         run_test grid "$CORE/grid.c"
+        run_test be_layers "$CORE/be_layers.c" "$CORE/be_math.c" "$CORE/grid.c" "$CORE/rules.c" "$CORE/core.c" \
+            "$CORE/locks.c" "$CORE/rng.c" "$CORE/serialize.c"
         run_test boot_anim "$CORE/boot_anim.c"
         run_test hit_variation
         run_rng
@@ -127,6 +133,8 @@ case "${1:-all}" in
         run_native cue
         run_native ui
         run_native vary
+        run_native be_runtime
+        run_native be_ui
         run_native master_fx
         run_native persist
         run_native menu
