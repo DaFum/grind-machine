@@ -433,6 +433,68 @@ static void tempo_follows_the_panel(void)
     check("a layer mutation uses the panel's current tempo, the known config's style and controls", ok);
 }
 
+/* A TIME mutation after the tempo moved without a generation: the live config says live_bpm (and HUMAN 100), the panel says
+ * panel_bpm. Every playing step of SEL starts at +12 (outside any span). Returns the values the mutation left:
+ * *maxabs the largest |micro|, *first_neg 1 if step 0 went negative, *n the playing steps, *left12 steps still at +12,
+ * *span the bound gm_micro_timing gives for panel_bpm on this track's division. */
+static uint32_t time_after_tempo_change(uint16_t live_bpm, uint16_t panel_bpm, int *maxabs, int *first_neg, uint32_t *n,
+                                        uint32_t *left12, uint32_t *span)
+{
+    gm_config live, panel;
+    uint8_t mus = 0;
+    uint32_t s, len, commits, ok = 1;
+    fresh();
+    live = gmrt.ctl.active_config;
+    live.bpm = live_bpm;
+    live.humanize = 100;
+    ok &= gm_runtime_submit(&live, GM_BOUNDARY_PATTERN, GM_REQUEST_MORPH) == GM_OK;
+    settle();
+    ok &= be_cfg_known && gmrt.ctl.active_config.bpm == live_bpm && gmrt.ctl.active_config.humanize == 100u;
+    ok &= gm_musical_division((uint8_t)trk[SEL].p[P_SDIV], &mus) == GM_OK;
+    trk[SEL].p[P_SSWING] = 0;
+    len = (uint32_t)clamp(trk[SEL].p[P_SLEN], 1, NSTEP);
+    *n = 0;
+    for (s = 0; s < len; s++)
+        if (trk[SEL].step[s].on) {
+            trk[SEL].step[s].micro = 12;
+            (*n)++;
+        }
+    panel = gmrt.ctl.active_config;
+    panel.bpm = panel_bpm;                                        /* the tempo changed without a generation */
+    commits = gm_runtime_commits();
+    ok &= be_submit_cfg(SEL, BE_TIME, &panel) == GM_OK;
+    settle();
+    ok &= gm_runtime_commits() == commits + 1u;
+    *span = 600u * panel_bpm * mus / 240000u;
+    if (*span > 12u)
+        *span = 12u;
+    *maxabs = 0;
+    *first_neg = 0;
+    *left12 = 0;
+    for (s = 0; s < len; s++)
+        if (trk[SEL].step[s].on) {
+            int m = trk[SEL].step[s].micro;
+            *maxabs = (m < 0 ? -m : m) > *maxabs ? (m < 0 ? -m : m) : *maxabs;
+            *left12 += m == 12;
+            if (s == 0 && m < 0)
+                *first_neg = 1;
+        }
+    return ok;
+}
+
+static void time_values_follow_the_panel_tempo(void)
+{
+    int maxabs, first_neg;
+    uint32_t n, left12, span, ok;
+    ok = time_after_tempo_change(240, 40, &maxabs, &first_neg, &n, &left12, &span);
+    check("TIME after a tempo drop 240 -> 40: published, enough playing steps and a span of at least 1 to tell", ok && n >= 4u && span >= 1u);
+    check("TIME after a tempo drop 240 -> 40: every playing step is inside the panel tempo's span, none is left at +12",
+          maxabs <= (int)span && left12 == 0u);
+    check("TIME after a tempo drop 240 -> 40: step 0 is never negative", !first_neg);
+    ok = time_after_tempo_change(240, 240, &maxabs, &first_neg, &n, &left12, &span);
+    check("control: at 240 -> 240 the same setup reaches beyond 40's span (the check above can fail)", ok && span >= 2u && maxabs > 1);
+}
+
 static void mutation_publishes_at_the_pattern_end(void)
 {
     uint32_t ok = 1, before, commits, k, len = 0, longest = 0;
@@ -737,6 +799,7 @@ int main(void)
     dropped_candidate_says_not_applied();
     song_start_between_submit_and_commit();
     tempo_follows_the_panel();
+    time_values_follow_the_panel_tempo();
     events_before_the_build_and_past_len();
     a_new_style_starts_the_recipe_history();
     a_queued_style_replaced_by_when_still_starts_over();
