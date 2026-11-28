@@ -396,6 +396,54 @@ static void song_start_between_submit_and_commit(void)
     check("a song that starts between submit and commit makes the mutation wait for the END", ok);
 }
 
+static void tempo_follows_the_panel(void)
+{
+    gm_config c;
+    uint32_t ok = 1;
+    fresh();
+    ok &= gm_runtime_submit(&gmrt.ctl.active_config, GM_BOUNDARY_PATTERN, GM_REQUEST_MORPH) == GM_OK;
+    settle();
+    ok &= be_cfg_known;
+    c = gmrt.ctl.active_config;
+    c.bpm = (uint16_t)(c.bpm == 240u ? 100u : 240u);              /* the tempo changed without a generation */
+    ok &= be_submit_cfg(SEL, BE_TIME, &c) == GM_OK;
+    ok &= gmrt.ctl.pending.config.bpm == c.bpm;                   /* the request scales the micro timing with it */
+    settle();
+    ok &= gmrt.ctl.active_config.bpm == c.bpm;
+    check("a layer mutation uses the panel's current tempo, the known config's style and controls", ok);
+}
+
+static void mutation_publishes_at_the_pattern_end(void)
+{
+    uint32_t ok = 1, before, commits, k, len = 0, longest = 0;
+    fresh();
+    for (k = 0; k < NTRK; k++)
+        if ((uint32_t)trk[k].p[P_SLEN] > len) {
+            len = (uint32_t)trk[k].p[P_SLEN];
+            longest = k;
+        }
+    before = gm_runtime_commits();
+    ok &= submit_live(SEL, BE_TIME) == GM_OK;
+    song.playing = 1;
+    gm_runtime_poll();
+    ok &= gmrt.ctl.stage_state == GM_STAGE_READY && cue.q_gm == 1;
+    for (k = 0; k < NTRK; k++) {
+        trk[k].seq_pos = 0;
+        trk[k].seq_idx = 0;
+        trk[k].seq_rem = 0;
+        trk[k].seq_cnt = 0;
+    }
+    cue_tick(64, 1u << 20, 0);                                    /* mid-pattern: the boundary is not here */
+    ok &= gm_runtime_commits() == before && cue.q_gm == 1;
+    trk[longest].seq_idx = len - 1u;                              /* the last step of the longest pattern */
+    commits = gm_runtime_commits();
+    cue_tick(64, 1u << 20, 0);
+    ok &= gm_runtime_commits() == commits + 1u && cue.q_gm == 0;  /* published at the END, once */
+    song.playing = 0;
+    (void)before;
+    check("a queued mutation publishes at the END of the longest pattern, not before", ok);
+}
+
 static void undo_restores_the_generator_config(void)
 {
     gm_config c0, c1;
@@ -530,6 +578,8 @@ int main(void)
     layer_locks_survive_a_context_change();
     dropped_candidate_says_not_applied();
     song_start_between_submit_and_commit();
+    tempo_follows_the_panel();
+    mutation_publishes_at_the_pattern_end();
     undo_restores_the_generator_config();
     parameter_locks_protect_cells();
     paired_hits_stay_paired();

@@ -239,6 +239,23 @@ static void mutation_after_undone_style(void)
     check("MUT after an undone STYLE change mutates on the restored grid", ok);
 }
 
+static void undo_of_a_mutation_counter_alone(void)
+{
+    uint32_t ok = 1;
+    fresh();
+    gm_v[GU_MUT] = 3;
+    gm_ui_changed(GU_MUT);                                        /* config A: mutation 3 */
+    frames(3);
+    gm_v[GU_MUT] = 5;
+    gm_ui_changed(GU_MUT);                                        /* config B differs from A in the counter alone */
+    frames(3);
+    ok &= gmrt.ctl.active_config.mutation == 5u && gm_runtime_commits() == 2u;
+    gm_v[GU_UNDO] = 1;
+    gm_ui_changed(GU_UNDO);
+    ok &= gm_v[GU_MUT] == 3;                                      /* the panel shows the counter of the live pattern */
+    check("undoing a change of the MUT counter alone restores the counter on the panel", ok);
+}
+
 static void undo_to_an_unknown_config_keeps_the_panel(void)
 {
     gm_pattern p;
@@ -313,6 +330,7 @@ int main(void)
     mutation_follows_the_panel_style();
     mutation_after_undone_style();
     undo_restores_counter_and_saves_style();
+    undo_of_a_mutation_counter_alone();
     undo_to_an_unknown_config_keeps_the_panel();
     live_config_beats_an_uncommitted_panel();
     mutation_works_straight_after_boot();

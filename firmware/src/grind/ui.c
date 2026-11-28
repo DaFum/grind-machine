@@ -140,7 +140,8 @@ static int gm_ui_follow_config(const gm_config *was)   /* 1: the panel's style c
         return 0;
     if (now->algorithm == was->algorithm && now->seed == was->seed && now->grid.num == was->grid.num &&
         now->grid.den == was->grid.den && now->grid.division == was->grid.division && now->aggression == was->aggression &&
-        now->density == was->density && now->chaos == was->chaos && now->humanize == was->humanize)
+        now->density == was->density && now->chaos == was->chaos && now->humanize == was->humanize &&
+        now->mutation == was->mutation)
         return 0;
     for (i = 0; i < GM_UI_STYLES; i++)
         if (gm_ui_style_config(i, &f) == GM_OK && f.algorithm == now->algorithm && f.seed == now->seed &&

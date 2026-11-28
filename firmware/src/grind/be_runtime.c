@@ -46,11 +46,7 @@ static gm_result be_submit_cfg(uint8_t track, uint8_t layers, const gm_config *p
 {
     gm_request r;
     gm_result v;
-    const gm_config *gen;
-    fm1_irq_off();
-    gen = be_cfg_known ? &gmrt.ctl.active_config : panel;   /* the config of the live pattern; the panel's only when none is known */
-    fm1_irq_on();
-    if (track >= NTRK || (layers & ~BE_ALL) || gm_validate_config(gen) != GM_OK)
+    if (track >= NTRK || (layers & ~BE_ALL) || gm_validate_config(panel) != GM_OK)
         return GM_INVALID;
     layers &= (uint8_t)~be_act[track].locks;
     if (!layers)
@@ -67,7 +63,8 @@ static gm_result be_submit_cfg(uint8_t track, uint8_t layers, const gm_config *p
     r.follow_live = 0;
     fm1_irq_off();
     r.base_revision = gmrt.ctl.native_revision;
-    r.config = *gen;                                      /* (the commit records the config that made these bytes) */
+    r.config = be_cfg_known ? gmrt.ctl.active_config : *panel;   /* (the live pattern's config, else the panel's; chosen with the revision, in one guard: a context switch cannot come between) */
+    r.config.bpm = panel->bpm;                            /* (the micro timing scales with the player's tempo now, not the one of the last generation) */
     v = gm_ctl_submit(&gmrt.ctl, &r);
     if (v == GM_OK) {
         memset(&be_pend, 0, sizeof be_pend);
