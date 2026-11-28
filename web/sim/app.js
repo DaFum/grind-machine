@@ -20,6 +20,7 @@ import { LAYOUTS, DECO_CLASS, blend, heroPose, outline } from './layout.js';
 const device = document.getElementById('device');
 const fit = document.getElementById('fit');
 const note = document.getElementById('note');
+const bootOnly = new URLSearchParams(location.search).get('boot') === '1';
 const els = { deco: {}, ctl: {}, enc: {}, lbl: {}, power: document.getElementById('power-on') };
 const lcd = document.createElement('canvas');
 lcd.width = lcd.height = 240;
@@ -310,7 +311,7 @@ function paint(now) {
 }
 
 // ---- flash in IndexedDB (store.js), the audio clock (audio.js)
-const store = new FlashStore(openFlashDb, msg => { note.textContent = msg; });
+const store = bootOnly ? null : new FlashStore(openFlashDb, msg => { note.textContent = msg; });
 let ctx = null, poweredOff = false;
 function wake() {                                 // a tap or a key brings a stopped context back (not one switched off)
   if (!ctx || poweredOff || !needsResume(ctx.state)) return;
@@ -334,7 +335,7 @@ async function powerSwitch() {                     // the first flip starts the 
   if (poweredOff) { releaseAll(); await ctx.suspend(); }
   else await ctx.resume();
 }
-function cancelBoot() {                            // power-on and Escape: the scene preview ends, the LCD is handed back
+function cancelBoot() {                            // Escape hands the LCD back to the reel
   if (!bootPreview) return;
   bootPreview.cancel();
   if (frame && frameOwner === 'boot') frame = null;  // only a queued preview frame is dropped, never a live one
@@ -344,7 +345,6 @@ function cancelBoot() {                            // power-on and Escape: the s
   }
 }
 async function powerOn() {
-  cancelBoot();
   const btn = els.power, pnote = document.getElementById('power-note');
   btn.disabled = true;
   btn.classList.remove('ready');
@@ -403,12 +403,18 @@ function bindPage() {
     requestAnimationFrame(follow);
   });
   const confirm = document.getElementById('reset-confirm');
-  document.getElementById('reset').addEventListener('click', () => { confirm.hidden = !confirm.hidden; });
+  document.addEventListener('keydown', e => { if (e.key === 'Escape') { confirm.hidden = true; cancelBoot(); } });
+  if (bootOnly) {
+    document.getElementById('power-note').textContent = 'Read-only boot preview. Press Esc to return to the demo reel.';
+    return;
+  }
+  const reset = document.getElementById('reset');
+  reset.addEventListener('click', () => { confirm.hidden = !confirm.hidden; });
+  reset.disabled = false;
   document.getElementById('reset-no').addEventListener('click', () => { confirm.hidden = true; });
   document.addEventListener('pointerdown', e => {   // the pop-over closes on a click elsewhere, or Esc
     if (!confirm.hidden && !e.target.closest('#reset-confirm, #reset')) confirm.hidden = true;
   });
-  document.addEventListener('keydown', e => { if (e.key === 'Escape') { confirm.hidden = true; cancelBoot(); } });
   for (const b of document.querySelectorAll('.bar-btn, #power-on'))   // a mouse click leaves no focus behind,
     b.addEventListener('mousedown', e => e.preventDefault());         // so the next Space plays, not this button
   document.getElementById('reset-yes').addEventListener('click', async () => {
@@ -453,7 +459,7 @@ function reelTick(now) {
 const hero = document.getElementById('hero'), stage = document.getElementById('stage');
 const tilt = document.getElementById('tilt'), scene = document.getElementById('scene');
 const still = window.matchMedia('(prefers-reduced-motion: reduce)');
-if (new URLSearchParams(location.search).get('boot') === '1') {   // opt-in scene preview; the ordinary URL is unchanged
+if (bootOnly) {
   bootPreview = createBootPreview(
     async () => Fm1Sim.create(await wasmBytes),                    // a fresh instance: never booted, no audio, no flash
     fb => { frame = { fb, leds: 0, keyLeds: 0 }; frameOwner = 'boot'; });
@@ -551,7 +557,7 @@ window.addEventListener('scroll', queueHero, { passive: true });
 window.addEventListener('resize', queueHero);
 still.addEventListener?.('change', queueHero);
 showMaster();
-bindControls();
+if (!bootOnly) bindControls();
 bindPage();
 window.addEventListener('resize', relayout);
 document.fonts?.ready.then(relayout);

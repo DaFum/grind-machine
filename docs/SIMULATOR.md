@@ -17,7 +17,7 @@ cd build/sim/preview && python3 -m http.server 8001
 # open http://127.0.0.1:8001/
 ```
 
-`GRIND_NATIVE=1` enables the five GRIND pages and the BLAST IGNITION preview (`?boot=1`). On a fresh browser store,
+`GRIND_NATIVE=1` enables the five GRIND pages and the read-only BLAST IGNITION preview (`?boot=1`). On a fresh browser store,
 project slot D contains a playable MATH 7/4 pattern and the GRIND role kit. Existing browser saves are loaded as usual.
 With `GRIND_NATIVE=0` (the build default), the standard drum-machine firmware and its four original demos are used.
 

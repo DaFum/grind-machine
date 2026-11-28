@@ -9,13 +9,13 @@ The page also has a short guide for each area, and interactive pieces that run t
 
 ## Start screen preview (GRIND builds)
 
-Adding `?boot=1` to the page address plays the 400 ms BLAST IGNITION scene on the screen before power-on: the same C
-renderer the firmware uses, drawn into a separate instance, so it starts no firmware, sound or save. With reduced motion
-set it shows the final READY frame. Escape ends it and hands the screen back to the demo reel; the power switch is the normal power-on (it ends the preview and starts the firmware). It is a
-scene preview, not a measurement of the device's boot timing: on the device the static title shows during initialisation
-and the 400 ms presentation follows on the first normal screen, where any input cancels it and acts normally, and the
-boot's LOADED note is kept for its full time. Only a simulator built with the GRIND engine has it; otherwise the page
-ignores the parameter.
+The Preview BLAST IGNITION link opens a read-only tab at `?boot=1#play`. The 400 ms scene uses the firmware's C renderer
+in a separate instance. Power and Reset to demos are disabled, and the tab leaves browser saves alone. With reduced
+motion enabled, the scene shows the final READY frame. Escape returns to the demo reel. A build without the GRIND
+engine shows the reel from the start.
+
+On the device, the static title appears during initialisation. The scene follows on the first normal screen. Input
+cancels it and acts normally, and the boot's LOADED note keeps its full display time.
 
 ## Storage
 
