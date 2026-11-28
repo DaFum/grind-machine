@@ -247,6 +247,68 @@ static void mutation_says_why_it_did_nothing(void)
     check("a whole-pattern change refused for a triplet track says TRACK DIFFERS, not GRIND ?", ok);
 }
 
+/* The recipe keys are not saved: after a restart the first RHY key is the one the saved mutation already used, which
+ * generates what is in the project. The build tries a few more keys before it calls that no change. */
+static void first_mutation_after_a_restart_still_changes_something(void)
+{
+    static track_t saved[NTRK];
+    gm_config c;
+    gm_pattern p;
+    uint32_t ok = 1, before, commits;
+    ui_host_init();
+    memset(&gmrt, 0, sizeof gmrt);
+    drum_boot_init();
+    gm_v[GU_STYLE] = (int16_t)GM_ALGORITHM_COUNT;                 /* MATH */
+    assert(gm_ui_style_config((uint32_t)gm_v[GU_STYLE], &c) == GM_OK && gm_generate(&c, NULL, &p) == GM_OK &&
+           gm_native_publish(&p) == GM_OK);
+    song.sel = 3;                                                 /* (the track whose rhythm MATH lets a layer mutation move) */
+    open_locks();
+    frames(2);
+    be_lock_set(3, BE_TIME, 1);
+    be_lock_set(3, BE_TMBR, 1);
+    before = track_sig(3);
+    turn(EN_K4, 1);
+    frames(6);
+    ok &= gm_runtime_commits() == 1u && track_sig(3) != before;   /* the first mutation worked */
+    check("setup: the first MUT on MATH's track 4 changes it", ok);
+    ok = 1;
+    memcpy(saved, trk, sizeof saved);                             /* saved with the project */
+    ui_host_init();                                               /* restart: the recipe keys start over */
+    memset(&gmrt, 0, sizeof gmrt);
+    drum_boot_init();
+    memcpy(trk, saved, sizeof saved);
+    gm_v[GU_STYLE] = (int16_t)GM_ALGORITHM_COUNT;
+    song.sel = 3;
+    open_locks();
+    frames(2);
+    be_lock_set(3, BE_TIME, 1);
+    be_lock_set(3, BE_TMBR, 1);
+    before = track_sig(3);
+    commits = gm_runtime_commits();
+    turn(EN_K4, 1);
+    frames(6);
+    ok &= gm_runtime_commits() == commits + 1u && track_sig(3) != before;   /* the first mutation after the restart changes it too */
+    check("the first MUT after a restart does not repeat the saved mutation", ok);
+
+    ui_host_init();                                               /* a track with nothing for the rhythm layer to move: still no change */
+    memset(&gmrt, 0, sizeof gmrt);
+    drum_boot_init();
+    gm_v[GU_STYLE] = (int16_t)GM_ALGORITHM_COUNT;
+    assert(gm_ui_style_config((uint32_t)gm_v[GU_STYLE], &c) == GM_OK && gm_generate(&c, NULL, &p) == GM_OK &&
+           gm_native_publish(&p) == GM_OK);
+    song.sel = 0;
+    open_locks();
+    frames(2);
+    be_lock_set(0, BE_TIME, 1);
+    be_lock_set(0, BE_TMBR, 1);
+    before = track_sig(0);
+    commits = gm_runtime_commits();
+    turn(EN_K4, 1);
+    frames(6);
+    check("a track the rhythm layer cannot move still reports no change (the retries are bounded)",
+          gm_runtime_commits() == commits && track_sig(0) == before && gm_last_result == GM_NO_CHANGE);
+}
+
 static void mutation_follows_the_panel_style(void)
 {
     gm_config c;
@@ -475,6 +537,7 @@ int main(void)
     undo_to_an_unknown_config_keeps_the_panel();
     live_config_beats_an_uncommitted_panel();
     mutation_says_why_it_did_nothing();
+    first_mutation_after_a_restart_still_changes_something();
     mutation_works_straight_after_boot();
     navigation();
     locks_are_per_track();
