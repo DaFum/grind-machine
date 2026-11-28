@@ -294,7 +294,7 @@ static void gm_ui_changed(uint32_t id)
         r = gm_ui_config(&c);                           /* the style and controls the panel shows */
         if (r == GM_OK)
             r = be_submit_cfg(track, BE_ALL, &c);
-        gm_last_result = r;                             /* (a stale NOT APPLIED does not outlive a request that went out) */
+        gm_last_result = r;                             /* (a stale NOT APPLIED does not outlive a request that went out; the stage the next poll makes of it clears the controller's status) */
         if (r == GM_OK)
             ui_message(song.playing ? "PENDING END" : "MUTATING");
         else if (r == GM_NO_CHANGE)
@@ -423,7 +423,7 @@ static void gm_ui_frame(int browsing)                  /* browsing: the STYLE BR
     n = gm_runtime_commits();
     if (n != seen) {
         seen = n;
-        ui_message(gmrt.ctl.stage_req.kind == GM_REQUEST_BE_LAYER ? "MUTATED" : gm_ui_style_name((uint32_t)gm_v[GU_STYLE]));   /* (the full name: the column has four letters) */
+        ui_message(be_last_was_be ? "MUTATED" : gm_ui_style_name((uint32_t)gm_v[GU_STYLE]));   /* (the full name: the column has four letters) */
         return;
     }
     st = gm_runtime_status();

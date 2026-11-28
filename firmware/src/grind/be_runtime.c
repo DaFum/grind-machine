@@ -12,6 +12,7 @@ static be_recipe be_undo[NTRK];       /* the recipes that belong to gmrt.undo (s
 static be_patch be_pend, be_stage;    /* the one request's scope (main loop writes both), and what its stage publishes */
 static gm_config be_undo_cfg;         /* the generator config that belongs to gmrt.undo (swapped with it) */
 static uint64_t be_events_seen;       /* the steps of the selected track the pending mutation already protects as events */
+static uint8_t be_last_was_be;          /* the last commit the hook saw was a layer mutation (what the panel says about it) */
 static uint8_t be_commit_was_be;       /* the commit being made is a layer mutation (hook to post-hook) */
 static uint8_t be_events_known;       /* be_events_seen is the mask the candidate was made with (set by be_build) */
 static uint8_t be_cfg_known, be_undo_known;   /* active_config (be_undo_cfg) made the live (undo) pattern; else it is only a boot or load default */
@@ -224,7 +225,8 @@ static void be_commit_hook(void)
     memcpy(be_undo, be_act, sizeof be_undo);
     be_undo_cfg = gmrt.ctl.active_config;                 /* (the commit that follows replaces it) */
     be_undo_known = be_cfg_known;
-    if (gmrt.ctl.stage_req.kind == GM_REQUEST_BE_LAYER) {
+    be_last_was_be = gmrt.ctl.stage_req.kind == GM_REQUEST_BE_LAYER;
+    if (be_last_was_be) {
         be_commit_was_be = 1;                             /* (a track's layers are not a style: the live config and its known bit stay, see be_post_commit) */
         if (be_stage.request == gmrt.ctl.stage_req.revision && be_stage.track < NTRK) {
             uint8_t locks = be_act[be_stage.track].locks;     /* (a lock set while the candidate was made is the player's, not the patch's) */

@@ -295,6 +295,48 @@ static void mutation_clears_a_stale_result(void)
     check("a MUT that goes out clears a stale NOT APPLIED for the USB editor", ok);
 }
 
+static void a_drop_not_yet_said_does_not_outlive_the_next_mutation(void)
+{
+    uint32_t ok = 1;
+    fresh();
+    song.sel = 0;
+    open_locks();
+    frames(2);
+    song.playing = 1;
+    ok &= be_submit_cfg(0, BE_RHY | BE_TIME, &gmrt.ctl.active_config) == GM_OK;
+    gm_runtime_poll();
+    ok &= gmrt.ctl.stage_state == GM_STAGE_READY;
+    be_lock_set(0, BE_RHY, 1);                                    /* drops the candidate: STALE, not said yet */
+    ok &= gm_runtime_status() == GM_STALE;
+    turn(EN_K4, 1);                                               /* the player asks again before a frame says it (the turn acts in the next frame) */
+    frames(3);
+    ok &= str_eq(ui.msg, "PENDING END") && gm_last_result == GM_OK;   /* the request's message, not the dropped one's */
+    song.playing = 0;
+    check("a NOT APPLIED not said yet is not said after the player asked again", ok);
+}
+
+static void commit_message_names_the_commit_not_the_next_stage(void)
+{
+    uint32_t ok = 1;
+    fresh();
+    song.sel = 0;
+    frames(1);
+    gm_v[GU_STYLE] = 3;
+    gm_ui_changed(GU_STYLE);
+    gm_runtime_poll();
+    gm_runtime_poll();
+    gm_runtime_poll();
+    ok &= gm_runtime_commits() != 0u;                             /* the style went out; the frame has not said so yet */
+    song.playing = 1;
+    ok &= be_submit_cfg(0, BE_TIME, &gmrt.ctl.active_config) == GM_OK;
+    gm_runtime_poll();
+    ok &= gmrt.ctl.stage_req.kind == GM_REQUEST_BE_LAYER;         /* a layer mutation waits for the END now */
+    ui_frame();
+    ok &= !str_eq(ui.msg, "MUTATED") && str_eq(ui.msg, gm_ui_style_name(3));
+    song.playing = 0;
+    check("the commit message is the one of the commit that went out, not of the stage made after it", ok);
+}
+
 static void undo_to_an_unknown_config_keeps_the_panel(void)
 {
     gm_pattern p;
@@ -372,6 +414,8 @@ int main(void)
     undo_of_a_mutation_counter_alone();
     editor_undo_puts_a_cancelled_style_back();
     mutation_clears_a_stale_result();
+    a_drop_not_yet_said_does_not_outlive_the_next_mutation();
+    commit_message_names_the_commit_not_the_next_stage();
     undo_to_an_unknown_config_keeps_the_panel();
     live_config_beats_an_uncommitted_panel();
     mutation_works_straight_after_boot();
