@@ -329,40 +329,54 @@ static void editing_an_existing_event_keeps_the_mutation(void)
 
 static void commit_records_the_config_that_made_it(void)
 {
-    gm_config c;
+    gm_config c, live;
     uint32_t ok = 1;
     fresh();
     assert(gm_factory_config(5, &c) == GM_OK);
+    live = gmrt.ctl.active_config;
     ok &= !be_cfg_known && be_submit_cfg(SEL, BE_RHY | BE_TIME, &c) == GM_OK;   /* no known config: the panel's one generates */
     settle();
-    ok &= gm_runtime_commits() == 1u && !memcmp(&gmrt.ctl.active_config, &c, sizeof c) && be_cfg_known;
-    ok &= gm_runtime_undo() == 1 && !be_cfg_known;                /* the undo brings back "unknown" with the bytes */
-    ok &= gm_runtime_undo() == 1 && be_cfg_known && !memcmp(&gmrt.ctl.active_config, &c, sizeof c);
-    check("a BE commit records the config that generated it; UNDO and REDO swap that knowledge with the bytes", ok);
+    ok &= gm_runtime_commits() == 1u && !be_cfg_known && !memcmp(&gmrt.ctl.active_config, &live, sizeof live);   /* ... and claims nothing */
+    ok &= gm_runtime_undo() == 1 && !be_cfg_known && !memcmp(&gmrt.ctl.active_config, &live, sizeof live);
+    ok &= gm_runtime_undo() == 1 && !be_cfg_known && !memcmp(&gmrt.ctl.active_config, &live, sizeof live);
+    check("a layer mutation of a pattern of unknown origin does not make a config known (nor does its UNDO/REDO)", ok);
 
     fresh();
     ok = 1;
-    assert(gm_factory_config(5, &c) == GM_OK);
-    ok &= gm_runtime_submit(&gmrt.ctl.active_config, GM_BOUNDARY_PATTERN, GM_REQUEST_MORPH) == GM_OK;
+    ok &= gm_runtime_submit(&gmrt.ctl.active_config, GM_BOUNDARY_PATTERN, GM_REQUEST_STYLE) == GM_OK;
     settle();
-    ok &= be_cfg_known;                                           /* a legacy commit makes it known too */
+    ok &= be_cfg_known;                                           /* a whole-pattern commit makes it known */
+    live = gmrt.ctl.active_config;
     ok &= be_submit_cfg(SEL, BE_TIME, &c) == GM_OK;               /* a panel style that differs: the live config wins */
+    ok &= gmrt.ctl.pending.config.algorithm == live.algorithm && gmrt.ctl.pending.config.seed == live.seed &&
+          gmrt.ctl.pending.config.grid.num == live.grid.num && gmrt.ctl.pending.config.algorithm != c.algorithm;
     settle();
-    ok &= gm_runtime_commits() == 2u && memcmp(&gmrt.ctl.active_config, &c, sizeof c) != 0;
-    check("with a known live config a different panel config does not generate or replace it", ok);
+    ok &= gm_runtime_commits() == 2u && be_cfg_known && !memcmp(&gmrt.ctl.active_config, &live, sizeof live);
+    check("with a known live config a different panel config neither generates nor replaces it", ok);
 }
 
 static void layer_locks_survive_a_context_change(void)
 {
-    uint32_t ok = 1;
+    be_recipe fresh_r;
+    uint32_t ok = 1, key;
     fresh();
+    ok &= gm_runtime_submit(&gmrt.ctl.active_config, GM_BOUNDARY_PATTERN, GM_REQUEST_STYLE) == GM_OK;
+    settle();
+    ok &= be_cfg_known;
+    ok &= submit_live(SEL, BE_RHY | BE_TIME) == GM_OK;
+    settle();
+    ok &= gm_runtime_commits() == 2u && be_cfg_known && gmrt.undo_ok;   /* a pattern with an advanced recipe, a known config and an undo */
+    key = be_act[SEL].key[0];
+    be_recipe_init(&fresh_r, gmrt.ctl.active_config.seed, SEL);
+    ok &= key != fresh_r.key[0];
     be_lock_set(SEL, BE_RHY, 1);
     be_lock_set(SEL + 1u, BE_TIME, 1);
     fm1_irq_off();
     gm_context_isr();                                             /* a project load or a cue's pattern switch */
     fm1_irq_on();
-    ok &= be_act[SEL].locks == BE_RHY && be_act[SEL + 1u].locks == BE_TIME && !be_cfg_known;
-    ok &= gm_runtime_undo() == 0 && be_act[SEL].locks == BE_RHY;  /* (the undo is gone with the pattern) */
+    ok &= be_act[SEL].locks == BE_RHY && be_act[SEL + 1u].locks == BE_TIME;   /* the player's locks stay */
+    ok &= !be_cfg_known && !gmrt.undo_ok && be_act[SEL].key[0] != key;        /* the recipe, the config and the undo do not */
+    ok &= gm_runtime_undo() == 0 && be_act[SEL].locks == BE_RHY;
     check("layer locks survive a project or pattern switch, the recipes and the known config do not", ok);
 }
 
@@ -377,8 +391,11 @@ static void dropped_candidate_says_not_applied(void)
     be_lock_set(SEL, BE_TIME, 1);
     ok &= gmrt.ctl.stage_state != GM_STAGE_READY && gm_runtime_status() == GM_STALE;
     gm_runtime_ack_status();
-    ok &= submit_live(SEL, BE_RHY) == GM_OK;                      /* a request that is replaced on purpose says nothing */
+    ok &= submit_live(SEL, BE_RHY) == GM_OK;
+    gm_runtime_poll();                                            /* a request that is replaced on purpose says nothing */
     ok &= submit_live(SEL, BE_RHY) == GM_OK && gm_runtime_status() == GM_OK;
+    gm_runtime_poll();
+    ok &= gm_runtime_status() == GM_OK;
     song.playing = 0;
     check("a candidate dropped by a lock or event says NOT APPLIED (stale); a superseded one does not", ok);
 }
@@ -409,7 +426,7 @@ static void tempo_follows_the_panel(void)
     ok &= be_submit_cfg(SEL, BE_TIME, &c) == GM_OK;
     ok &= gmrt.ctl.pending.config.bpm == c.bpm;                   /* the request scales the micro timing with it */
     settle();
-    ok &= gmrt.ctl.active_config.bpm == c.bpm;
+    ok &= gmrt.ctl.active_config.bpm != c.bpm;
     check("a layer mutation uses the panel's current tempo, the known config's style and controls", ok);
 }
 
@@ -442,6 +459,78 @@ static void mutation_publishes_at_the_pattern_end(void)
     song.playing = 0;
     (void)before;
     check("a queued mutation publishes at the END of the longest pattern, not before", ok);
+}
+
+static void events_before_the_build_and_past_len(void)
+{
+    step_t s3, s5;
+    uint32_t ok = 1;
+    fresh();
+    lock_set(SEL, 3, P_E1, 20);                                   /* step 3 already carries an event */
+    ok &= submit_live(SEL, BE_RHY | BE_TIME) == GM_OK;
+    lock_set(SEL, 3, P_E1, 40);                                   /* a new value before the candidate is made: the build reads it */
+    lock_set(SEL, 5, P_E1, 40);                                   /* a first event too: the build will protect it */
+    lock_set(SEL, 40, P_E1, 40);                                  /* a dormant step (past LEN): the candidate never touches it */
+    ok &= gmrt.ctl.has_pending && gm_runtime_status() != GM_STALE;
+    s3 = trk[SEL].step[3];
+    s5 = trk[SEL].step[5];
+    settle();
+    ok &= gm_runtime_commits() == 1u;
+    ok &= !memcmp(&s3, &trk[SEL].step[3], sizeof s3) && !memcmp(&s5, &trk[SEL].step[5], sizeof s5);   /* both steps with events stand */
+    check("events written before the candidate is built, or on a dormant step, do not drop the request", ok);
+
+    fresh();
+    ok = 1;
+    ok &= submit_live(SEL, BE_RHY | BE_TIME) == GM_OK;
+    song.playing = 1;
+    gm_runtime_poll();
+    ok &= gmrt.ctl.stage_state == GM_STAGE_READY;
+    lock_set(SEL, 40, P_E1, 40);                                  /* a dormant step after the build: still no reason to drop */
+    ok &= gmrt.ctl.stage_state == GM_STAGE_READY && cue.q_gm == 1;
+    song.playing = 0;
+    check("an event on a dormant step leaves a ready candidate queued", ok);
+}
+
+static void a_new_style_starts_the_recipe_history(void)
+{
+    be_recipe fresh_r;
+    uint32_t ok = 1, advanced;
+    fresh();
+    ok &= gm_runtime_submit(&gmrt.ctl.active_config, GM_BOUNDARY_PATTERN, GM_REQUEST_MORPH) == GM_OK;
+    settle();
+    ok &= submit_live(SEL, BE_RHY) == GM_OK;
+    settle();
+    advanced = be_act[SEL].key[0];
+    be_recipe_init(&fresh_r, gmrt.ctl.active_config.seed, SEL);
+    ok &= advanced != fresh_r.key[0];                             /* a mutation advanced the recipe */
+    be_lock_set(SEL, BE_TIME, 1);
+    ok &= gm_runtime_submit(&gmrt.ctl.active_config, GM_BOUNDARY_PATTERN, GM_REQUEST_MORPH) == GM_OK;
+    settle();
+    ok &= be_act[SEL].key[0] == advanced;                         /* a knob turn (MORPH) keeps the history */
+    ok &= gm_runtime_submit(&gmrt.ctl.active_config, GM_BOUNDARY_PATTERN, GM_REQUEST_STYLE) == GM_OK;
+    settle();
+    ok &= be_act[SEL].key[0] == fresh_r.key[0] && be_act[SEL].locks == BE_TIME;   /* a new style starts it over; the lock stays */
+    ok &= gm_runtime_undo() == 1 && be_act[SEL].key[0] == advanced;               /* UNDO brings the history back */
+    check("a STYLE commit starts the recipe history over (locks stay), a knob turn keeps it, UNDO restores it", ok);
+}
+
+static void chain_between_submit_and_commit(void)
+{
+    uint32_t ok = 1, before;
+    fresh();
+    before = gm_runtime_commits();
+    ok &= submit_live(SEL, BE_TIME) == GM_OK;
+    chain.running = 1;                                            /* a chain starts before the main loop made the candidate (it plays) */
+    song.playing = 1;
+    gm_runtime_poll();
+    cue.now = 0;
+    trk[SEL].seq_pos = 0;
+    trk[SEL].seq_idx = (uint32_t)trk[SEL].p[P_SLEN] - 1u;        /* the end of a pattern */
+    cue_tick(64, 1u << 20, 0);
+    ok &= gm_runtime_commits() == before;                         /* nothing is published under a running chain */
+    chain.running = 0;
+    song.playing = 0;
+    check("a chain that starts between submit and commit publishes nothing", ok);
 }
 
 static void undo_restores_the_generator_config(void)
@@ -579,6 +668,9 @@ int main(void)
     dropped_candidate_says_not_applied();
     song_start_between_submit_and_commit();
     tempo_follows_the_panel();
+    events_before_the_build_and_past_len();
+    a_new_style_starts_the_recipe_history();
+    chain_between_submit_and_commit();
     mutation_publishes_at_the_pattern_end();
     undo_restores_the_generator_config();
     parameter_locks_protect_cells();

@@ -19,6 +19,7 @@ static gm_result gm_runtime_base(void);
 static void be_reset(void);
 static void be_context_reset(void);
 static void be_commit_hook(void);
+static void be_post_commit(void);
 static void be_undo_hook(void);
 static gm_result be_build(const gm_request *r);
 
@@ -130,6 +131,7 @@ static int gm_runtime_commit(void)
     gmrt.undo_id++;                                       /* (a new snapshot: an undo that observed the old one must refuse) */
     gmrt.undo_was_undo = 0;
     gm_ctl_commit(&gmrt.ctl, rev);
+    be_post_commit();
     return 0;
 }
 

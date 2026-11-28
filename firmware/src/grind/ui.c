@@ -129,36 +129,43 @@ static void gm_settings_unpack(uint32_t v)
     }
     gm_v[GU_MUT] = 0;
 }
-/* UNDO / REDO swap the generator config with the pattern: when it changed (a STYLE turn was undone), the panel shows the
- * style and controls of the pattern that is live again, so MUT and the next turn start from what the player hears. */
-static int gm_ui_follow_config(const gm_config *was)   /* 1: the panel's style changed */
+static gm_result gm_last_result;                     /* retained for the USB editor after the panel reports it */
+static uint8_t gm_save_t;                              /* frames until a changed style / WHEN is written (a turn through
+                                                        * the list writes once, not at every detent) */
+
+/* UNDO / REDO swap the generator config with the pattern: afterwards the panel shows the style and controls of the pattern
+ * that is live again (so MUT and the next turn start from what the player hears), but only when that config is known: a
+ * boot or load default is no pattern's config. Read after the swap, it needs no "before": a style turn that never played
+ * is put back as well. 1: the panel's style changed. */
+static int gm_ui_follow_config(void)
 {
     const gm_config *now = &gmrt.ctl.active_config;
     gm_config f;
     uint32_t i;
-    if (!be_cfg_known)                                 /* a boot or load default is no pattern's config: the panel stays */
-        return 0;
-    if (now->algorithm == was->algorithm && now->seed == was->seed && now->grid.num == was->grid.num &&
-        now->grid.den == was->grid.den && now->grid.division == was->grid.division && now->aggression == was->aggression &&
-        now->density == was->density && now->chaos == was->chaos && now->humanize == was->humanize &&
-        now->mutation == was->mutation)
+    if (!be_cfg_known)
         return 0;
     for (i = 0; i < GM_UI_STYLES; i++)
         if (gm_ui_style_config(i, &f) == GM_OK && f.algorithm == now->algorithm && f.seed == now->seed &&
             f.grid.num == now->grid.num && f.grid.den == now->grid.den && f.grid.division == now->grid.division) {
+            int changed = gm_v[GU_STYLE] != (int16_t)i;
             gm_v[GU_STYLE] = (int16_t)i;
             gm_v[GU_AGGR] = now->aggression;
             gm_v[GU_DENS] = now->density;
             gm_v[GU_CHAOS] = now->chaos;
             gm_v[GU_HUMAN] = now->humanize;
             gm_v[GU_MUT] = (int16_t)now->mutation;      /* (the counter belongs to the config, as the knobs do) */
-            return 1;
+            return changed;
         }
     return 0;
 }
-static gm_result gm_last_result;                     /* retained for the USB editor after the panel reports it */
-static uint8_t gm_save_t;                              /* frames until a changed style / WHEN is written (a turn through
-                                                        * the list writes once, not at every detent) */
+/* The panel's and the USB editor's UNDO: the swap, the panel following it, the changed style remembered. */
+static int gm_ui_undo(void)
+{
+    int u = gm_runtime_undo();
+    if (u > 0 && gm_ui_follow_config())
+        gm_save_t = 90;                                /* (the style that is live again is the one remembered) */
+    return u;
+}
 
 /* the knobs as a config: the style's factory grid and seed, the four controls, MUT as the mutation counter */
 static gm_result gm_ui_config(gm_config *c)
@@ -360,14 +367,10 @@ static void gm_ui_changed(uint32_t id)
     }
     if (id == GU_UNDO) {
         int u;
-        gm_config before;
         if (!gm_v[GU_UNDO])
             return;
         gm_v[GU_UNDO] = 0;
-        before = gmrt.ctl.active_config;
-        u = gm_runtime_undo();
-        if (u > 0 && gm_ui_follow_config(&before))
-            gm_save_t = 90;                            /* (the style that is live again is the one remembered) */
+        u = gm_ui_undo();
         ui_message(u < 0 ? "STOP THE SONG" : !u ? "NOTHING TO UNDO" : gmrt.undo_was_undo ? "UNDONE" : "REDONE");
         return;
     }

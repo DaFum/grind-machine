@@ -256,6 +256,30 @@ static void undo_of_a_mutation_counter_alone(void)
     check("undoing a change of the MUT counter alone restores the counter on the panel", ok);
 }
 
+static void editor_undo_puts_a_cancelled_style_back(void)
+{
+    uint32_t ok = 1;
+    fresh();
+    song.sel = 0;
+    gm_v[GU_STYLE] = 3;
+    gm_ui_changed(GU_STYLE);                                      /* style A is live and known */
+    frames(3);
+    open_locks();
+    frames(2);
+    turn(EN_K4, 1);                                               /* a mutation under A: the undo has a snapshot of A's config */
+    frames(4);
+    ok &= gm_runtime_commits() == 2u && be_cfg_known;
+    song.playing = 1;                                             /* B is turned while playing: it waits for the END */
+    gm_v[GU_STYLE] = 5;
+    gm_ui_changed(GU_STYLE);
+    ok &= gm_v[GU_STYLE] == 5;
+    gm_save_t = 0;
+    ok &= gm_ui_undo() == 1;                                      /* what the panel's UNDO and the USB editor's UNDO both call */
+    ok &= gm_v[GU_STYLE] == 3 && gm_save_t != 0;                  /* the style that never played is put back and remembered */
+    song.playing = 0;
+    check("UNDO puts a style turn that never played back on the panel (shared by the panel and the USB editor)", ok);
+}
+
 static void undo_to_an_unknown_config_keeps_the_panel(void)
 {
     gm_pattern p;
@@ -331,6 +355,7 @@ int main(void)
     mutation_after_undone_style();
     undo_restores_counter_and_saves_style();
     undo_of_a_mutation_counter_alone();
+    editor_undo_puts_a_cancelled_style_back();
     undo_to_an_unknown_config_keeps_the_panel();
     live_config_beats_an_uncommitted_panel();
     mutation_works_straight_after_boot();
