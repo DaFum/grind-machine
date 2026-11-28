@@ -84,6 +84,8 @@ int gm_is_locked(const gm_pattern *p, unsigned track, unsigned step);
 gm_result gm_set_lock(gm_pattern *p, unsigned track, unsigned step, int locked);
 gm_result gm_generate(const gm_config *c, const gm_pattern *base, gm_pattern *out);
 gm_result gm_validate(const gm_config *c, const gm_pattern *p);
+/* Whether one cell is inside the portable bounds (the check gm_validate applies to every cell). */
+int gm_cell_valid(gm_cell cell);
 /* The destination must not overlap the input. A return of 0 leaves it untouched. */
 size_t gm_encode(const gm_config *c, const gm_pattern *p, uint8_t *out, size_t cap);
 uint32_t gm_hash(const uint8_t *data, size_t length);

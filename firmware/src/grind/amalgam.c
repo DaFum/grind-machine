@@ -9,5 +9,7 @@
 #include "rules.c"
 #include "core.c"
 #include "serialize.c"
+#include "be_math.c"
+#include "be_layers.c"
 #include "controller.c"
 #endif

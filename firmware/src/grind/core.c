@@ -14,6 +14,11 @@ static int valid_cell(gm_cell cell)
            cell.note >= -60 && cell.note <= 67 && cell.micro >= -50 && cell.micro <= 50;
 }
 
+int gm_cell_valid(gm_cell cell)
+{
+    return valid_cell(cell);
+}
+
 static int empty_cell(gm_cell cell)
 {
     return !cell.flags && !cell.cond && !cell.note && !cell.micro;
