@@ -35,7 +35,7 @@ This README describes **main with `GRIND_NATIVE=1`**, including the community ex
 | **Sound engine** | 808/909-style drums, physical-model percussion, samples and ACID bass on up to two tracks. |
 | **Live performance** | Native pattern cue, KEEP, undo/redo, mutes/solo, PERFORM effects, SINK, SWELL and CUT. |
 | **Studio workflow** | MIDI clock, USB audio, per-track automation, projects, variations and a capability-gated USB editor. |
-| **Browser simulator** | Run the same firmware sources compiled to WebAssembly; use the mouse, touch or keyboard. Build the GRIND-enabled simulator locally. |
+| **Browser simulator** | Run the same firmware sources compiled to WebAssembly; use the mouse, touch or keyboard. The GRIND build is [published with each preview](https://dafum.github.io/grind-machine/); build it locally to match unreleased source. |
 
 ## The GRIND engine
 
@@ -174,7 +174,7 @@ The USB web editor exposes the device's capabilities via SysEx. Use a Web-MIDI-c
 
 The new panel-only VARY and LIVE controls and dedicated native style-preview page are not advertised as new editor controls. Older firmware without the GRIND capability keeps the existing tabs. Restores and sample uploads are stopped-only. A canceled sample upload can leave the slot empty; keep the source file. Backups cover saved data, so save edits first. Big transfers while clocking a DAW may introduce clock jitter. The editor yields to updates and does not use Bluetooth as an editor link.
 
-**Current GRIND site:** the preview workflow publishes the [GRIND USB editor](https://dafum.github.io/grind-machine/webapp/editor/) alongside the [preview installer](https://dafum.github.io/grind-machine/webapp/installer/) and firmware package, but not the simulator. Build the site locally only if you need an editor matching unreleased source changes. The original [Hortator editor](https://deadactive.github.io/hortator/webapp/editor/) and [Hortator manual](https://deadactive.github.io/hortator/manual/) are upstream references, not the current GRIND build. See [editor manual](docs/manual/14-web-editor.md) and [wire protocol](web/EDITOR_PROTOCOL.md).
+**Current GRIND site:** the preview workflow publishes the [browser simulator](https://dafum.github.io/grind-machine/) (the GRIND build, compiled from the same firmware sources), the [GRIND USB editor](https://dafum.github.io/grind-machine/webapp/editor/), the [preview installer](https://dafum.github.io/grind-machine/webapp/installer/) and the firmware package. The run drives the assembled site in a browser before it publishes. Build the site locally only if you need a copy matching unreleased source changes. The original [Hortator editor](https://deadactive.github.io/hortator/webapp/editor/) and [Hortator manual](https://deadactive.github.io/hortator/manual/) are upstream references, not the current GRIND build. See [editor manual](docs/manual/14-web-editor.md) and [wire protocol](web/EDITOR_PROTOCOL.md).
 
 ## Song patterns
 

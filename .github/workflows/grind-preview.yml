@@ -1,11 +1,14 @@
 name: GRIND MACHINE preview
 
 # Builds the firmware package with the Grind engine linked (GRIND_NATIVE=1) on a GitHub runner and publishes it as a
-# pre-release plus a web installer on GitHub Pages (the gh-pages branch). Runs when a grind-v* tag is pushed, or by hand
-# (a dry run only builds and keeps the files as a workflow artifact).
+# pre-release plus the site on GitHub Pages (the gh-pages branch): the browser simulator (the GRIND build, compiled from
+# the same firmware sources) at the root, the web installer, the USB editor and the package. Runs when a grind-v* tag is
+# pushed, or by hand (a dry run only builds and keeps the files as a workflow artifact).
 #
 # It publishes a PREVIEW: the package comes from this run, it is not hardware-qualified, and the installer says so.
-# Only the installer, the package and the licence files go on Pages: no simulator, editor or manual.
+# The simulator is built before the package (tools/build_sim.sh, Emscripten in Docker, as the WASM lane does), and the
+# assembled site is driven in a browser (tests/grind/browser_smoke.mjs) before anything is released or published: a
+# site that does not work stops the run. No manual.
 
 on:
   push:
@@ -39,6 +42,23 @@ jobs:
           persist-credentials: false
       - name: Prepare Python (Pillow, as the native lane)
         uses: ./.github/actions/pillow-venv
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: '22'
+      # The simulator: the same pinned Emscripten image and playwright-core as the WASM lane (grind.yml).
+      - name: Use the resolved Linux amd64 Emscripten image
+        run: |
+          image=emscripten/emsdk@sha256:fca9b3affd2e321ab97ffc657ccc53b9fb88715997712d11d562900e6655f26f
+          docker pull "$image"
+          docker tag "$image" emscripten/emsdk:6.0.11
+      - name: Install the pinned browser test driver
+        run: npm install --prefix build/grind-browser --no-save --ignore-scripts --no-audit --no-fund playwright-core@1.58.2
+      - name: Build the simulator (GRIND build)
+        env:
+          GRIND_NATIVE: '1'
+        run: |
+          bash tools/build_sim.sh
+          [ -f build/sim/fm1sim.wasm ] || { echo 'no simulator was built'; exit 1; }
       # The pinned vendor inputs share the native lane's cache entry (grind.yml). A restored copy is not trusted: the
       # extraction step checks its digests (tools/grind/native_inputs.py). A miss downloads them as before.
       - id: vendor_cache
@@ -119,7 +139,8 @@ jobs:
           out=publish
           rm -rf "$out"
           mkdir -p "$out/site/webapp" "$out/files"
-          cp build/site/index.html "$out/site/"
+          [ -f build/site/fm1sim.wasm ] || { echo 'the site has no simulator (build/sim was not picked up)'; exit 1; }
+          find build/site -maxdepth 1 -type f -exec cp {} "$out/site/" \;   # the landing page and the simulator's files
           cp -R build/site/firmware "$out/site/"
           cp -R build/site/webapp/installer build/site/webapp/editor "$out/site/webapp/"
           touch "$out/site/.nojekyll"
@@ -129,6 +150,13 @@ jobs:
           sha256sum "$out"/files/* | tee "$out/files/SHA256SUMS.txt"
           echo "sha=$sha" >> "$GITHUB_OUTPUT"
           echo "pkg=grind-machine-$sha.fwsc" >> "$GITHUB_OUTPUT"
+      - name: Drive the assembled site in a browser
+        env:
+          GRIND_NATIVE: '1'
+        run: |
+          chrome=$(command -v google-chrome || command -v chromium || true)
+          [ -x "$chrome" ] || { echo 'no Chrome on the runner'; exit 1; }
+          GRIND_CHROMIUM="$chrome" node tests/grind/browser_smoke.mjs publish/site
       - name: Keep the files of this run
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
@@ -178,9 +206,9 @@ jobs:
           git -C pages config user.name 'github-actions[bot]'
           git -C pages config user.email '41898282+github-actions[bot]@users.noreply.github.com'
           git -C pages add -A
-          git -C pages commit -qm "GRIND MACHINE preview $SHA: installer" || echo 'the site is unchanged'
+          git -C pages commit -qm "GRIND MACHINE preview $SHA: simulator, installer, editor" || echo 'the site is unchanged'
           git -C pages push -q origin HEAD:refs/heads/gh-pages
           gh api "repos/$GITHUB_REPOSITORY/pages" >/dev/null 2>&1 ||
             gh api -X POST "repos/$GITHUB_REPOSITORY/pages" -f 'source[branch]=gh-pages' -f 'source[path]=/' >/dev/null 2>&1 ||
             echo 'Pages is not turned on yet: Settings > Pages > Deploy from a branch > gh-pages'
-          echo "Installer: https://${GITHUB_REPOSITORY%%/*}.github.io/${GITHUB_REPOSITORY##*/}/webapp/installer/" | tee -a "$GITHUB_STEP_SUMMARY"
+          echo "Simulator: https://${GITHUB_REPOSITORY%%/*}.github.io/${GITHUB_REPOSITORY##*/}/ | Installer: https://${GITHUB_REPOSITORY%%/*}.github.io/${GITHUB_REPOSITORY##*/}/webapp/installer/" | tee -a "$GITHUB_STEP_SUMMARY"
