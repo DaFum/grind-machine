@@ -21,6 +21,10 @@ const device = document.getElementById('device');
 const fit = document.getElementById('fit');
 const note = document.getElementById('note');
 const bootOnly = new URLSearchParams(location.search).get('boot') === '1';
+if (bootOnly) {                                    // the preview panel is a visual display
+  device.inert = true;
+  device.setAttribute('aria-hidden', 'true');
+}
 const els = { deco: {}, ctl: {}, enc: {}, lbl: {}, power: document.getElementById('power-on') };
 const lcd = document.createElement('canvas');
 lcd.width = lcd.height = 240;

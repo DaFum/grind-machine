@@ -67,6 +67,7 @@ try {
     assert.ok((await page.request.get(editorUrl)).ok(), 'the packaged preview serves its bundled editor');
   }
   const power = page.getByRole('switch', { name: 'Power' });
+  assert.equal(await page.locator('#device').getByRole('slider').count(), 8);
   assert.ok(await page.getByRole('button', { name: 'Reset to demos' }).isEnabled());
   await power.click();
   await page.locator('#power-note').waitFor({ state: 'hidden' });
@@ -88,6 +89,13 @@ try {
   const assertReadOnly = async previewPage => {
     assert.ok(await previewPage.getByRole('switch', { name: 'Power' }).isDisabled());
     assert.ok(await previewPage.getByRole('button', { name: 'Reset to demos' }).isDisabled());
+    const panel = previewPage.locator('#device');
+    assert.equal(await panel.getByRole('slider').count(), 0, 'the preview exposes no interactive sliders');
+    const focused = await panel.locator('.enc').evaluateAll(knobs => knobs.some(knob => {
+      knob.focus();
+      return knob === document.activeElement;
+    }));
+    assert.equal(focused, false, 'the preview knobs cannot receive focus');
   };
   if (!native) {                                          // the unsupported build: ?boot=1 leaves the normal reel on screen
     const off = await browser.newPage({ reducedMotion: 'reduce' });
