@@ -255,8 +255,146 @@ static void undo_is_atomic(void)
     check("a KEEP change does not end the undo", ok);
 }
 
+static snap_t hooked;
+static void hook_rec(void)                                      /* the real recorder: a hit written into the playing step */
+{
+    (void)rec_hit(&trk[SEL], 100);
+    take(&hooked);
+}
+static void recorded_hit_survives(void)
+{
+    uint32_t ok = 1;
+    fresh();
+    ok &= be_submit(SEL, BE_RHY) == GM_OK;
+    settle();
+    race_hook = hook_rec;
+    ok &= gm_runtime_undo() == 0;                                 /* the recording took the snapshot: no swap */
+    race_hook = NULL;
+    ok &= gmrt.undo_ok == 0 && track_same(&hooked, SEL) && others_same(&hooked, SEL);
+    check("a hit recorded by the real rec_hit between the undo's check and its swap stands", ok);
+}
+
+static void queued_mutation_honours_new_locks(void)
+{
+    uint32_t ok = 1;
+    fresh();
+    ok &= be_submit(SEL, BE_RHY | BE_TIME) == GM_OK;
+    song.playing = 1;                                             /* playing: the candidate waits for the END */
+    gm_runtime_poll();
+    ok &= gmrt.ctl.stage_state == GM_STAGE_READY && cue.q_gm == 1;
+    be_lock_set(SEL + 1u, BE_RHY, 1);                             /* another track's lock does not touch it */
+    be_lock_set(SEL, BE_TMBR, 1);                                 /* neither does a layer it does not carry */
+    ok &= gmrt.ctl.stage_state == GM_STAGE_READY && cue.q_gm == 1;
+    be_lock_set(SEL, BE_RHY, 1);                                  /* a layer it would change: it must not publish */
+    ok &= gmrt.ctl.stage_state != GM_STAGE_READY && cue.q_gm == 0;
+    song.playing = 0;
+    check("locking a layer a queued mutation carries drops it; other locks leave it", ok);
+}
+
+static void undo_restores_the_generator_config(void)
+{
+    gm_config c0, c1;
+    uint32_t ok = 1;
+    fresh();
+    c0 = gmrt.ctl.active_config;
+    assert(gm_factory_config(5, &c1) == GM_OK);
+    ok &= gm_runtime_submit(&c1, GM_BOUNDARY_PATTERN, GM_REQUEST_STYLE) == GM_OK;
+    settle();
+    ok &= memcmp(&gmrt.ctl.active_config, &c0, sizeof c0) != 0;   /* the style change moved the config */
+    ok &= gm_runtime_undo() == 1 && !memcmp(&gmrt.ctl.active_config, &c0, sizeof c0);
+    ok &= gm_runtime_undo() == 1 && !memcmp(&gmrt.ctl.active_config, &c1, sizeof c1);   /* REDO brings it back too */
+    check("UNDO and REDO swap the generator config together with the pattern", ok);
+}
+
+static void parameter_locks_protect_cells(void)
+{
+    snap_t before;
+    uint32_t ok = 1, s, len, moved = 0;
+    fresh();
+    take(&before);
+    len = (uint32_t)trk[SEL].p[P_SLEN];
+    for (s = 0; s < len; s++)
+        lock_set(SEL, s, P_E1, 20);                               /* every playable step carries a parameter lock */
+    ok &= be_submit(SEL, BE_RHY | BE_TIME) == GM_OK;
+    settle();
+    ok &= track_same(&before, SEL) && gm_runtime_status() == GM_NO_CHANGE;   /* nothing may change under a lock */
+    check("a step with a parameter lock is protected as a whole", ok);
+
+    fresh();
+    take(&before);
+    lock_set(SEL, 3, P_E1, 20);
+    ok = be_submit(SEL, BE_RHY | BE_TIME) == GM_OK;
+    settle();
+    ok &= !memcmp(&before.st[SEL][3], &trk[SEL].step[3], sizeof(step_t));
+    for (s = 0; s < len; s++)
+        moved |= memcmp(&before.st[SEL][s], &trk[SEL].step[s], sizeof(step_t)) != 0;
+    ok &= moved != 0u;                                            /* the other steps do change */
+    check("only the locked step is protected: the rest of the track still mutates", ok);
+}
+
+static void paired_hits_stay_paired(void)
+{
+    snap_t before;
+    gm_config h;
+    gm_rule_masks m;
+    uint32_t ok = 1, s, len;
+    fresh();
+    assert(gm_factory_config(2, &h) == GM_OK);                    /* HAMMER: kick and snare share their optional hits */
+    ok &= gm_runtime_submit(&h, GM_BOUNDARY_PATTERN, GM_REQUEST_STYLE) == GM_OK;
+    settle();
+    ok &= gm_rules_build(&gmrt.ctl.active_config, &m) == GM_OK && m.paired != 0u;
+    take(&before);
+    len = (uint32_t)trk[GM_KICK].p[P_SLEN];
+    ok &= be_submit(GM_KICK, BE_RHY) == GM_OK;
+    settle();
+    for (s = 0; s < len; s++)
+        if ((m.paired >> s) & 1u)
+            ok &= !memcmp(&before.st[GM_KICK][s], &trk[GM_KICK].step[s], sizeof(step_t));   /* a pair is not split */
+    check("RHY on the kick leaves the steps it shares with the snare as they are", ok);
+}
+
+static void unrelated_tracks_do_not_block(void)
+{
+    snap_t before;
+    uint32_t ok = 1;
+    fresh();
+    trk[5].p[P_SDIV] = 4;                                         /* another track on a grid Grind cannot export */
+    trk[5].p[P_SLEN] = 7;
+    fm1_irq_off();
+    gm_keep_set(5, 2, 1);                                         /* and a KEEP there that the generator would refuse */
+    fm1_irq_on();
+    take(&before);
+    ok &= be_submit(SEL, BE_RHY | BE_TIME) == GM_OK;
+    settle();
+    ok &= !track_same(&before, SEL) && others_same(&before, SEL) && gm_runtime_commits() == 1u;
+    check("another track's grid or KEEP does not block a mutation of the selected track", ok);
+}
+
+static void superseded_step_request_clears_now(void)
+{
+    gm_config c;
+    uint32_t ok = 1;
+    fresh();
+    song.playing = 1;
+    assert(gm_factory_config(5, &c) == GM_OK);
+    ok &= gm_runtime_submit(&c, GM_BOUNDARY_STEP, GM_REQUEST_STYLE) == GM_OK;
+    gm_runtime_poll();
+    ok &= cue.now == 1 && cue.q_gm == 1;                          /* a STEP request waits for the next step */
+    ok &= be_submit(SEL, BE_TIME) == GM_OK;                       /* ... and a BE request (at the END) replaces it */
+    ok &= cue.now == 0 && cue.q_gm == 0;
+    song.playing = 0;
+    check("a BE request that replaces a ready STEP request does not inherit its next-step boundary", ok);
+}
+
 int main(void)
 {
+    recorded_hit_survives();
+    queued_mutation_honours_new_locks();
+    undo_restores_the_generator_config();
+    parameter_locks_protect_cells();
+    paired_hits_stay_paired();
+    unrelated_tracks_do_not_block();
+    superseded_step_request_clears_now();
     rhythm_only();
     time_only();
     locks_and_keep();

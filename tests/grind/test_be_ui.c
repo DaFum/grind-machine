@@ -170,8 +170,24 @@ static void held_step_never_runs_mut(void)
     check("ui: a turn with a step held never invokes MUT", ok);
 }
 
+static void mutation_works_straight_after_boot(void)
+{
+    gm_pattern p;
+    uint32_t ok = 1, before;
+    ui_host_init();
+    memset(&gmrt, 0, sizeof gmrt);                                /* power-on: the runtime has never been reset */
+    drum_boot_init();
+    assert(gm_factory_pattern(1, &p) == GM_OK && gm_native_publish(&p) == GM_OK);
+    before = track_sig(2);
+    ok &= be_submit(2, BE_TIME) == GM_OK;                         /* the config MUT sends is a valid one, not all zeros */
+    gm_runtime_poll();
+    ok &= gm_runtime_commits() == 1u && track_sig(2) != before;
+    check("MUT works right after power-on, before any other GRIND request", ok);
+}
+
 int main(void)
 {
+    mutation_works_straight_after_boot();
     navigation();
     locks_are_per_track();
     mut_runs_the_free_layers();
