@@ -353,6 +353,35 @@ static void paired_hits_stay_paired(void)
     check("RHY on the kick leaves the steps it shares with the snare as they are", ok);
 }
 
+static void paired_hits_keep_presence_but_retime(void)
+{
+    snap_t before;
+    gm_config h;
+    gm_rule_masks m;
+    uint32_t ok = 1, s, len, moved = 0, on_paired = 0;
+    fresh();
+    assert(gm_factory_config(2, &h) == GM_OK);
+    ok &= gm_runtime_submit(&h, GM_BOUNDARY_PATTERN, GM_REQUEST_STYLE) == GM_OK;
+    settle();
+    ok &= gm_rules_build(&gmrt.ctl.active_config, &m) == GM_OK && m.paired != 0u;
+    take(&before);
+    len = (uint32_t)trk[GM_KICK].p[P_SLEN];
+    ok &= be_submit(GM_KICK, BE_RHY | BE_TIME) == GM_OK;          /* both layers free: the LOCKS page's MUT */
+    settle();
+    for (s = 0; s < len; s++)
+        if ((m.paired >> s) & 1u) {
+            const step_t *a = &before.st[GM_KICK][s], *b = &trk[GM_KICK].step[s];
+            ok &= a->on == b->on && a->acc == b->acc && a->slide == b->slide && a->tie == b->tie && a->rat == b->rat &&
+                  a->cond == b->cond && a->nt == b->nt;           /* the pair is not split: presence and attributes stay */
+            if (a->on) {
+                on_paired++;
+                moved |= a->micro != b->micro;                    /* but its timing is the TIME layer's to move */
+            }
+        }
+    ok &= on_paired > 0u && moved != 0u;
+    check("RHY and TIME on the kick: paired hits keep their presence, their micro-timing still mutates", ok);
+}
+
 static void unrelated_tracks_do_not_block(void)
 {
     snap_t before;
@@ -393,6 +422,7 @@ int main(void)
     undo_restores_the_generator_config();
     parameter_locks_protect_cells();
     paired_hits_stay_paired();
+    paired_hits_keep_presence_but_retime();
     unrelated_tracks_do_not_block();
     superseded_step_request_clears_now();
     rhythm_only();

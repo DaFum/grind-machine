@@ -257,7 +257,9 @@ static void gm_ui_changed(uint32_t id)
         if (!gm_v[GU_LMUT])
             return;
         gm_v[GU_LMUT] = 0;
-        r = be_submit(track, BE_ALL);
+        r = gm_ui_config(&c);                           /* the style and controls the panel shows */
+        if (r == GM_OK)
+            r = be_submit_cfg(track, BE_ALL, &c);
         if (r == GM_OK)
             ui_message(song.playing ? "PENDING END" : "MUTATING");
         else if (r == GM_NO_CHANGE)

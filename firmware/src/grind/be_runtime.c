@@ -11,6 +11,7 @@ static be_recipe be_act[NTRK];        /* the recipes of the live pattern */
 static be_recipe be_undo[NTRK];       /* the recipes that belong to gmrt.undo (swapped with it) */
 static be_patch be_pend, be_stage;    /* the one request's scope (main loop writes both), and what its stage publishes */
 static gm_config be_undo_cfg;         /* the generator config that belongs to gmrt.undo (swapped with it) */
+static gm_config be_gen;              /* the style and controls the rhythm of the pending request is generated from */
 
 static void be_reset(void)
 {
@@ -18,7 +19,7 @@ static void be_reset(void)
     for (k = 0; k < NTRK; k++)
         be_recipe_init(&be_act[k], gmrt.ctl.active_config.seed, (uint8_t)k);
     memcpy(be_undo, be_act, sizeof be_undo);
-    be_undo_cfg = gmrt.ctl.active_config;
+    be_undo_cfg = be_gen = gmrt.ctl.active_config;
     memset(&be_pend, 0, sizeof be_pend);
     memset(&be_stage, 0, sizeof be_stage);
 }
@@ -26,11 +27,11 @@ static void be_reset(void)
 /* Main loop. The layers the track does not lock, from a fixed base: a candidate made from a changed pattern is dropped,
  * never rebased. GM_NO_CHANGE: every asked layer is locked. GM_UNSUPPORTED: only the timbre layer was asked (it is not
  * there yet), or a song runs. */
-static gm_result be_submit(uint8_t track, uint8_t layers)
+static gm_result be_submit_cfg(uint8_t track, uint8_t layers, const gm_config *gen)
 {
     gm_request r;
     gm_result v;
-    if (track >= NTRK || (layers & ~BE_ALL))
+    if (track >= NTRK || (layers & ~BE_ALL) || gm_validate_config(gen) != GM_OK)
         return GM_INVALID;
     layers &= (uint8_t)~be_act[track].locks;
     if (!layers)
@@ -51,6 +52,7 @@ static gm_result be_submit(uint8_t track, uint8_t layers)
     v = gm_ctl_submit(&gmrt.ctl, &r);
     if (v == GM_OK) {
         memset(&be_pend, 0, sizeof be_pend);
+        be_gen = *gen;
         be_pend.request = r.revision;
         be_pend.base_revision = r.base_revision;
         be_pend.track = track;
@@ -65,10 +67,16 @@ static gm_result be_submit(uint8_t track, uint8_t layers)
     return v;
 }
 
+/* The panel's style and controls drive the rhythm (as the old MUT knob does); the live config stays what it was. */
+static gm_result be_submit(uint8_t track, uint8_t layers)
+{
+    return be_submit_cfg(track, layers, &gmrt.ctl.active_config);
+}
+
 /* The portable base of ONE track: its own playable steps, timing and KEEP cells. The other tracks are inert filler (a
  * valid empty timing, no cells, no KEEP): their grids and KEEPs are none of this mutation's business and must neither
  * block it nor be validated by it. A track that plays another source (GRIDS) is not mutated. */
-static gm_result be_base_track(unsigned tr, const gm_config *cfg)
+static gm_result be_base_track(unsigned tr, const gm_config *cfg, const gm_rule_masks *rules)
 {
     uint32_t t, s, len = (uint32_t)clamp(trk[tr].p[P_SLEN], 1, NSTEP);
     uint8_t mus;
@@ -80,7 +88,7 @@ static gm_result be_base_track(unsigned tr, const gm_config *cfg)
         return res;
     memset(&gmrt.u.base, 0, sizeof gmrt.u.base);
     for (t = 0; t < NTRK; t++)
-        gmrt.u.base.timing[t] = (gm_timing){16, cfg->grid.division, 0, 0};
+        gmrt.u.base.timing[t] = (gm_timing){rules->length[t], cfg->grid.division, 0, 0};   /* (what the rules expect: valid, empty) */
     gmrt.u.base.timing[tr] = (gm_timing){(uint8_t)len, mus, (uint8_t)trk[tr].p[P_SSWING], 0};
     for (s = 0; s < len; s++) {
         gmrt.u.base.cell[tr][s] = gm_from_native(&trk[tr].step[s]);
@@ -112,7 +120,7 @@ static uint64_t be_event_mask(unsigned tr, uint32_t len)
 static gm_result be_build(const gm_request *r)
 {
     be_patch p = be_pend;
-    gm_config cfg = r->config;
+    gm_config cfg = be_gen;
     gm_cell merged[GM_STEPS];
     gm_rule_masks rules;
     uint64_t paired = 0, events;
@@ -129,7 +137,10 @@ static gm_result be_build(const gm_request *r)
         p.next.key[0] = be_key_next(p.next.key[0]);
     if (layers & BE_TIME)
         p.next.key[1] = be_key_next(p.next.key[1]);
-    res = be_base_track(tr, &cfg);
+    res = gm_rules_build(&cfg, &rules);
+    if (res != GM_OK)
+        return res;
+    res = be_base_track(tr, &cfg, &rules);
     if (res != GM_OK)
         return res;
     if (layers & BE_RHY) {                                /* the rhythm: the generator, keyed by the RHY layer alone */
@@ -140,7 +151,7 @@ static gm_result be_build(const gm_request *r)
         if (gmrt.out.timing[tr].length != gmrt.u.base.timing[tr].length ||
             gmrt.out.timing[tr].division != gmrt.u.base.timing[tr].division)
             return GM_UNSUPPORTED;                        /* the rules would change this track's grid: not converted */
-        if ((tr == GM_KICK || tr == GM_SNARE) && gm_rules_build(&cfg, &rules) == GM_OK)
+        if (tr == GM_KICK || tr == GM_SNARE)
             paired = rules.paired;                        /* (kick and snare share these hits: this track alone must not split them) */
     }
     len = gmrt.u.base.timing[tr].length;
@@ -148,13 +159,15 @@ static gm_result be_build(const gm_request *r)
     events = be_event_mask(tr, len);
     cfg.grid.division = gmrt.u.base.timing[tr].division;  /* (the micro span follows the grid the track really has) */
     for (s = 0; s < len; s++) {
-        gm_cell b = gmrt.u.base.cell[tr][s], c = (layers & BE_RHY) ? gmrt.out.cell[tr][s] : b;
-        int prot = gm_is_locked(&gmrt.u.base, tr, s) || ((paired >> s) & 1u) || ((events >> s) & 1u);
-        if ((layers & BE_TIME) && (c.flags & GM_ON))
+        int pairedstep = (int)((paired >> s) & 1u);       /* kick and snare share this hit: its presence is not ours to change */
+        unsigned lay = pairedstep ? (layers & ~BE_RHY) : layers;
+        gm_cell b = gmrt.u.base.cell[tr][s], c = (lay & BE_RHY) ? gmrt.out.cell[tr][s] : b;
+        int prot = gm_is_locked(&gmrt.u.base, tr, s) || ((events >> s) & 1u);
+        if ((lay & BE_TIME) && (c.flags & GM_ON))         /* (the timing of a hit the merged rhythm keeps; TIME still moves a paired one) */
             c.micro = be_time_micro(&cfg, p.next.key[1], tr, s, swing);
         else
             c.micro = b.micro;                            /* (a step that does not play keeps its dormant timing) */
-        res = be_merge_cell(b, c, layers, prot, &merged[s]);
+        res = be_merge_cell(b, c, lay, prot, &merged[s]);
         if (res != GM_OK)
             return res;
         changed |= memcmp(&b, &merged[s], sizeof b) != 0;

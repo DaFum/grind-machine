@@ -32,6 +32,12 @@ static void fresh(void)
     gm_pattern p;
     ui_host_init();
     gm_runtime_reset();
+    gm_v[GU_STYLE] = 0;                                           /* (screen state outlives a test: start from style 1's panel) */
+    gm_v[GU_AGGR] = 75;
+    gm_v[GU_DENS] = 65;
+    gm_v[GU_CHAOS] = 20;
+    gm_v[GU_HUMAN] = 25;
+    gm_v[GU_MUT] = 0;
     song.g[G_BPM] = 240;
     assert(gm_factory_pattern(1, &p) == GM_OK && gm_native_publish(&p) == GM_OK);
     gm_runtime_reset();
@@ -185,8 +191,30 @@ static void mutation_works_straight_after_boot(void)
     check("MUT works right after power-on, before any other GRIND request", ok);
 }
 
+static void mutation_follows_the_panel_style(void)
+{
+    gm_config c;
+    gm_pattern p;
+    uint32_t ok = 1, before;
+    ui_host_init();
+    memset(&gmrt, 0, sizeof gmrt);
+    drum_boot_init();                                             /* power-on: the controller holds style 1's config */
+    gm_v[GU_STYLE] = (int16_t)GM_ALGORITHM_COUNT;                 /* the restored panel style: MATH, 7/4 over 28 steps */
+    assert(gm_ui_style_config((uint32_t)gm_v[GU_STYLE], &c) == GM_OK && gm_generate(&c, NULL, &p) == GM_OK &&
+           gm_native_publish(&p) == GM_OK);                       /* a restored project on that grid */
+    song.sel = 0;                                                 /* the kick: MATH has no hi-hat to mutate */
+    open_locks();
+    frames(2);
+    before = track_sig(0);
+    turn(EN_K4, 1);
+    frames(4);
+    ok &= gm_runtime_commits() == 1u && track_sig(0) != before;   /* MUT uses the style the panel shows, not style 1 */
+    check("MUT after a reboot with a non-default STYLE follows the panel's style", ok);
+}
+
 int main(void)
 {
+    mutation_follows_the_panel_style();
     mutation_works_straight_after_boot();
     navigation();
     locks_are_per_track();
