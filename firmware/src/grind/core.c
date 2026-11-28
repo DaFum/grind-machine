@@ -87,6 +87,23 @@ static int chance(const gm_config *c, unsigned track, unsigned step, unsigned do
     return gm_random(c, (uint8_t)track, (uint8_t)step, domain) % 100u < value;
 }
 
+/* The micro-timing of one hit: the one rule both the generator and the BRUTAL EVOLUTION TIME layer use. A swing or
+ * humanize above 100 is clamped (a valid config and timing never have one), so the span stays inside +-12. */
+int8_t gm_micro_timing(const gm_config *c, uint8_t track, uint8_t step, uint8_t swing, uint8_t division)
+{
+    unsigned humanize = c->humanize > 100u ? 100u : c->humanize;
+    unsigned span = 600u * c->bpm * division / 240000u;
+    if (swing > 100u)
+        swing = 100u;
+    if (span > 12u)
+        span = 12u;
+    span = span * humanize / 100u;
+    span = span * (250u - swing) / 250u;
+    if (step == 0u)
+        return (int8_t)(gm_random(c, track, 0, GM_DOMAIN_MICRO) % (span + 1u));
+    return (int8_t)((int)(gm_random(c, track, step, GM_DOMAIN_MICRO) % (2u * span + 1u)) - (int)span);
+}
+
 static gm_cell generated_cell(const gm_config *c, const gm_rule_masks *rules, gm_timing timing,
                               unsigned track, unsigned step)
 {
@@ -115,17 +132,7 @@ static gm_cell generated_cell(const gm_config *c, const gm_rule_masks *rules, gm
                     chance(c, track, step, GM_DOMAIN_DENSITY, c->density));
     cell.flags = (uint8_t)(GM_ON | ((accent || required_accent) ? GM_ACC : 0u) | (rat << GM_RAT_SHIFT));
 
-    unsigned span = 600u * c->bpm * timing.division / 240000u;
-    if (span > 12u)
-        span = 12u;
-    span = span * c->humanize / 100u;
-    span = span * (250u - timing.swing) / 250u;
-    if (step == 0u) {
-        cell.micro = (int8_t)(gm_random(c, (uint8_t)track, 0, GM_DOMAIN_MICRO) % (span + 1u));
-    } else {
-        cell.micro = (int8_t)((int)(gm_random(c, (uint8_t)track, (uint8_t)step, GM_DOMAIN_MICRO) %
-                                  (2u * span + 1u)) - (int)span);
-    }
+    cell.micro = gm_micro_timing(c, (uint8_t)track, (uint8_t)step, timing.swing, timing.division);
     return cell;
 }
 

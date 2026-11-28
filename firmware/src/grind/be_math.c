@@ -8,6 +8,8 @@ uint32_t be_key_next(uint32_t key)
 
 void be_recipe_init(be_recipe *r, uint32_t seed, uint8_t track)
 {
+    if (!r)
+        return;
     for (unsigned l = 0; l < 3u; ++l)
         r->key[l] = gm_mix32(seed ^ gm_mix32((((uint32_t)track + 1u) << 8) | (BE_DOMAIN_RHY + l)));
     r->curve = BE_ASCEND;

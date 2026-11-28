@@ -3,6 +3,7 @@
 """Independent vectors for the BRUTAL EVOLUTION layer tests (tests/grind/test_be_layers.c)."""
 
 M = 0xFFFFFFFF
+ENGINE = 1  # GM_ENGINE_VERSION: bump together with tests/grind/test_be_layers.c
 
 
 def mix(v):
@@ -23,7 +24,7 @@ def micro(seed, key, alg, bpm, div, hum, swing, t, s):
     span = min(span, 12)
     span = span * hum // 100
     span = span * (250 - swing) // 250
-    r = rnd(seed, key, 1, alg, t, s, 4)
+    r = rnd(seed, key, ENGINE, alg, t, s, 4)
     return r % (span + 1) if s == 0 else (r % (2 * span + 1)) - span
 
 

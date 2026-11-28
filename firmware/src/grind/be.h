@@ -21,6 +21,8 @@ typedef struct {
     uint8_t curve, amount, span, target;
     uint8_t mode, brutal, locks, flags;
 } be_recipe;
+/* In memory only: the layout is the host's own, so a recipe or patch that is ever stored or sent must be written
+ * field by field in a fixed byte order, never as these bytes. */
 typedef char be_recipe_is_20[sizeof(be_recipe) == 20 ? 1 : -1];
 
 /* What one accepted mutation publishes for one track. */
