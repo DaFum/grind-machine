@@ -90,6 +90,7 @@ try {
     assert.ok(await previewPage.getByRole('switch', { name: 'Power' }).isDisabled());
     assert.ok(await previewPage.getByRole('button', { name: 'Reset to demos' }).isDisabled());
     const panel = previewPage.locator('#device');
+    assert.equal(await panel.locator('.enc:visible').count(), 8, 'the preview renders all eight knobs');
     assert.equal(await panel.getByRole('slider').count(), 0, 'the preview exposes no interactive sliders');
     const focused = await panel.locator('.enc').evaluateAll(knobs => knobs.some(knob => {
       knob.focus();
