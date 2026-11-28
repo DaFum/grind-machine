@@ -91,8 +91,6 @@ jobs:
     runs-on: ubuntu-24.04
     timeout-minutes: 25
     env:
-      EMSDK_DIGEST: sha256:fca9b3affd2e321ab97ffc657ccc53b9fb88715997712d11d562900e6655f26f
-      EMSDK_ID: sha256:b4584bcb016b5416c2eb606e3aeffa7461a63037c0ba4cc8e83c6df3ffb532ba   # its config digest
       PLAYWRIGHT_CORE: 1.58.2
     outputs:
       status: ${{ steps.checks.outputs.status }}
@@ -104,42 +102,11 @@ jobs:
         with:
           node-version: '22'
       - uses: ./.github/actions/pillow-venv
-      # The pinned image is cached as a docker save archive. A restored copy is used only when its image ID is the pinned
-      # config digest (EMSDK_ID; the containerd image store reports the manifest digest EMSDK_DIGEST instead). Otherwise
-      # it is pulled by digest as before, and saved only after the pulled image matches the pin.
-      - id: emsdk_cache
-        name: Restore the pinned Emscripten image
-        uses: actions/cache/restore@0400d5f644dc74513175e3cd8d07132dd4860809 # v4.2.4
-        with:
-          path: ${{ runner.temp }}/emsdk-image.tar
-          key: grind-emsdk-v1-${{ env.EMSDK_DIGEST }}
-      - id: emsdk
-        name: Use the resolved Linux amd64 Emscripten image
-        env:
-          CACHE_HIT: ${{ steps.emsdk_cache.outputs.cache-hit }}
+      - name: Use the resolved Linux amd64 Emscripten image
         run: |
-          archive="$RUNNER_TEMP/emsdk-image.tar"
-          image="emscripten/emsdk@$EMSDK_DIGEST"
-          id_of() { docker image inspect --format '{{.Id}}' "$1" 2>/dev/null; }
-          pinned() { case $(id_of "$1") in "$EMSDK_ID"|"$EMSDK_DIGEST") return 0 ;; *) return 1 ;; esac; }
-          if [ "$CACHE_HIT" = true ] && docker load -i "$archive" && pinned emscripten/emsdk:6.0.11; then
-            echo "Emscripten image $(id_of emscripten/emsdk:6.0.11): restored from the cache"
-          else
-            docker image rm -f emscripten/emsdk:6.0.11 >/dev/null 2>&1 || true
-            docker pull "$image"
-            docker tag "$image" emscripten/emsdk:6.0.11
-            if pinned "$image"; then
-              docker save -o "$archive" emscripten/emsdk:6.0.11 && echo 'save=1' >> "$GITHUB_OUTPUT"
-            else
-              echo "::warning title=Emscripten cache::pulled image ID $(id_of "$image") differs from EMSDK_ID; not cached"
-            fi
-          fi
-      - name: Save the pinned Emscripten image
-        if: steps.emsdk.outputs.save == '1' && steps.emsdk_cache.outputs.cache-hit != 'true'
-        uses: actions/cache/save@0400d5f644dc74513175e3cd8d07132dd4860809 # v4.2.4
-        with:
-          path: ${{ runner.temp }}/emsdk-image.tar
-          key: grind-emsdk-v1-${{ env.EMSDK_DIGEST }}
+          image=emscripten/emsdk@sha256:fca9b3affd2e321ab97ffc657ccc53b9fb88715997712d11d562900e6655f26f
+          docker pull "$image"
+          docker tag "$image" emscripten/emsdk:6.0.11
       - id: browser_cache
         name: Restore the pinned browser test driver
         uses: actions/cache@0400d5f644dc74513175e3cd8d07132dd4860809 # v4.2.4
