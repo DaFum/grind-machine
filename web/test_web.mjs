@@ -87,13 +87,38 @@ async function editorSite() {
     ok(!r.failed && /params\.has\("mock"\)/.test(src.modules["app.mjs"]),
       `editor site (${where}): the inlined modules pass the page tests (${r.passed} checks); ?mock kept`);
   }
-  const landing = readFileSync(join(HERE, "sim/index.html"), "utf8"), nav = landing.slice(landing.indexOf('<nav class="hero-nav">'), landing.indexOf("</nav>"));
-  const foot = landing.slice(landing.indexOf('<nav class="foot-nav"'));
-  ok(/<a href="webapp\/editor\/">Editor<\/a>/.test(nav) && /<a href="webapp\/editor\/">[^<]+<\/a>/.test(foot.slice(0, foot.indexOf("</nav>")))
-    && !/editor\/\?mock|[?&]mock\b/.test(landing), "landing page: links the editor (top and foot nav), not ?mock");
-  const front = join(HERE, "../build/site/index.html");
-  if (existsSync(front) && /fm1sim/.test(readFileSync(front, "utf8")))
-    ok(/href="webapp\/editor\/"/.test(readFileSync(front, "utf8")), "build/site: the landing page links the editor");
+  const publishedEditor = "https://dafum.github.io/grind-machine/webapp/editor/";
+  const bundledEditor = "webapp/editor/";
+  function checkLanding(landing, href, where) {
+    const nav = landing.match(/<nav class="hero-nav">([\s\S]*?)<\/nav>/)?.[1];
+    const foot = landing.match(/<nav class="foot-nav"[^>]*>([\s\S]*?)<\/nav>/)?.[1];
+    ok(nav?.includes(`<a href="${href}">Editor</a>`) && foot?.includes(`<a href="${href}">USB editor for the FM-1</a>`)
+      && !/editor\/\?mock|[?&]mock\b/.test(landing), `${where}: navigation and footer link the editor without mock mode`);
+  }
+  const source = join(HERE, "sim/index.html");
+  checkLanding(readFileSync(source, "utf8"), publishedEditor, "simulator landing source");
+  const assembled = py(`import shutil, sys, tempfile
+from pathlib import Path
+sys.path.insert(0, sys.argv[1])
+import make_site
+with tempfile.TemporaryDirectory() as tmp:
+    sim, out = Path(tmp) / "sim", Path(tmp) / "site"
+    sim.mkdir()
+    out.mkdir()
+    shutil.copyfile(sys.argv[2], sim / "index.html")
+    (sim / "fm1sim.wasm").touch()
+    make_site.sim_page(out, sim)
+    sys.stdout.buffer.write((out / "index.html").read_bytes())`, HERE, source).toString();
+  checkLanding(assembled, bundledEditor, "assembled landing");
+  for (const where of ["build/sim", "build/sim/preview", "build/site"]) {
+    const dir = join(HERE, "..", where), front = join(dir, "index.html");
+    if (!existsSync(join(dir, "fm1sim.wasm")) || !existsSync(front)) continue;
+    const installer = join(dir, "webapp/installer/index.html");
+    const bundled = where === "build/site" || (where === "build/sim/preview" && existsSync(installer)
+      && !readFileSync(installer, "utf8").includes("preview-has-no-package.fwsc"));
+    checkLanding(readFileSync(front, "utf8"), bundled ? bundledEditor : publishedEditor, where);
+    if (bundled) ok(existsSync(join(dir, bundledEditor, "index.html")), `${where}: bundled editor exists`);
+  }
 }
 
 /* ------------------------------------------------------- packages: JS == Python --- */

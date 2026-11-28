@@ -126,7 +126,7 @@ def checked(pkg):
     return raw, product
 
 
-def main(pkg, version, out, ble_pkg=None):
+def main(pkg, version, out, ble_pkg=None, *, sim_dir=None):
     pkg, out = Path(pkg), Path(out)
     raw, product = checked(pkg)
     if ble_pkg is not None and checked(ble_pkg)[1] != product:
@@ -173,7 +173,7 @@ def main(pkg, version, out, ble_pkg=None):
     import build_manual
     (out / "manual").mkdir(exist_ok=True)
     build_manual.build(out / "manual" / "index.html")
-    landing = sim_page(out)
+    landing = sim_page(out, sim_dir)
     if not landing:
         (out / "index.html").write_text(
             '<!doctype html><meta charset="utf-8"><title>GRIND MACHINE</title>'
@@ -188,15 +188,21 @@ SIM_PUBLISHED = (".html", ".js", ".css", ".wasm", ".gz", ".json",   # not reel.b
                  ".woff", ".txt")                                    # the typeface (terminus.woff) and its licence
 
 
-def sim_page(out):
+def sim_page(out, sim_dir=None):
     """the landing page with the simulator at the site's root, from build/sim (tools/build_sim.sh); '' when not built"""
-    if not (SIM / "fm1sim.wasm").exists():
+    sim = SIM if sim_dir is None else Path(sim_dir)
+    if not (sim / "fm1sim.wasm").exists():
         return ""
-    files = [f for f in SIM.iterdir() if f.is_file() and f.suffix in SIM_PUBLISHED]
+    files = [f for f in sim.iterdir() if f.is_file() and f.suffix in SIM_PUBLISHED]
     for f in files:
         shutil.copy(f, out / f.name)
+    front = out / "index.html"
+    html = front.read_text(encoding="utf-8")
+    front.write_text(html.replace(
+        'href="https://dafum.github.io/grind-machine/webapp/editor/"', 'href="webapp/editor/"'
+    ), encoding="utf-8")
     try:                                           # the page shows the version it was built from: say if it is not this tree's
-        built = json.loads((SIM / "version.json").read_text(encoding="utf-8"))["commit"]
+        built = json.loads((sim / "version.json").read_text(encoding="utf-8"))["commit"]
         here = subprocess.run(["git", "rev-parse", "--short", "HEAD"], cwd=HERE, capture_output=True, text=True).stdout.strip()
         if here and not here.startswith(built) and not built.startswith(here):
             print(f"site: warning: build/sim was built from {built}, this tree is {here}: run tools/build_sim.sh first")

@@ -20,6 +20,11 @@ import { LAYOUTS, DECO_CLASS, blend, heroPose, outline } from './layout.js';
 const device = document.getElementById('device');
 const fit = document.getElementById('fit');
 const note = document.getElementById('note');
+const bootOnly = new URLSearchParams(location.search).get('boot') === '1';
+if (bootOnly) {                                    // the preview panel is a visual display
+  device.inert = true;
+  device.setAttribute('aria-hidden', 'true');
+}
 const els = { deco: {}, ctl: {}, enc: {}, lbl: {}, power: document.getElementById('power-on') };
 const lcd = document.createElement('canvas');
 lcd.width = lcd.height = 240;
@@ -310,7 +315,7 @@ function paint(now) {
 }
 
 // ---- flash in IndexedDB (store.js), the audio clock (audio.js)
-const store = new FlashStore(openFlashDb, msg => { note.textContent = msg; });
+const store = bootOnly ? null : new FlashStore(openFlashDb, msg => { note.textContent = msg; });
 let ctx = null, poweredOff = false;
 function wake() {                                 // a tap or a key brings a stopped context back (not one switched off)
   if (!ctx || poweredOff || !needsResume(ctx.state)) return;
@@ -334,7 +339,7 @@ async function powerSwitch() {                     // the first flip starts the 
   if (poweredOff) { releaseAll(); await ctx.suspend(); }
   else await ctx.resume();
 }
-function cancelBoot() {                            // power-on and Escape: the scene preview ends, the LCD is handed back
+function cancelBoot() {                            // Escape hands the LCD back to the reel
   if (!bootPreview) return;
   bootPreview.cancel();
   if (frame && frameOwner === 'boot') frame = null;  // only a queued preview frame is dropped, never a live one
@@ -344,7 +349,6 @@ function cancelBoot() {                            // power-on and Escape: the s
   }
 }
 async function powerOn() {
-  cancelBoot();
   const btn = els.power, pnote = document.getElementById('power-note');
   btn.disabled = true;
   btn.classList.remove('ready');
@@ -403,12 +407,18 @@ function bindPage() {
     requestAnimationFrame(follow);
   });
   const confirm = document.getElementById('reset-confirm');
-  document.getElementById('reset').addEventListener('click', () => { confirm.hidden = !confirm.hidden; });
+  document.addEventListener('keydown', e => { if (e.key === 'Escape') { confirm.hidden = true; cancelBoot(); } });
+  if (bootOnly) {
+    document.getElementById('power-note').textContent = 'Read-only boot preview. Press Esc to return to the demo reel.';
+    return;
+  }
+  const reset = document.getElementById('reset');
+  reset.addEventListener('click', () => { confirm.hidden = !confirm.hidden; });
+  reset.disabled = false;
   document.getElementById('reset-no').addEventListener('click', () => { confirm.hidden = true; });
   document.addEventListener('pointerdown', e => {   // the pop-over closes on a click elsewhere, or Esc
     if (!confirm.hidden && !e.target.closest('#reset-confirm, #reset')) confirm.hidden = true;
   });
-  document.addEventListener('keydown', e => { if (e.key === 'Escape') { confirm.hidden = true; cancelBoot(); } });
   for (const b of document.querySelectorAll('.bar-btn, #power-on'))   // a mouse click leaves no focus behind,
     b.addEventListener('mousedown', e => e.preventDefault());         // so the next Space plays, not this button
   document.getElementById('reset-yes').addEventListener('click', async () => {
@@ -453,7 +463,7 @@ function reelTick(now) {
 const hero = document.getElementById('hero'), stage = document.getElementById('stage');
 const tilt = document.getElementById('tilt'), scene = document.getElementById('scene');
 const still = window.matchMedia('(prefers-reduced-motion: reduce)');
-if (new URLSearchParams(location.search).get('boot') === '1') {   // opt-in scene preview; the ordinary URL is unchanged
+if (bootOnly) {
   bootPreview = createBootPreview(
     async () => Fm1Sim.create(await wasmBytes),                    // a fresh instance: never booted, no audio, no flash
     fb => { frame = { fb, leds: 0, keyLeds: 0 }; frameOwner = 'boot'; });
@@ -505,7 +515,7 @@ function placePower() {
 }
 function queueHero() { if (!heroQueued) { heroQueued = true; requestAnimationFrame(heroFrame); } }
 
-// ---- install: the firmware this site ships and what is new in it (version.json, written by the build)
+// ---- simulator build and source changelog (version.json, written by the build)
 const MONTHS = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October',
   'November', 'December'];
 function plainNote(n) {                            // the changelog's line for players: no upstream credits or baselines
@@ -525,10 +535,13 @@ installCount().then(n => {
   el.hidden = false;
 });
 fetch('version.json').then(r => r.ok ? r.json() : Promise.reject()).then(v => {
+  const grind = v.grind_native === true;
+  document.getElementById('sim-build').textContent = grind ? 'GRIND build' : 'Base drum-machine build';
+  if (grind) for (const el of document.querySelectorAll('[data-grind-only]')) el.hidden = false;
   const [y, m, d] = v.date.split('-').map(Number);
   const newer = v.since.length ? ` and ${v.since.length} newer change${v.since.length > 1 ? 's' : ''}` : '';
   document.getElementById('fw-version').textContent =
-    `Version ${v.version}${newer}, built ${d} ${MONTHS[m - 1]} ${y} from commit ${v.commit}`;
+    `Simulator source ${v.version}${newer}, commit ${v.commit} (${d} ${MONTHS[m - 1]} ${y})`;
   const ul = document.getElementById('whats-new');
   for (const n of [...v.since, ...v.release.notes]) {
     const li = document.createElement('li'), span = document.createElement('span'), b = document.createElement('b');
@@ -548,7 +561,7 @@ window.addEventListener('scroll', queueHero, { passive: true });
 window.addEventListener('resize', queueHero);
 still.addEventListener?.('change', queueHero);
 showMaster();
-bindControls();
+if (!bootOnly) bindControls();
 bindPage();
 window.addEventListener('resize', relayout);
 document.fonts?.ready.then(relayout);

@@ -6,6 +6,7 @@
 // the device grid. A plain TrueType built by hand (no dependencies), wrapped as WOFF 1.0.
 //   node tests/sim_font.mjs IN.bdf OUT.woff
 import { readFileSync, writeFileSync } from 'node:fs';
+import { pathToFileURL } from 'node:url';
 import { deflateSync } from 'node:zlib';
 
 const PX = 64, EM = 1024, ADV = 8 * PX;
@@ -204,7 +205,7 @@ export function woff(tables) {
   return Buffer.from([...head, ...dir, ...body]);
 }
 
-if (process.argv[1] && import.meta.url.endsWith(process.argv[1].split('/').pop())) {
+if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
   const [inp, out] = process.argv.slice(2);
   const bdf = parseBdf(readFileSync(inp, 'utf8')), font = woff(buildFont(bdf));
   writeFileSync(out, font);

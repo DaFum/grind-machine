@@ -158,7 +158,7 @@ import { execFileSync } from 'node:child_process';
 test('the page links to the source archive it ships, and the archive holds the firmware and the sim', () => {
   const html = readFileSync(join(DIR, 'index.html'), 'utf8');
   assert.match(html, /<a [^>]*href="source\.tar\.gz(\?v=[0-9a-f]+)?"/);
-  const list = execFileSync('tar', ['-tzf', join(DIR, 'source.tar.gz')], { encoding: 'utf8' }).split('\n');
+  const list = execFileSync('tar', ['-tzf', join(DIR, 'source.tar.gz')], { encoding: 'utf8' }).split(/\r?\n/);
   for (const f of ['firmware/src/felucca.c', 'tests/sim_core.c', 'web/sim/app.js', 'tools/build_sim.sh', 'LICENSE'])
     assert.ok(list.some(l => l.endsWith(f)), f);
 });
@@ -334,11 +334,13 @@ test('reel snapshots: a clip replayed from its start snapshot ends on the same s
   }
 });
 
-test('version.json: the firmware built here, its date and what is new, from VERSION.txt and CHANGELOG.md', () => {
+test('version.json: the firmware built here, its enabled mode and source changelog', async () => {
   const v = JSON.parse(readFileSync(join(DIR, 'version.json'), 'utf8'));
   assert.equal(v.version, readFileSync('VERSION.txt', 'utf8').trim());
   assert.match(v.commit, /^[0-9a-f]{7,}$/);
   assert.match(v.date, /^\d{4}-\d{2}-\d{2}$/);
+  const sim = await Fm1Sim.create(WASM);
+  assert.equal(v.grind_native, sim.bootPreview(0), 'build metadata matches the firmware capability');
   assert.ok(Array.isArray(v.since) && Array.isArray(v.release.notes));
   assert.equal(v.release.version, v.version);
   assert.ok(v.since.length + v.release.notes.length > 0, 'something to show');

@@ -6,7 +6,8 @@ import { createServer } from 'node:http';
 import { extname, resolve, sep } from 'node:path';
 
 const { chromium } = await import('../../build/grind-browser/node_modules/playwright-core/index.mjs');
-const preview = resolve('build/sim/preview');
+const packagedPreview = process.argv[2];
+const preview = resolve(packagedPreview ?? 'build/sim/preview');
 const web = resolve('web');
 const types = {
   '.css': 'text/css', '.html': 'text/html', '.js': 'text/javascript',
@@ -14,7 +15,8 @@ const types = {
   '.wasm': 'application/wasm', '.woff': 'font/woff',
 };
 const server = createServer(async (request, response) => {
-  const path = new URL(request.url, 'http://localhost').pathname;
+  let path = new URL(request.url, 'http://localhost').pathname;
+  if (path.endsWith('/')) path += 'index.html';
   const fromWeb = path.startsWith('/editor-source/');
   const root = fromWeb ? web : preview;
   const file = resolve(root, fromWeb ? path.slice('/editor-source/'.length) : path.slice(1) || 'index.html');
@@ -48,14 +50,41 @@ try {
     page.goto(base),
   ]);
   assert.equal(wasm.status(), 200);
+  const native = (process.env.GRIND_NATIVE ?? '0') === '1';
+  const buildLabel = native ? 'GRIND build' : 'Base drum-machine build';
+  assert.equal(await page.title(), 'GRIND MACHINE | FM-1 Web Simulator');
+  await page.waitForFunction(label => document.querySelector('#sim-build').textContent === label, buildLabel);
+  assert.equal(await page.getByRole('heading', { name: 'Generate a GRIND pattern' }).isVisible(), native);
+  const installer = await page.request.get(`${base}/webapp/installer/index.html`);
+  assert.ok(installer.ok(), 'the preview includes an installer');
+  const installerHtml = await installer.text();
+  const editorHref = installerHtml.match(/<a href="([^"]+)">Open the USB web editor<\/a>/)?.[1];
+  const standalone = installerHtml.includes('preview-has-no-package.fwsc');
+  if (packagedPreview) assert.ok(!standalone, 'the supplied site must include a bundled editor');
+  const publishedEditor = 'https://dafum.github.io/grind-machine/webapp/editor/';
+  const landingHref = standalone ? publishedEditor : 'webapp/editor/';
+  const navEditor = page.locator('.hero-nav').getByRole('link', { name: 'Editor', exact: true });
+  const footerEditor = page.locator('.foot-nav').getByRole('link', { name: /USB editor for the FM-1$/ });
+  assert.equal(await navEditor.getAttribute('href'), landingHref, 'landing navigation editor destination');
+  assert.equal(await footerEditor.getAttribute('href'), landingHref, 'landing footer editor destination');
+  let editorUrl = `${base}/editor-source/editor.html`;
+  if (standalone) {
+    assert.equal(editorHref, publishedEditor);
+  } else {
+    assert.equal(editorHref, '../editor/');
+    editorUrl = new URL(landingHref, page.url()).href;
+    assert.equal(new URL(editorHref, installer.url()).href, editorUrl);
+    assert.ok((await page.request.get(editorUrl)).ok(), 'the packaged preview serves its bundled editor');
+  }
   const power = page.getByRole('switch', { name: 'Power' });
+  assert.equal(await page.locator('#device').getByRole('slider').count(), 8);
+  assert.ok(await page.getByRole('button', { name: 'Reset to demos' }).isEnabled());
   await power.click();
   await page.locator('#power-note').waitFor({ state: 'hidden' });
   assert.equal(await power.getAttribute('aria-checked'), 'true');
   assert.doesNotMatch(await page.locator('#note').textContent(), /firmware failed/i);
 
   // BLAST IGNITION's scene preview (?boot=1): the expected mode comes from GRIND_NATIVE (default 0)
-  const native = (process.env.GRIND_NATIVE ?? '0') === '1';
   const supported = await page.evaluate(async () => {
     const { Fm1Sim } = await import('/engine.js');
     const sim = await Fm1Sim.create(await (await fetch('/fm1sim.wasm')).arrayBuffer());
@@ -67,12 +96,25 @@ try {
     const c = document.querySelector('canvas.lcd').getContext('2d').getImageData(x0, y0, 1, 1).data;
     return [c[0], c[1], c[2], c[3]];
   }, [x, y]);
+  const assertReadOnly = async previewPage => {
+    assert.ok(await previewPage.getByRole('switch', { name: 'Power' }).isDisabled());
+    assert.ok(await previewPage.getByRole('button', { name: 'Reset to demos' }).isDisabled());
+    const panel = previewPage.locator('#device');
+    assert.equal(await panel.locator('.enc:visible').count(), 8, 'the preview renders all eight knobs');
+    assert.equal(await panel.getByRole('slider').count(), 0, 'the preview exposes no interactive sliders');
+    const focused = await panel.locator('.enc').evaluateAll(knobs => knobs.some(knob => {
+      knob.focus();
+      return knob === document.activeElement;
+    }));
+    assert.equal(focused, false, 'the preview knobs cannot receive focus');
+  };
   if (!native) {                                          // the unsupported build: ?boot=1 leaves the normal reel on screen
     const off = await browser.newPage({ reducedMotion: 'reduce' });
     off.setDefaultTimeout(15_000);
     off.on('pageerror', error => errors.push(error.message));
     await off.goto(`${base}/?boot=1`);
     await off.waitForFunction(() => document.documentElement.dataset.bootPreview === 'settled');   // the preview's load is over
+    await assertReadOnly(off);
     const owners = new Set(), frames = new Set();         // who painted the LCD, and the reel's images
     for (let i = 0; i < 40 && !(owners.has('reel') && frames.size >= 2); i++) {
       const [owner, hash] = await off.evaluate(() => {
@@ -104,12 +146,20 @@ try {
     await off.close();
   }
   if (native) {
-    const boot = await browser.newPage({ reducedMotion: 'reduce' });
+    // No reel in the popup, so Escape should restore a black screen.
+    await page.context().route('**/reel.bin.gz*', route => route.fulfill({ status: 404 }));
+    const originalUrl = page.url();
+    const [boot] = await Promise.all([
+      page.waitForEvent('popup'),
+      page.getByRole('link', { name: /Preview BLAST IGNITION/ }).click(),
+    ]);
     boot.setDefaultTimeout(15_000);
     boot.on('pageerror', error => errors.push(error.message));
-    await boot.route('**/reel.bin.gz*', route => route.fulfill({ status: 404 }));   // no reel: black is the baseline
-    await boot.goto(`${base}/?boot=1`);
+    await boot.waitForURL(`${base}/?boot=1#play`);
+    assert.equal(page.url(), originalUrl);
+    assert.equal(await power.getAttribute('aria-checked'), 'true', 'the original simulator stays powered on');
     await boot.waitForFunction(() => document.documentElement.dataset.bootPreview === 'settled');
+    await assertReadOnly(boot);
     await boot.waitForFunction(() => {                    // reduced motion: READY directly (the red rule at y 124)
       const c = document.querySelector('canvas.lcd').getContext('2d').getImageData(120, 124, 1, 1).data;
       return c[0] > 150 && c[1] < 80 && c[3] === 255;
@@ -120,6 +170,7 @@ try {
       return c[0] < 40 && c[3] === 255;
     });
     assert.equal(await boot.locator('.lit').count(), 0, 'no LED stays lit after the hand-back');
+    await assertReadOnly(boot);
     await boot.close();
     const plain = await browser.newPage({ reducedMotion: 'reduce' });      // the ordinary URL is unchanged
     await plain.goto(base);
@@ -127,7 +178,7 @@ try {
     assert.notDeepEqual((await lcdPixel(plain, 120, 124)).slice(0, 3), [188, 37, 45]);
     await plain.close();
   }
-  await page.goto(`${base}/editor-source/editor.html?mock=auto`);
+  await page.goto(`${editorUrl}?mock=auto`);
   const projects = page.getByRole('tab', { name: 'Projects' });
   await projects.click();
   assert.equal(await projects.getAttribute('aria-selected'), 'true');

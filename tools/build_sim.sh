@@ -45,7 +45,7 @@ if [ -n "$REF" ]; then
     mkdir -p "$ROOT"
     git archive "$REF" | tar -x -C "$ROOT"
     cp tests/sim_* "$ROOT/tests/"
-    cp web/index_pkg.html "$ROOT/web/"                  # the restyled installer (docs/SIMULATOR.md)
+    cp web/index_pkg.html web/make_site.py "$ROOT/web/"  # use this simulator's site assembly with the ref's editor
     mkdir -p "$ROOT/web/sim" "$ROOT/tools" "$ROOT/docs"
     cp web/sim/* "$ROOT/web/sim/"
     cp tools/build_sim.sh "$ROOT/tools/"
@@ -54,10 +54,14 @@ if [ -n "$REF" ]; then
 fi
 VERSION=$(cat "$ROOT/VERSION.txt" 2>/dev/null || echo DEV)
 DEFS=(-DFELUCCA_VERSION="\"DRUM-$VERSION\"")         # ABOUT shows the firmware's version, as tools/build.py does
-[ "${GRIND_NATIVE:-0}" = 1 ] && DEFS+=(-DGRIND_NATIVE=1)   # the Grind engine and its GRIND pages (off by default)
+NATIVE=0
+if [ "${GRIND_NATIVE:-0}" = 1 ]; then
+    NATIVE=1
+    DEFS+=(-DGRIND_NATIVE=1)                        # the Grind engine and its GRIND pages (off by default)
+fi
 
 # the landing page's version line and "what's new": VERSION.txt, the commit, CHANGELOG.md's Unreleased and this version
-"$PY" - "$ROOT/CHANGELOG.md" "$VERSION" "$(git rev-parse --short "${REF:-HEAD}")" "$(git log -1 --format=%cs "${REF:-HEAD}")" \
+"$PY" - "$ROOT/CHANGELOG.md" "$VERSION" "$(git rev-parse --short "${REF:-HEAD}")" "$(git log -1 --format=%cs "${REF:-HEAD}")" "$NATIVE" \
     > "$OUT/version.json" <<'PY'
 import json, re, sys
 from pathlib import Path
@@ -77,7 +81,7 @@ def note(text):                                   # a short title: the words bef
     title = head if 0 < len(head) <= 48 else " ".join(text.split()[:5])
     return {"title": title, "text": text}
 rel = sections.get(version, {"date": None, "notes": []})
-print(json.dumps({"version": version, "commit": commit, "date": date,
+print(json.dumps({"version": version, "commit": commit, "date": date, "grind_native": sys.argv[5] == "1",
                   "since": [note(n) for n in sections.get("Unreleased", {"notes": []})["notes"]],
                   "release": {"version": version, "date": rel["date"], "notes": [note(n) for n in rel["notes"]]}}, indent=1))
 PY
@@ -163,7 +167,21 @@ PY
 OUT_ABS=$PWD/$OUT
 (cd "$ROOT" && node --test-reporter=dot tests/sim_glue.mjs "$OUT_ABS" && node --test-reporter=dot tests/sim_site.mjs)
 
-# 5. preview: the site's layout, to look at (and, with --package, to install from)
+# 5. The stand-alone simulator links to an installer without a package. A packaged preview gets its own installer.
+mkdir -p "$OUT/webapp/installer"
+"$PY" - "$ROOT/web" "$OUT/webapp/installer/index.html" "$VERSION" <<'PY'
+import json, sys
+from pathlib import Path
+web, out, version = Path(sys.argv[1]), Path(sys.argv[2]), sys.argv[3]
+sys.path.insert(0, str(web))
+from make_site import LIB, strip_module
+html = (web / "index_pkg.html").read_text(encoding="utf-8").replace(
+    'href="../editor/"', 'href="https://dafum.github.io/grind-machine/webapp/editor/"'
+)
+lib = "\n".join(strip_module((web / f).read_text(encoding="utf-8")) for f in LIB)
+meta = json.dumps({"version": version + " (preview)", "product": "FM-1_984", "pkg": "../../firmware/preview-has-no-package.fwsc"})
+out.write_text(html.replace("/*LIB*/", lib).replace("/*META*/", meta), encoding="utf-8")
+PY
 if [ "$PREVIEW" = 1 ]; then
     P=$OUT/preview
     rm -rf "$P"
@@ -173,27 +191,15 @@ if [ "$PREVIEW" = 1 ]; then
         LABEL=$(basename "$PACKAGE" .fwsc | sed -nE 's/^felucca-((drum|hortator)-[0-9.]+)-([0-9a-f]+(-dirty)?)$/\1+\3/p')
         LABEL=${LABEL:-drum-$VERSION}
         echo "build_sim: preview with the firmware package $(basename "$PACKAGE") ($LABEL)"
-        "$PY" - "$ROOT/web" "$OUT/package.fwsc" "$LABEL" "$P" <<'PY'
+        "$PY" - "$ROOT/web" "$OUT/package.fwsc" "$LABEL" "$P" "$OUT" <<'PY'
 import sys
 sys.path.insert(0, sys.argv[1])
 import make_site                                     # the site exactly as web/make_site.py makes it
-make_site.main(sys.argv[2], sys.argv[3], sys.argv[4])
+make_site.main(*sys.argv[2:5], sim_dir=sys.argv[5])
 PY
-        for f in $PAGE fm1sim.wasm source.tar.gz reel.bin.gz reel.json features.bin.gz features.json terminus.woff terminus-license.txt version.json lab_ids.json; do cp "$OUT/$f" "$P/"; done   # the landing page at /
     else
-    for f in $PAGE fm1sim.wasm source.tar.gz reel.bin.gz reel.json features.bin.gz features.json terminus.woff terminus-license.txt version.json lab_ids.json; do cp "$OUT/$f" "$P/"; done
-    "$PY" - "$ROOT/web" "$P/webapp/installer/index.html" "DRUM-$VERSION" <<'PY'
-import json, sys
-from pathlib import Path
-web, out, version = Path(sys.argv[1]), Path(sys.argv[2]), sys.argv[3]
-sys.path.insert(0, str(web))
-from make_site import strip_module                   # the site's own assembly (web/make_site.py main)
-html = (web / "index_pkg.html").read_text(encoding="utf-8")
-from make_site import LIB
-lib = "\n".join(strip_module((web / f).read_text(encoding="utf-8")) for f in LIB)
-meta = json.dumps({"version": version + " (preview)", "product": "FM-1_900", "pkg": "../../firmware/preview-has-no-package.fwsc"})
-out.write_text(html.replace("/*LIB*/", lib).replace("/*META*/", meta), encoding="utf-8")
-PY
+        cp "$OUT/webapp/installer/index.html" "$P/webapp/installer/"
+        for f in $PAGE fm1sim.wasm source.tar.gz reel.bin.gz reel.json features.bin.gz features.json terminus.woff terminus-license.txt version.json lab_ids.json; do cp "$OUT/$f" "$P/"; done   # the landing page at /
     fi
     echo "build_sim: preview $P (cd $P && python3 -m http.server 8001)"
 fi

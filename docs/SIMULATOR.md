@@ -12,10 +12,14 @@ Design: `docs/superpowers/specs/2026-10-06-websim-design.md`. Plan: `docs/superp
 From a fresh clone, one command:
 
 ```sh
-tools/build_sim.sh                 # PYTHON=... to pick the Python (it needs Pillow for the generated headers)
-cd build/sim && python3 -m http.server 8001
+GRIND_NATIVE=1 bash tools/build_sim.sh --preview
+cd build/sim/preview && python3 -m http.server 8001
 # open http://127.0.0.1:8001/
 ```
+
+`GRIND_NATIVE=1` enables the five GRIND pages and the read-only BLAST IGNITION preview (`?boot=1`). On a fresh browser store,
+project slot D contains a playable MATH 7/4 pattern and the GRIND role kit. Existing browser saves are loaded as usual.
+With `GRIND_NATIVE=0` (the build default), the standard drum-machine firmware and its four original demos are used.
 
 **Prerequisites:**
 - Python 3 with Pillow.
@@ -38,24 +42,24 @@ Everything the script writes goes under `build/sim/`:
 - `emcache/`;
 - `fm1sim.wasm` and the page files.
 
-`build/sim/` is a self-contained static folder that can be put on any static host. It needs no special headers and no SharedArrayBuffer.
+`build/sim/` is a static folder that can be served locally or put on a static host. It needs no special headers and no SharedArrayBuffer.
+Its local installer has no package by default. The landing page also links to the published GRIND preview installer.
 
 ## The site: landing page and installer
 
-`web/sim/index.html` is the project's landing page: the name and one sentence, the simulator as the hero, the
-manual (a panel map: a small FM-1, `web/sim/mini.js`, lit by `web/sim/manual.js` from the list of every control;
-then ten short guides, the README keeping the full manual), the features as eight interactive pieces on the firmware's own DSP (the features lab, below), how to install, credits and
-the source link.
+`web/sim/index.html` is the GRIND MACHINE simulator landing page. It includes the playable panel, a control map,
+guides (including GRIND controls only when enabled), the features lab, installation links, credits and the source
+archive. The build label and source changelog describe the simulator. The published installer and USB editor can
+serve a different commit.
 
-`web/index_pkg.html` is the installer page, restyled to match, in English only and named Hortator (the firmware's name since 2026-10-07). This was a
+`web/index_pkg.html` is the GRIND MACHINE installer page, restyled to match and in English. This was a
 user-granted exception to the simulator's file rules (2026-10-07). Its script is `main`'s at 12a1ba0 with exactly
 four changes: the text table, the fixed language, no language switch, and the status label. `tests/sim_site.mjs`
 rebuilds that script from 12a1ba0 and requires a byte-for-byte match, so the install logic cannot drift unnoticed.
 
-`tools/build_sim.sh --preview` (with `--ref main` for the current firmware) writes `build/sim/preview/` in the
-site's layout. The landing page is at `/` and the installer at `webapp/installer/`, assembled with `make_site.py`'s
-own `strip_module`. Its firmware package is a placeholder that does not exist, so the preview installer shows
-"Could not load the firmware" and Install stays disabled.
+`tools/build_sim.sh --preview` writes `build/sim/preview/` in the site's layout. The landing page is at `/` and the
+local installer at `webapp/installer/`. Without a package, that installer shows "Could not load the firmware" and
+Install stays disabled.
 
 To preview with a real firmware package, pass one the firmware session already built: `tools/build_sim.sh --ref
 <its commit> --preview --package <path>/felucca-drum-X.Y.Z-<commit>.fwsc`. The package is copied into `build/sim`
@@ -86,7 +90,7 @@ The page is drawn as the FM-1's screen draws its pages:
 |---|---|---|
 | Host harness | `tests/sim_host.h` | `#include`s the firmware sources in `felucca.c`'s order, with the HAL replaced: the audio sample count as the clock, input levels with latched edges, the LCD as a framebuffer, the audio ISR (`audio.c`) run on demand, the flash in RAM with dirty sectors |
 | Sim core | `tests/sim_core.c` | the exported C API: `sim_init`, `sim_render`, `sim_frame`, `sim_btn`, `sim_key`, `sim_enc`, `sim_master`, `sim_leds`, `sim_key_leds`, `sim_fb`, `sim_audio`, `sim_flash*`, `sim_playing` |
-| Demos | `tests/sim_demo.c` | the first visit's four projects (the drumsim kits 808 / 909 / Plaits / mixed), saved to slots 1–4 with `project_save`, slot 1 loaded and remembered as the last project |
+| Demos | `tests/sim_demo.c` | TRX, EFM, modern with ACID, and mixed TRX/EFM (MATH 7/4 in a GRIND build), saved to slots A–D with `project_save`, slot A loaded and remembered as the last project |
 | Engine | `web/sim/engine.js` | loads the wasm (no emscripten JS glue), wraps the API; used by the worklet and by node |
 | Worklet | `web/sim/worklet.js` | the firmware runs here, in the audio thread: 128 frames per quantum. The audio ISR runs once per 256-frame half and the UI frame every 15 ms of audio, as on the device. It posts the screen, the LEDs and written flash sectors to the page |
 | Storage, audio | `web/sim/store.js`, `web/sim/audio.js` | the flash in IndexedDB (written sectors wait until a write completes; a lost connection is reopened once; a failure shows a note and is retried with the next save); resuming the AudioContext (the clock) after a phone stops it, and the iOS playback session (sound with the silent switch on) |
@@ -191,7 +195,7 @@ Autorepeat and shortcuts with Cmd / Ctrl / Alt are ignored. Leaving the tab rele
 - `tests/sim_site.mjs` checks the page: the manual before the features, its map listing every knob and button, ten
   guides; the eight chapters, each with its plate; every panel hint (guides and chapters) naming real controls.
 
-## Requests for the firmware session
+## Upstream simulator integration notes
 
 1. **Done on `web-sim` (user-approved, 2026-10-07): the landing page is the site's front page.** `web/make_site.py`
    copies the published files of `build/sim/` to the site's root when `tools/build_sim.sh` has built it (the landing

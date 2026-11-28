@@ -14,14 +14,24 @@ class WasmCiTests(unittest.TestCase):
     def run_lane(self, core_exit, preview_exit):
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
-            for name in ('tools/grind', 'tests', 'bin', 'build/grind-browser/node_modules/playwright-core'):
+            for name in ('tools/grind', 'tests', 'web', 'bin', 'build/grind-browser/node_modules/playwright-core'):
                 (root / name).mkdir(parents=True)
             shutil.copyfile(ROOT / 'tools/grind/run_ci.sh', root / 'tools/grind/run_ci.sh')
+            shutil.copyfile(ROOT / 'tools/fm1pkg_make.py', root / 'tools/fm1pkg_make.py')
+            (root / 'web/make_site.py').write_text(
+                'def main(package, version, site):\n'
+                '    assert package.is_file()\n'
+                '    site.mkdir()\n'
+                '    (site / "index.html").touch()\n', encoding='utf-8')
             (root / 'tests/run_grind_tests.sh').touch()
             (root / 'tools/build_sim.sh').write_text(f'exit {preview_exit}\n', encoding='utf-8')
             (root / 'build/grind-browser/node_modules/playwright-core/index.mjs').touch()
-            for name, script in (('docker', f'exit {core_exit}\n'), ('chromium', 'exit 0\n'),
-                                 ('node', 'printf "%s\\n" "$1" >> "$PWD/node-invocations"\n')):
+            node = ('if [ "$1" = tests/grind/browser_smoke.mjs ] && [ "$#" -gt 1 ]; then\n'
+                    '    test -f "$2/index.html" || exit 1\n'
+                    '    set -- "$1 --packaged"\n'
+                    'fi\n'
+                    'printf "%s GRIND_NATIVE=%s\\n" "$1" "${GRIND_NATIVE-unset}" >> "$PWD/node-invocations"\n')
+            for name, script in (('docker', f'exit {core_exit}\n'), ('chromium', 'exit 0\n'), ('node', node)):
                 path = root / 'bin' / name
                 path.write_text('#!/bin/sh\n' + script, encoding='utf-8')
                 path.chmod(0o755)
@@ -36,14 +46,23 @@ class WasmCiTests(unittest.TestCase):
         result, status, invoked = self.run_lane(1, 0)
         self.assertEqual(result.returncode, 1, result.stdout + result.stderr)
         self.assertEqual(status, 'status=FAIL')
-        self.assertIn('tests/grind/browser_smoke.mjs', invoked)
-        self.assertIn('PASS: browser-smoke', result.stdout)
+        lines = result.stdout.splitlines()
+        self.assertEqual([line for line in lines if line.startswith('FAIL: ')], ['FAIL: grind-core-wasm'], result.stdout)
+        self.assertIn('PASS: browser-smoke-native1', lines, result.stdout)
+        self.assertIn('PASS: browser-smoke-native1-packaged', lines, result.stdout)
+        self.assertIn('PASS: browser-smoke-native0', lines, result.stdout)
+        smoke = [call for call in invoked if call.startswith('tests/grind/browser_smoke.mjs')]
+        self.assertEqual(sorted(smoke), [
+            'tests/grind/browser_smoke.mjs --packaged GRIND_NATIVE=1',
+            'tests/grind/browser_smoke.mjs GRIND_NATIVE=0',
+            'tests/grind/browser_smoke.mjs GRIND_NATIVE=1',
+        ])
 
     def test_failed_preview_blocks_browser(self):
         result, status, invoked = self.run_lane(0, 1)
         self.assertEqual(result.returncode, 1, result.stdout + result.stderr)
         self.assertEqual(status, 'status=FAIL')
-        self.assertNotIn('tests/grind/browser_smoke.mjs', invoked)
+        self.assertFalse(any(call.startswith('tests/grind/browser_smoke.mjs') for call in invoked))
         for native in (0, 1):
             self.assertIn(f'BLOCKED: browser smoke (GRIND_NATIVE={native}) requires successful WASM preview build', result.stdout)
 
