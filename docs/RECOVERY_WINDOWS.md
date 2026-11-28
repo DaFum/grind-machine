@@ -37,14 +37,24 @@ shows up in Device Manager under "Disk drives". If Windows asks whether to forma
 ## Another Windows way: M-Flasher
 
 [M-Flasher](https://github.com/jvitkauskas/m-flasher) (Windows, macOS, Linux; window and command line) backs up,
-restores and installs firmware on the FM-1 through the chip's USB download mode, so it also works on a unit whose
-firmware is broken. Per its README it saves a backup before it writes, checks that the package is for this model,
-writes only what changes and verifies every write. How it gets the unit into download mode:
+restores and installs firmware on the FM-1 through the chip's USB download mode. That mode is built into the chip's ROM
+and works even when the firmware does not, **but the unit has to be in it first**: M-Flasher cannot start a unit whose
+firmware does not run. Per its README it saves a backup before it writes, checks that the package is for this model,
+writes only what changes and verifies every write. How the unit gets into download mode:
 
-- with the unit running normally (M-VAVE's firmware or Felucca), just connect it: M-Flasher finds it on USB MIDI and
-  its **DOWNLOAD MODE** button switches it over (this also works on stock firmware);
+- with the unit **running** (M-VAVE's firmware or Felucca), just connect it: M-Flasher finds it on USB MIDI and its
+  **DOWNLOAD MODE** button switches it over (this also works on stock firmware);
 - with Felucca, SLOOP or Snoop37 running: hold **OCT−** and **OCT+** for 5 s;
-- with its own m-bootloader installed: hold **REC** while switching on.
+- with its own **m-bootloader already installed**: hold **REC** while switching on. This is the key route that still
+  works when the firmware does not start;
+- a unit whose firmware is damaged often ends up in download mode by itself (per M-Flasher's usage doc), so connect
+  it and see whether M-Flasher finds it.
+
+**If the firmware does not start and the unit is not in download mode**, and it still has M-VAVE's stock bootloader
+(no m-bootloader), there is no key route: M-Flasher's usage doc says its keys cannot put such a unit into download
+mode, and that the USB_KEY dongle (a Raspberry Pi Pico) still reaches it. The FM-1 Transporter mentioned below is
+the same kind of hardware route. M-Flasher offers to install m-bootloader once per unit, which gives the unit a key
+route for next time.
 
 The apps are not signed, so Windows and Defender warn on the first start. Its README gives the licence as MIT, with
 some bundled files under their own licences (listed in its `data/NOTICE.md` and `assets/README.md`). I have not run it.
