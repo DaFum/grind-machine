@@ -121,6 +121,17 @@ static void time_micro(void)
     for (unsigned s = 0; s < GM_STEPS; ++s)
         assert(be_time_micro(&cfg, key, 2, s, 0) == be_time_micro(&other, key, 2, s, 0));
     assert(cfg.mutation == 0u && cfg.seed == UINT32_C(0xC0FFEE));   /* the caller's config is untouched */
+    /* hostile inputs stay a valid cell: swing and humanize above 100 are clamped, a NULL config or an out-of-range
+     * coordinate gives 0 */
+    cfg.humanize = 255;
+    for (unsigned sw = 0; sw < 256u; ++sw)
+        for (unsigned s = 0; s < GM_STEPS; ++s) {
+            gm_cell c = { GM_ON, 0, 0, be_time_micro(&cfg, key, 3, s, (uint8_t)sw) };
+            assert(gm_cell_valid(c) && c.micro >= -12 && c.micro <= 12);
+        }
+    assert(be_time_micro(NULL, key, 0, 0, 0) == 0 && be_time_micro(&cfg, key, GM_TRACKS, 0, 0) == 0 &&
+           be_time_micro(&cfg, key, 0, GM_STEPS, 0) == 0);
+    be_recipe_init(NULL, 1u, 0);                                    /* (no crash) */
 }
 
 int main(void)
