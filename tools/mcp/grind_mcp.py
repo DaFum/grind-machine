@@ -40,6 +40,7 @@ MAX_TEXT = 24000                      # characters a tool returns at most (the r
 
 BUTTONS = ["FX", "SCL", "ENV", "LFO", "EDIT", "GLO", "HOME", "SAVE", "ARP", "SEQ", "PLAY", "REC", "OCTDN", "OCTUP"]
 QUIET = {"stderr", "command.start", "process.start"}   # (their fields name a timeout: not a failure)
+PROTOCOLS = ("2025-06-18", "2025-03-26", "2024-11-05")   # (the MCP revisions the plumbing below speaks)
 ENCODERS = ["SELECT", "ALGO", "PRESET", "K1", "K2", "K3", "K4"]
 
 
@@ -222,8 +223,9 @@ def t_sim_audio(a):
 
 
 def t_sim_screenshot(a):
-    path = ROOT / "build" / "sim" / "host" / "screen.ppm"
-    need_ok(Sim.ask(f"shot {path}"))
+    rel = "build/sim/host/screen.ppm"                 # (relative to the simulator's cwd, ROOT)
+    path = ROOT / rel
+    need_ok(Sim.ask(f"shot {rel}"))
     w, h, pix = scale(*read_ppm(path), max(1, min(int(a.get("scale", 2)), 4)))
     return [{"type": "image", "data": base64.b64encode(png(w, h, pix)).decode(), "mimeType": "image/png"}]
 
@@ -266,6 +268,7 @@ def t_emu_run(a):
     exe = os.environ.get("FM1_EMU")
     if not exe or not Path(exe).is_file():
         raise RuntimeError("set FM1_EMU to the fm1-emu binary (github.com/joakimeriksson/fm1-emu releases)")
+    exe = str(Path(exe).resolve())                    # (the run happens in another directory: a relative path would not follow)
     pkg = Path(a["package"]).expanduser()
     if not pkg.is_file() or pkg.suffix.lower() not in (".fwsc", ".bin"):
         raise ValueError("package must be an existing .fwsc (or app .bin) file")
@@ -367,7 +370,8 @@ def t_log_summary(a):
     js = [d for d, _ in recs if d and "event" in d]
     if js:
         times = [d.get("time") for d in js if d.get("time")]
-        out.append(f"JSON events: {len(js)} ({len(ls) - len(js)} other lines); {times[0]} .. {times[-1]}")
+        span = f"; {times[0]} .. {times[-1]}" if times else ""
+        out.append(f"JSON events: {len(js)} ({len(ls) - len(js)} other lines){span}")
         ev = collections.Counter(d["event"] for d in js)
         out.append("top events: " + ", ".join(f"{k} x{v}" for k, v in ev.most_common(12)))
         src = collections.Counter(d.get("source") for d in js)
@@ -505,7 +509,8 @@ TOOLS = {
 def handle(msg):
     method, mid = msg.get("method"), msg.get("id")
     if method == "initialize":
-        return {"protocolVersion": msg.get("params", {}).get("protocolVersion", "2025-06-18"),
+        asked = (msg.get("params") or {}).get("protocolVersion")
+        return {"protocolVersion": asked if asked in PROTOCOLS else PROTOCOLS[0],
                 "capabilities": {"tools": {}}, "serverInfo": {"name": "grind-dev", "version": "0.1.0"}}
     if method == "ping":
         return {}

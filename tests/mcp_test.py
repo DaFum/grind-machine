@@ -56,6 +56,24 @@ def main():
             "emu_run", "emu_fetch_package", "log_summary", "log_read", "log_search", "ci_log"}
     check("tools/list has every tool", want <= names)
     check("an unknown method answers with an error, not silence", "error" in c.rpc("nope"))
+    check("initialize echoes a protocol version it supports",
+          c.rpc("initialize", {"protocolVersion": "2024-11-05"})["result"]["protocolVersion"] == "2024-11-05")
+    fb = c.rpc("initialize", {"protocolVersion": "9999-01-01"})["result"]["protocolVersion"]
+    check("initialize answers an unknown protocol version with a supported one, not an echo", fb != "9999-01-01" and fb[:2] == "20")
+    check("initialize with no version still gets a default", "protocolVersion" in c.rpc("initialize")["result"])
+
+    # sim_cli: a screenshot path with spaces is written whole; a path too long for the buffer is refused, not cut
+    with tempfile.TemporaryDirectory() as d:
+        sub = Path(d) / "a dir with spaces"
+        sub.mkdir()
+        exe = ROOT / "build" / "sim" / "host" / ("sim_cli.exe" if os.name == "nt" else "sim_cli")
+        c.call("sim_reset")                           # (builds it)
+        cli = subprocess.run([str(exe)], input=f"shot {sub / 'shot one.ppm'}\nshot {Path(d) / ('x' * 400)}\nquit\n",
+                             capture_output=True, text=True, cwd=ROOT)
+        replies = [json.loads(x) for x in cli.stdout.splitlines() if x.startswith("{")]
+        check("sim_cli writes a screenshot whose path has spaces", replies and replies[0].get("ok") is True
+              and (sub / "shot one.ppm").is_file() and (sub / "shot one.ppm").stat().st_size > 100000)
+        check("sim_cli refuses a path longer than its buffer", len(replies) > 1 and replies[1].get("ok") is False)
 
     # simulator: record the value before the action and require it to change
     r, t = c.call("sim_reset")
@@ -72,7 +90,7 @@ def main():
     frames0 = s1["ui_frames"]
     c.call("sim_run", frames=4096)
     check("sim_run advances the firmware's UI frames", c.state()["ui_frames"] > frames0)
-    before = png1
+    before = base64.b64decode(c.call("sim_screenshot", scale=1)[0]["content"][0]["data"])   # (after the run, just before the turn)
     c.call("sim_turn", encoder="K1", steps=3)
     after = base64.b64decode(c.call("sim_screenshot", scale=1)[0]["content"][0]["data"])
     check("turning KNOB 1 changes the screen", after != before)
@@ -96,6 +114,11 @@ def main():
               and facts["audio"]["seconds"] > 1)
         check("emu_run returns both snapshots as PNG", len(imgs) == 2 and base64.b64decode(imgs[0]["data"])[:4] == b"\x89PNG")
         check("the EDIT press changed the screen between the snapshots", len(imgs) == 2 and imgs[0]["data"] != imgs[1]["data"])
+        rel = Client({**os.environ, "FM1_EMU": os.path.relpath(emu, ROOT)})      # (the emulator runs in another directory)
+        r2 = rel.call("emu_run", package=pkg, ms=300, snapshots=[250], timeout=170)[0]
+        check("emu_run works when FM1_EMU is a relative path", not r2["isError"]
+              and json.loads(r2["content"][0]["text"].split("\n")[0])["exit"] == 0)
+        rel.close()
     else:
         print("skip  emu_run boot (set FM1_EMU and FM1_EMU_PACKAGE)")
     c.close()
@@ -184,6 +207,11 @@ def main():
         txt = Path(d) / "serial.log"
         txt.write_text("12:00:00.1 boot\n12:00:01.2 CRASH at 0x1234\n12:00:02.3 ok\n", encoding="utf-8")
         check("log_summary reads plain text and flags the crash line", "CRASH" in c.call("log_summary", path=str(txt))[1])
+        nt = Path(d) / "no-time.jsonl"
+        nt.write_text(json.dumps({"event": "x.start", "seq": 1}) + "\n" + json.dumps({"event": "x.error", "seq": 2}) + "\n",
+                      encoding="utf-8")
+        r, t = c.call("log_summary", path=str(nt))
+        check("log_summary copes with JSON events that carry no time", not r["isError"] and "x.error" in t)
     r, t = c.call("ci_log", run_id="12; rm -rf /")
     check("ci_log rejects a run id that is not a number", r["isError"] and "number" in t)
     c.close()
