@@ -1,0 +1,38 @@
+name: Pillow venv
+description: >-
+  The project .venv with the pinned Pillow, restored from the Actions cache when the runner's Python is unchanged.
+  A restored copy is checked before use; a miss or a failed check builds it as before.
+inputs:
+  pillow:
+    description: Pinned Pillow version
+    default: '13.0.0'
+runs:
+  using: composite
+  steps:
+    - id: python
+      shell: bash
+      run: |
+        python3 - >> "$GITHUB_OUTPUT" <<'PY'
+        import hashlib, os, platform, sys
+        ident = f'{os.path.realpath(sys.executable)} {sys.version} {platform.machine()}'
+        print('id=' + hashlib.sha256(ident.encode()).hexdigest()[:16])
+        PY
+    - id: cache
+      uses: actions/cache@0400d5f644dc74513175e3cd8d07132dd4860809 # v4.2.4
+      with:
+        path: .venv
+        key: grind-venv-v1-${{ runner.os }}-${{ runner.arch }}-${{ steps.python.outputs.id }}-Pillow-${{ inputs.pillow }}
+    - shell: bash
+      env:
+        PILLOW: ${{ inputs.pillow }}
+        CACHE_HIT: ${{ steps.cache.outputs.cache-hit }}
+      run: |
+        if [ "$CACHE_HIT" = true ] &&
+          .venv/bin/python -c 'import sys, PIL; sys.exit(PIL.__version__ != sys.argv[1])' "$PILLOW" 2>/dev/null; then
+          echo "Pillow $PILLOW: restored .venv"
+        else
+          rm -rf .venv
+          python3 -m venv .venv
+          .venv/bin/pip install "Pillow==$PILLOW"
+        fi
+        echo "$PWD/.venv/bin" >> "$GITHUB_PATH"

@@ -50,10 +50,7 @@ jobs:
       - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
         with:
           node-version: '22'
-      - run: |
-          python3 -m venv .venv
-          .venv/bin/pip install Pillow==13.0.0
-          echo "$PWD/.venv/bin" >> "$GITHUB_PATH"
+      - uses: ./.github/actions/pillow-venv
       - id: checks
         run: bash tools/grind/run_ci.sh host-upstream
       - name: Upload Host Upstream evidence
@@ -78,10 +75,7 @@ jobs:
       - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
         with:
           node-version: '22'
-      - run: |
-          python3 -m venv .venv
-          .venv/bin/pip install Pillow==13.0.0
-          echo "$PWD/.venv/bin" >> "$GITHUB_PATH"
+      - uses: ./.github/actions/pillow-venv
       - id: checks
         run: bash tools/grind/run_ci.sh performance
       - name: Upload Performance evidence
@@ -96,6 +90,10 @@ jobs:
     name: WASM and web
     runs-on: ubuntu-24.04
     timeout-minutes: 25
+    env:
+      EMSDK_DIGEST: sha256:fca9b3affd2e321ab97ffc657ccc53b9fb88715997712d11d562900e6655f26f
+      EMSDK_ID: sha256:b4584bcb016b5416c2eb606e3aeffa7461a63037c0ba4cc8e83c6df3ffb532ba   # its config digest
+      PLAYWRIGHT_CORE: 1.58.2
     outputs:
       status: ${{ steps.checks.outputs.status }}
     steps:
@@ -105,17 +103,60 @@ jobs:
       - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
         with:
           node-version: '22'
-      - run: |
-          python3 -m venv .venv
-          .venv/bin/pip install Pillow==13.0.0
-          echo "$PWD/.venv/bin" >> "$GITHUB_PATH"
-      - name: Use the resolved Linux amd64 Emscripten image
+      - uses: ./.github/actions/pillow-venv
+      # The pinned image is cached as a docker save archive. A restored copy is used only when its image ID is the pinned
+      # config digest (EMSDK_ID; the containerd image store reports the manifest digest EMSDK_DIGEST instead). Otherwise
+      # it is pulled by digest as before, and saved only after the pulled image matches the pin.
+      - id: emsdk_cache
+        name: Restore the pinned Emscripten image
+        uses: actions/cache/restore@0400d5f644dc74513175e3cd8d07132dd4860809 # v4.2.4
+        with:
+          path: ${{ runner.temp }}/emsdk-image.tar
+          key: grind-emsdk-v1-${{ env.EMSDK_DIGEST }}
+      - id: emsdk
+        name: Use the resolved Linux amd64 Emscripten image
+        env:
+          CACHE_HIT: ${{ steps.emsdk_cache.outputs.cache-hit }}
         run: |
-          image=emscripten/emsdk@sha256:fca9b3affd2e321ab97ffc657ccc53b9fb88715997712d11d562900e6655f26f
-          docker pull "$image"
-          docker tag "$image" emscripten/emsdk:6.0.11
+          archive="$RUNNER_TEMP/emsdk-image.tar"
+          image="emscripten/emsdk@$EMSDK_DIGEST"
+          id_of() { docker image inspect --format '{{.Id}}' "$1" 2>/dev/null; }
+          pinned() { case $(id_of "$1") in "$EMSDK_ID"|"$EMSDK_DIGEST") return 0 ;; *) return 1 ;; esac; }
+          if [ "$CACHE_HIT" = true ] && docker load -i "$archive" && pinned emscripten/emsdk:6.0.11; then
+            echo "Emscripten image $(id_of emscripten/emsdk:6.0.11): restored from the cache"
+          else
+            docker image rm -f emscripten/emsdk:6.0.11 >/dev/null 2>&1 || true
+            docker pull "$image"
+            docker tag "$image" emscripten/emsdk:6.0.11
+            if pinned "$image"; then
+              docker save -o "$archive" emscripten/emsdk:6.0.11 && echo 'save=1' >> "$GITHUB_OUTPUT"
+            else
+              echo "::warning title=Emscripten cache::pulled image ID $(id_of "$image") differs from EMSDK_ID; not cached"
+            fi
+          fi
+      - name: Save the pinned Emscripten image
+        if: steps.emsdk.outputs.save == '1' && steps.emsdk_cache.outputs.cache-hit != 'true'
+        uses: actions/cache/save@0400d5f644dc74513175e3cd8d07132dd4860809 # v4.2.4
+        with:
+          path: ${{ runner.temp }}/emsdk-image.tar
+          key: grind-emsdk-v1-${{ env.EMSDK_DIGEST }}
+      - id: browser_cache
+        name: Restore the pinned browser test driver
+        uses: actions/cache@0400d5f644dc74513175e3cd8d07132dd4860809 # v4.2.4
+        with:
+          path: build/grind-browser/node_modules
+          key: grind-playwright-core-v1-${{ runner.os }}-${{ env.PLAYWRIGHT_CORE }}
       - name: Install the pinned browser test driver
-        run: npm install --prefix build/grind-browser --no-save --ignore-scripts --no-audit --no-fund playwright-core@1.58.2
+        env:
+          CACHE_HIT: ${{ steps.browser_cache.outputs.cache-hit }}
+        run: |
+          if [ "$CACHE_HIT" = true ] && node -e 'process.exit(require(process.argv[1]).version === process.argv[2] ? 0 : 1)' \
+            "$PWD/build/grind-browser/node_modules/playwright-core/package.json" "$PLAYWRIGHT_CORE"; then
+            echo "playwright-core $PLAYWRIGHT_CORE: restored from the cache"
+          else
+            rm -rf build/grind-browser/node_modules
+            npm install --prefix build/grind-browser --no-save --ignore-scripts --no-audit --no-fund "playwright-core@$PLAYWRIGHT_CORE"
+          fi
       - id: checks
         run: bash tools/grind/run_ci.sh wasm
       - name: Upload WASM and web evidence
@@ -153,10 +194,7 @@ jobs:
           git fetch --no-tags https://github.com/DeadActive/hortator.git 'refs/tags/drum-v*:refs/tags/drum-v*' ||
             echo 'BLOCKED: upstream release refs unavailable; the native build can still run'
       - name: Prepare native Python environment
-        run: |
-          python3 -m venv .venv
-          .venv/bin/pip install Pillow==13.0.0
-          echo "$PWD/.venv/bin" >> "$GITHUB_PATH"
+        uses: ./.github/actions/pillow-venv
       # The two pinned vendor inputs are cached before the build touches them. A restored copy is not trusted: the build
       # step still checks its digests (tools/grind/native_inputs.py). A miss downloads them as before.
       - id: vendor_cache
