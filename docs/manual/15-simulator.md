@@ -1,9 +1,9 @@
 # Web simulator
-<!--blurb: Playing Hortator in the browser: mouse, touch and computer keyboard.-->
+<!--blurb: Playing GRIND MACHINE in the browser with mouse, touch and computer keyboard.-->
 
 ## What it is
 
-The landing page at [deadactive.github.io/hortator](https://deadactive.github.io/hortator/) runs the **real firmware**, compiled to WebAssembly, on a 3D FM-1: the 240 by 240 screen, the panel (buttons, SELECT / ALGORITHM / PRESETS, KNOB 1 to 4, MASTER, 27 keys, the LEDs) and stereo audio. The UI, sequencer, drum engines and effects are the firmware's own sources, so the page follows every release. The simulator runs the **plain version**: it has no Bluetooth page. SCL is labelled SEL there.
+The local **GRIND MACHINE simulator** runs the firmware compiled to WebAssembly. The FM-1 panel includes the 240 × 240 screen, buttons, keys, knobs, LEDs and stereo audio. Build with `GRIND_NATIVE=1` and press ARP through the two GRIDS pages to reach GRIND. A fresh browser store includes MATH 7/4 in demo slot D. The simulator uses the standard non-Bluetooth build and labels SCL as SEL.
 
 The page also has a short guide for each area, and interactive pieces that run the firmware's own DSP: voices, resonators, the compressor, LFOs, the sequencer's chance and live hands, Grids, effects and PERFORM.
 
@@ -47,7 +47,7 @@ Autorepeat and shortcuts with Cmd, Ctrl or Alt are ignored. Leaving the tab rele
 
 ## Building and testing it
 
-`tools/build_sim.sh` builds the simulator (needs Docker, Node 18 or newer, Python 3 with Pillow and a C compiler); `--preview` writes the site's layout, `--ref` builds another commit. See `docs/SIMULATOR.md`.
+`GRIND_NATIVE=1 bash tools/build_sim.sh --preview` builds the GRIND simulator into `build/sim/preview/`. It needs Docker, Node 18 or newer, Python 3 with Pillow and a C compiler. The published GRIND preview site provides the installer and editor. See `docs/SIMULATOR.md` for the local browser setup.
 
 ## This manual
 

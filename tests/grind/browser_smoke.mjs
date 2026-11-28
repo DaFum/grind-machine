@@ -48,6 +48,11 @@ try {
     page.goto(base),
   ]);
   assert.equal(wasm.status(), 200);
+  const native = (process.env.GRIND_NATIVE ?? '0') === '1';
+  const buildLabel = native ? 'GRIND build' : 'Base drum-machine build';
+  assert.equal(await page.title(), 'GRIND MACHINE | FM-1 Web Simulator');
+  await page.waitForFunction(label => document.querySelector('#sim-build').textContent === label, buildLabel);
+  assert.equal(await page.getByRole('heading', { name: 'Generate a GRIND pattern' }).isVisible(), native);
   const power = page.getByRole('switch', { name: 'Power' });
   await power.click();
   await page.locator('#power-note').waitFor({ state: 'hidden' });
@@ -55,7 +60,6 @@ try {
   assert.doesNotMatch(await page.locator('#note').textContent(), /firmware failed/i);
 
   // BLAST IGNITION's scene preview (?boot=1): the expected mode comes from GRIND_NATIVE (default 0)
-  const native = (process.env.GRIND_NATIVE ?? '0') === '1';
   const supported = await page.evaluate(async () => {
     const { Fm1Sim } = await import('/engine.js');
     const sim = await Fm1Sim.create(await (await fetch('/fm1sim.wasm')).arrayBuffer());

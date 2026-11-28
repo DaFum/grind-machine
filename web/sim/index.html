@@ -5,8 +5,8 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Hortator: drum-machine firmware for the M-VAVE FM-1</title>
-<meta name="description" content="Hortator turns the M-VAVE FM-1 into an eight-track drum machine with 45 drum engines, 21 of them measured from the Machinedrum. Play it in your browser, then install it over USB.">
+<title>GRIND MACHINE | FM-1 Web Simulator</title>
+<meta name="description" content="Play GRIND MACHINE, the eight-track extreme metal drum machine for the M-VAVE FM-1, in your browser using the firmware compiled to WebAssembly.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Silkscreen&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
@@ -14,11 +14,11 @@
 <link rel="stylesheet" href="sim.css">
 </head>
 <body>
-<section id="hero" class="hero" aria-label="Hortator">
+<section id="hero" class="hero" aria-label="GRIND MACHINE">
   <div class="hero-stage" id="stage">
     <nav class="hero-nav">
-      <span class="silk">HORTATOR</span>
-      <span class="nav-links"><a href="manual/">Guide</a><a href="webapp/editor/">Editor</a><a href="webapp/installer/">Install</a></span>
+      <span class="silk">GRIND MACHINE</span>
+      <span class="nav-links"><a href="https://github.com/DaFum/grind-machine#readme">Guide</a><a href="https://dafum.github.io/grind-machine/webapp/editor/">Editor</a><a href="#install">Install</a></span>
     </nav>
 
     <div class="desk-shadow" id="desk-shadow"></div>
@@ -38,14 +38,14 @@
     </div>
 
     <div class="hero-copy" id="hero-copy">
-      <h1>Eight tracks of drums, inside the M&#8209;VAVE&nbsp;FM&#8209;1.</h1>
-      <p>Custom firmware by DEADACTIVE, named after the drummer who kept a Roman galley's rowers in time. Scroll on
-        to play the real firmware in your browser.</p>
+      <h1>GRIND MACHINE</h1>
+      <p>Eight tracks of blastbeats, doublebass and breakdowns on the M&#8209;VAVE&nbsp;FM&#8209;1. Play the firmware
+        in your browser. <span id="sim-build"></span></p>
       <p class="hero-count"><b>45</b> drum engines in three banks: <b>21</b> measured from the Machinedrum (13 TRX,
         8 EFM), <b>10</b> modern, <b>14</b> classic. <b>151</b> factory presets, <b>96</b> user slots.</p>
       <p class="hero-actions">
         <a class="cta" href="#play">Play it</a>
-        <span class="cta-slot"><a class="cta ghost" href="webapp/installer/">Install on your FM-1</a><span class="install-count" id="install-count" hidden></span></span>
+        <span class="cta-slot"><a class="cta ghost" href="#install">Install on your FM-1</a><span class="install-count" id="install-count" hidden></span></span>
       </p>
     </div>
     <p class="scroll-cue" id="scroll-cue" aria-hidden="true">Scroll</p>
@@ -76,8 +76,9 @@
         <ul>
           <li>SELECT turns the pages (on TRACKS: the tempo). ALGORITHM picks the track.</li>
           <li>HOME switches TRACKS and HOME; hold it for the menu.</li>
-          <li>REC arms the selected track, on any page.</li>
+          <li>REC arms the selected track on TRACKS and all tracks on other pages during live recording.</li>
           <li>Hold GLO: the white keys mute the tracks.</li>
+          <li data-grind-only hidden>Press ARP through both GRIDS pages to reach GRIND.</li>
         </ul>
       </div>
       <div>
@@ -96,9 +97,8 @@
 <section id="manual" class="manual" aria-labelledby="manual-title">
   <header class="manual-head">
     <h2 id="manual-title">How to play it.</h2>
-    <p>Every control, then ten things to do with them. Each works in the simulator above as on the FM&#8209;1. The whole
-      manual is in the <a href="https://github.com/DeadActive/hortator#readme" target="_blank" rel="noopener">README</a>,
-      and the <a href="manual/">full searchable manual</a> has every page and parameter.</p>
+    <p>Find each panel control and try the guides below. The
+      <a href="https://github.com/DaFum/grind-machine#readme">GRIND MACHINE documentation</a> covers the full instrument.</p>
   </header>
 
   <div class="panel-map">
@@ -123,7 +123,7 @@
         <li data-ctl="SEQ"><b>SEQ</b> The steps on the white keys, then PATTERN, MOTION and SONG. Hold it: the step
           tools, copy and paste.</li>
         <li data-ctl="FX"><b>FX</b> FILTER, FX, INSERT (and SRR), SLICER, RESON. Hold it: PERFORM.</li>
-        <li data-ctl="ARP"><b>ARP</b> Grids, a map of drum patterns.</li>
+        <li data-ctl="ARP"><b>ARP</b> Grids, a map of drum patterns.<span data-grind-only hidden> GRIND follows the two GRIDS pages.</span></li>
         <li data-ctl="LFO"><b>LFO</b> The track's two LFOs, then DEST: what they move.</li>
         <li data-ctl="ENV"><b>ENV</b> STEPS: the white keys are the track's steps on every page, for locks.</li>
         <li data-ctl="SEL"><b>SEL</b> KEYS: the keys play the selected track, a keyboard.</li>
@@ -159,6 +159,20 @@
         page, sets the track's length, division and swing, or has it follow a Grids lane (SRC).</p>
       <p class="where"><b>SEQ</b>, tap the white keys, <b>PLAY</b>. Hold a step: <b>KNOB1</b> PROB, <b>KNOB2</b> RATCH,
         <b>KNOB3</b> ACCENT, <b>KNOB4</b> NUDGE.</p>
+    </li>
+    <li class="guide" id="m-grind" data-grind-only hidden>
+      <h3>Generate a GRIND pattern</h3>
+      <p>Press ARP through both GRIDS pages until STYLE appears. Start with the transport stopped and turn KNOB1 to
+        generate a pattern. Choose
+        from 23 styles, including MATH in 7/4. On the Feel page, MUT makes a variation and WHEN sets the apply boundary
+        during playback. Use KEEP to protect steps and VARY to adjust playback velocity variation.</p>
+      <p>On LIVE, SINK filters the mix, SWELL raises the effect sends, and CUT stops the transport and cuts the track
+        voices. On Browse, STYLE and BANK let you inspect a pattern before you commit it with APPLY.</p>
+      <p>With a fresh browser save, tap SAVE to open PROJECT, select slot D with KNOB1, then turn KNOB3 right twice
+        to load MATH 7/4. Press PLAY to hear it.</p>
+      <p class="where"><b>ARP</b> reaches GRIND after both GRIDS pages. Turn <b>SELECT</b> through the five GRIND pages.
+        <a href="https://github.com/DaFum/grind-machine/blob/main/docs/grind/live-pages.md">GRIND control reference</a>.
+        <a href="?boot=1">Preview BLAST IGNITION</a>.</p>
     </li>
     <li class="guide" id="m-copy">
       <h3>Copy and paste steps</h3>
@@ -220,7 +234,8 @@
       <p class="where"><b>SAVE</b>; <b>SELECT</b> to TOOLS. <b>SEQ</b>, <b>SELECT</b> to SONG.</p>
     </li>
     <li class="guide" id="m-midi">
-      <h3>MIDI, USB audio and LEARN</h3>
+      <h3>MIDI and USB audio on the FM-1</h3>
+      <p>These connections are available on the physical instrument. The browser panel plays through Web Audio.</p>
       <p>MIDI comes in over USB and the TRS jack: notes on the drum channel (CH, 10 at first) play the tracks whose
         NOTE matches (ROUT NOTE; SEL plays the selected track and TRACK channels 1 to 8 the eight tracks, pitched), and
         CLK follows a clock from either. SYNC sends a MIDI clock out over USB for a DAW or AUM to follow, and THRU passes
@@ -233,23 +248,11 @@
       <p class="where">Tap <b>GLO</b> for CH and CLK. Hold <b>GLO</b> + G4 to learn, <b>OCT+</b> when done. Hold
         <b>HOME</b> for USB AUDIO.</p>
     </li>
-    <li class="guide" id="m-ble">
-      <h3>Bluetooth</h3>
-      <p>The Bluetooth version adds a BLUETOOTH page to the menu. ROLE HOST: the FM&#8209;1 connects a BLE&#8209;MIDI
-        controller, the M&#8209;VAVE SMC&#8209;Mixer or another FM&#8209;1 itself; set BLUETOOTH ON, + ADD A DEVICE, pick
-        it. ROLE DEVICE: the FM&#8209;1 is <b>Felucca FM&#8209;1</b>, a Bluetooth MIDI port for a Mac (Audio MIDI Setup,
-        Bluetooth, Connect), an iPad app or another FM&#8209;1. Notes, MIDI LEARN, CLK BLE and SYNC BLE work as over
-        USB. FM&#8209;Link keeps two FM&#8209;1s in time: the leader on CLK INT (or following a DAW's clock), the
-        follower on CLK LINK; PLAY on the leader starts both.</p>
-      <p>It leaves out USB AUDIO 10 CH (USB audio is 2 CH there). Known issue: a saved device that is not connected can
-        make the sound stutter now and then; FORGET the ones you don't use (KNOB 1 left on its line, OCT+).</p>
-      <p class="where">Hold <b>HOME</b>, <b>SELECT</b> to BLUETOOTH, <b>OCT+</b>. Step by step: the <a href="https://github.com/DeadActive/hortator#connecting-step-by-step" target="_blank" rel="noopener">README</a>.</p>
-    </li>
     <li class="guide" id="m-settings">
       <h3>Make it yours</h3>
       <p>Hold HOME for the menu. COLOR picks one of six screen themes, ACCEL speeds a knob up as it turns faster,
         BACKLIGHT lets the unlit keys glow to find them in the dark, SPEAKER EQ adds bass to the small speaker. METRO,
-        on GLOBAL's last page, clicks every quarter note. The Bluetooth version adds BLUETOOTH to the menu.</p>
+        on GLOBAL's last page, clicks every quarter note.</p>
       <p class="where">Hold <b>HOME</b>, <b>SELECT</b> to a row, <b>OCT+</b> OK, <b>OCT-</b> back.</p>
     </li>
   </ol>
@@ -358,11 +361,10 @@
   </article>
   <article class="chapter" id="f-ble" aria-labelledby="f-ble-title">
     <div class="ch-text">
-      <h3 id="f-ble-title">Bluetooth MIDI</h3>
-      <p>The Bluetooth version connects to Bluetooth MIDI controllers itself. An M-VAVE SMC-Mixer becomes
-        its mixer (levels, the selected track's knobs, MUTE, SOLO); other controllers play the tracks. It is also a
-        Bluetooth MIDI device for a computer or a tablet, and FM-Link plays two FM-1s in time without a cable.</p>
-      <p class="where">Hold <b>HOME</b> for the menu, <b>SELECT</b> to BLUETOOTH, <b>OCT+</b>. Off at power-on unless AUTOSTART is ON.</p>
+      <h3 id="f-ble-title">Bluetooth MIDI in Hortator</h3>
+      <p>This diagram illustrates the separate upstream Hortator Bluetooth build. GRIND MACHINE's simulator and
+        published preview use the standard non-Bluetooth build.</p>
+      <p class="where"><a href="https://github.com/DeadActive/hortator#connecting-step-by-step">Upstream Bluetooth guide</a>.</p>
       <figure class="device-screen">
         <canvas width="240" height="240" role="img" aria-label="The FM-1's screen"></canvas>
         <figcaption>The simulator runs the plain version: no Bluetooth page.</figcaption>
@@ -375,7 +377,8 @@
 <section id="install" class="install" aria-labelledby="install-title">
   <header class="install-head">
     <h2 id="install-title">Put it on your FM-1.</h2>
-    <p>From a web page, over the FM-1's own USB cable, in a few minutes.</p>
+    <p>GRIND MACHINE packages are development previews. The simulator build details below describe this page.
+      Check the separate package version in the installer before writing to your FM-1.</p>
   </header>
 
   <div class="cable-diagram" id="cable" aria-hidden="true">
@@ -387,21 +390,22 @@
     <div class="fm1-shot" id="install-mini"></div>
   </div>
   <ol class="install-steps">
-    <li><h3>Open the installer in Chrome or Edge</h3><p>On a computer: only they allow USB MIDI.</p></li>
+    <li><h3>Open the installer in Chrome or Edge</h3><p>Use the installer on a computer and allow MIDI access when prompted.</p></li>
     <li><h3>Plug in the FM-1</h3><p>A USB data cable, straight into the computer.</p></li>
-    <li><h3>Press Install and wait</h3><p>Keep the cable in until Done. The FM-1 restarts with Hortator.</p></li>
+    <li><h3>Press Install and wait</h3><p>Keep the cable connected until the installer confirms the restart.</p></li>
   </ol>
 
   <div class="install-grid">
     <div class="whats-new">
-      <p class="fw-version" id="fw-version">Hortator</p>
-      <h3>What's new</h3>
+      <p class="fw-version" id="fw-version">GRIND MACHINE simulator</p>
+      <h3>Source changelog</h3>
       <ul id="whats-new"></ul>
     </div>
     <div class="install-go">
-      <a class="cta big" href="webapp/installer/">Open the installer</a>
-      <p class="risk">Installed at your own risk: the author accepts no responsibility if your FM-1 is
-        damaged or misbehaves.</p>
+      <a class="cta big" href="https://dafum.github.io/grind-machine/webapp/installer/">Open the published preview installer</a>
+      <p><a href="webapp/installer/">Local installer</a> (requires a preview built with a firmware package).</p>
+      <p class="risk">Install at your own risk. Preview packages are not hardware-qualified. Back up your data and
+        check the <a href="https://github.com/DaFum/grind-machine/blob/main/docs/grind/compatibility.md">compatibility and recovery guide</a>.</p>
       <details>
         <summary>Back to the official firmware</summary>
         <p>M-VAVE's updater, M-UPGRADE, puts it back: from
@@ -421,19 +425,18 @@
 <div class="foot-band" id="foot-band" aria-hidden="true"></div>
 <footer class="foot">
   <div class="foot-brand">
-    <p class="silk foot-mark">HORTATOR</p>
-    <p>The hortator kept a galley's rowers in time. This one keeps eight tracks.</p>
+    <p class="silk foot-mark">GRIND MACHINE</p>
+    <p><a href="https://github.com/DaFum/grind-machine">Project repository</a></p>
   </div>
   <nav class="foot-nav" aria-label="On this page">
     <a href="#play">Play it in the browser</a>
     <a href="#manual">How to play it</a>
-    <a href="webapp/installer/">Install on your FM-1</a>
-    <a href="webapp/editor/">Edit it from the browser</a>
-    <a href="#install">What's new</a>
-    <a href="source.tar.gz">Source code (GPL-3.0)</a>
+    <a href="https://dafum.github.io/grind-machine/webapp/editor/">USB editor for the FM-1</a>
+    <a href="#install">Build and installation</a>
+    <a href="source.tar.gz">Source for this build (GPL-3.0)</a>
   </nav>
   <div class="foot-credits">
-    <p>By DEADACTIVE, built on Felucca by Leo Kuroshita (@kurogedelic),
+    <p>Based on Hortator by DEADACTIVE and Felucca by Leo Kuroshita (@kurogedelic),
       <a href="https://hugelton.com" target="_blank" rel="noopener">Hügelton Instruments</a>. GPL-3.0, no warranty.
       Saves stay in this browser.</p>
     <p>Drum algorithms (Plaits, stmlib), GRIDS and the compressor (Streams): Emilie Gillet,
@@ -444,8 +447,8 @@
       Icons: Fukiai (Hügelton Instruments). Pixel font: DEADACTIVE.</p>
     <p>MD voices measured from Joe Landers' Machinedrum emulator, a fork of
       <a href="https://github.com/dsp56300/gearmulator" target="_blank" rel="noopener">Gearmulator</a> by The Usual
-      Suspects; measurements only, no code or data. Machinedrum is a trademark of Elektron; Hortator is not
-      affiliated. M-VAVE and FM-1 are trademarks of their owners; not affiliated with M-VAVE.</p>
+      Suspects; measurements only, no code or data. Machinedrum is a trademark of Elektron.
+      GRIND MACHINE is not affiliated with Elektron or M-VAVE. M-VAVE and FM-1 are trademarks of their owners.</p>
   </div>
 </footer>
 <script type="module" src="app.js"></script>

@@ -644,6 +644,9 @@ canvas.lcd { image-rendering: pixelated; image-rendering: crisp-edges; border-ra
 /* type on its grid: whole multiples of 16 px only */
 @media (max-width: 1000px) { .hero-copy h1 { font-size: 48px; line-height: 48px; } }
 @media (max-width: 560px) {
+  .hero-nav { gap: 4px; }
+  .hero-nav .nav-links { gap: 6px; }
+  .hero-nav a { padding-inline: 4px; }
   .hero-copy h1 { font-size: 32px; line-height: 32px; }
   .features-head h2, .install-head h2, .manual-head h2 { font-size: 32px; line-height: 32px; }
   .hero-copy { bottom: 64px; }
@@ -653,6 +656,7 @@ canvas.lcd { image-rendering: pixelated; image-rendering: crisp-edges; border-ra
   .hero-copy p:not(.hero-actions) { display: none; }
   .hero-copy { bottom: 16px; }
 }
+@media (max-width: 560px), (max-height: 520px) { .scroll-cue { display: none; } }
 @media (min-width: 1500px) { .hero-copy h1 { font-size: 80px; line-height: 80px; } }
 @media (prefers-reduced-motion: reduce) {
   * { transition: none !important; animation: none !important; }

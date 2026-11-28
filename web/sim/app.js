@@ -505,7 +505,7 @@ function placePower() {
 }
 function queueHero() { if (!heroQueued) { heroQueued = true; requestAnimationFrame(heroFrame); } }
 
-// ---- install: the firmware this site ships and what is new in it (version.json, written by the build)
+// ---- simulator build and source changelog (version.json, written by the build)
 const MONTHS = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October',
   'November', 'December'];
 function plainNote(n) {                            // the changelog's line for players: no upstream credits or baselines
@@ -525,10 +525,13 @@ installCount().then(n => {
   el.hidden = false;
 });
 fetch('version.json').then(r => r.ok ? r.json() : Promise.reject()).then(v => {
+  const grind = v.grind_native === true;
+  document.getElementById('sim-build').textContent = grind ? 'GRIND build' : 'Base drum-machine build';
+  if (grind) for (const el of document.querySelectorAll('[data-grind-only]')) el.hidden = false;
   const [y, m, d] = v.date.split('-').map(Number);
   const newer = v.since.length ? ` and ${v.since.length} newer change${v.since.length > 1 ? 's' : ''}` : '';
   document.getElementById('fw-version').textContent =
-    `Version ${v.version}${newer}, built ${d} ${MONTHS[m - 1]} ${y} from commit ${v.commit}`;
+    `Simulator source ${v.version}${newer}, commit ${v.commit} (${d} ${MONTHS[m - 1]} ${y})`;
   const ul = document.getElementById('whats-new');
   for (const n of [...v.since, ...v.release.notes]) {
     const li = document.createElement('li'), span = document.createElement('span'), b = document.createElement('b');

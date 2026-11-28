@@ -3,7 +3,8 @@
 /* The web simulator's first-visit demos, saved to project slots 1-4 with the firmware's own project_save; slot 1 is
  * then loaded (and remembered as the last project, so a returning visit opens it), so PLAY grooves at once. MD first,
  * as the MODEL list: 1 the TRX kit (the power-on kit's voices, its LEVEL raised to sit with the others), 2 an EFM
- * kit, 3 MODERN (Plaits-style) with an ACID line, 4 TRX and EFM mixed. The 808 and 909 are not in the demos.
+ * kit, 3 MODERN (Plaits-style) with an ACID line, 4 TRX and EFM mixed (GRIND build: MATH 7/4 with the role kit).
+ * The 808 and 909 are not in the demos.
  * 'x' = a hit, 'X' = an accent; TUNE (P_E0, KEEP = the voice's default sound's), DECAY (P_E1, -1 = the default's);
  * an ACID track plays acid[] (its notes from C4, slide where 's'). CLASSIC and the first MODERN models take their
  * knobs as up to drum 0.20.0 (SIM_OLD_DEF, as tests/old_defs.h: they sound as drumsim's, whatever the models'
@@ -79,6 +80,17 @@ static void sim_demo_install(void)
         trk[1].p[P_REV] = 40;                             /* drumsim's sends: snare and clap reverb, hat delay */
         trk[2].p[P_REV] = 50;
         trk[3].p[P_DLY] = 25;
+#if GRIND_NATIVE
+        if (s == 3u) {
+            gm_config math;
+            gm_pattern pattern;
+            if (gm_ui_style_config(GM_ALGORITHM_COUNT, &math) == GM_OK &&
+                gm_generate(&math, NULL, &pattern) == GM_OK && gm_native_publish(&pattern) == GM_OK) {
+                gm_kit_roles();
+                name_set(chain.name, "MATH 7/4");
+            }
+        }
+#endif
         song.sel = 0;
         project_save(s);
     }
@@ -86,6 +98,10 @@ static void sim_demo_install(void)
                                                            * (a returning visit opens it, as before), not slot 4 */
     lastp.slot = 0;
     settings_save();
+#if GRIND_NATIVE
+    (void)proj_load(0, 1);                                /* switch demos without writing any live changes back to D */
+#else
     drum_tracks_init();
     project_load(0);
+#endif
 }

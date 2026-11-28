@@ -9,7 +9,7 @@ import { execFileSync } from 'node:child_process';
 
 // ---- the installer: restyled and rebranded, its install logic untouched
 const ORIG_REV = '12a1ba0';                         // the installer's last change on main (upstream 1.0 installer)
-const NOW = readFileSync('web/index_pkg.html', 'utf8');
+const NOW = readFileSync('web/index_pkg.html', 'utf8').replace(/\r\n/g, '\n');
 let ORIG = null;
 try { ORIG = execFileSync('git', ['show', `${ORIG_REV}:web/index_pkg.html`], { encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] }); }
 catch { /* a source archive without git history: the guard is skipped */ }
@@ -97,10 +97,18 @@ test('landing: hero (with the device and the #play end), features, install; inst
   assert.match(LANDING, /href="webapp\/installer\/"/);
   assert.match(LANDING, /href="#play"/);
   assert.match(LANDING, /href="source\.tar\.gz"/);
-  assert.match(LANDING.match(/<title>(.*)<\/title>/)[1], /Hortator/);
+  assert.match(LANDING.match(/<title>(.*)<\/title>/)[1], /GRIND MACHINE/);
   assert.doesNotMatch(LANDING, /FM-1 Drums|FM-1 DRUMS/, 'the old name is gone');
-  assert.match(LANDING, /galley/, 'the name\'s origin is told');
+  assert.match(hero, /blastbeats, doublebass and breakdowns/i, 'the project\'s rhythm focus');
   assert.match(LANDING, /id="device"/, 'the simulator is on the page');
+});
+
+test('GRIND controls are gated by the simulator build and point to the current page reference', () => {
+  const guide = LANDING.match(/<li class="guide" id="m-grind" data-grind-only hidden>([\s\S]*?)<\/li>/)?.[1];
+  assert.ok(guide, 'the GRIND guide starts hidden');
+  for (const feature of ['GRIDS', 'MATH', 'VARY', 'SINK', 'SWELL', 'CUT', 'APPLY']) assert.match(guide, new RegExp(`\\b${feature}\\b`));
+  assert.match(guide, /DaFum\/grind-machine\/blob\/main\/docs\/grind\/live-pages\.md/);
+  assert.match(LANDING, /<span id="sim-build">/);
 });
 
 // ---- layout.js: the panel's two layouts, the morph between them, the hero's choreography (pure, no DOM)
@@ -178,8 +186,8 @@ test('manual: the panel map lists every knob and button, with the keys; every gu
   for (const l of labels) assert.ok(mapped.includes(l), `${l} is in the map`);
   for (const c of mapped) assert.ok(labels.has(c) || c === 'white' || c === 'black', `${c} is not on the panel`);
   for (const [, k] of list.matchAll(/<b>([^<]+)<\/b>/g)) assert.ok(labels.has(k), `map: ${k} is not on the panel`);
-  const guides = [...sec.matchAll(/<li class="guide" id="m-(\w+)">([\s\S]*?)<\/li>/g)];
-  assert.equal(guides.length, 12, 'twelve guides (step copy the 3rd, Bluetooth the 11th)');
+  const guides = [...sec.matchAll(/<li class="guide" id="m-(\w+)"[^>]*>([\s\S]*?)<\/li>/g)];
+  assert.equal(guides.length, 12, 'eleven shared guides and a GRIND-only guide');
   for (const [, id, g] of guides) {
     assert.match(g, /<h3>[^<]+<\/h3>/, `${id}: its title`);
     const where = g.match(/<p class="where">([\s\S]*?)<\/p>/)?.[1];
@@ -188,8 +196,8 @@ test('manual: the panel map lists every knob and button, with the keys; every gu
     assert.ok(keys.length, `${id}: names a control`);
     for (const k of keys) assert.ok(labels.has(k), `${id}: ${k} is not on the panel`);
   }
-  assert.match(sec, /href="https:\/\/github\.com\/DeadActive\/hortator#readme"/, 'the whole manual: the README');
-  assert.match(LANDING.slice(0, LANDING.indexOf('id="scene"')), /<a href="manual\/">Guide<\/a>/, 'the nav has a Guide button to the full manual');
+  assert.match(sec, /href="https:\/\/github\.com\/DaFum\/grind-machine#readme"/, 'the project guide');
+  assert.match(LANDING.slice(0, LANDING.indexOf('id="scene"')), /<a href="https:\/\/github\.com\/DaFum\/grind-machine#readme">Guide<\/a>/);
   assert.match(LANDING, /id="more-cue" href="#manual"/, 'More below leads to the on-page manual');
   const foot = LANDING.slice(LANDING.indexOf('<footer'), LANDING.indexOf('</footer>'));
   assert.ok(foot.includes('href="#manual"'), 'and the footer');
@@ -203,6 +211,8 @@ test('install: the version and what is new, the connection diagram, the installe
   assert.match(sec, /<details[^>]*>\s*<summary>Back to the official firmware<\/summary>/);
   assert.match(sec, /<details[^>]*>\s*<summary>If an install fails<\/summary>/);
   assert.match(sec, /at your own risk/i);
+  assert.match(sec, /hardware-qualified/i);
+  assert.match(sec, /href="https:\/\/dafum\.github\.io\/grind-machine\/webapp\/installer\/"/);
   assert.doesNotMatch(sec, /beta/i);
 });
 
@@ -212,10 +222,11 @@ test('Controls opens its help over the hero stage, next to the button (not below
   assert.match(stage, /id="help"/, 'the help panel is inside the sticky stage');
 });
 
-test('footer: the name and its origin, the ways around the page, the credits and the licence', () => {
+test('footer: the project, the ways around the page, the upstream credits and the licence', () => {
   const foot = LANDING.slice(LANDING.indexOf('<footer'), LANDING.indexOf('</footer>'));
-  assert.match(foot, /HORTATOR/);
-  for (const href of ['#play', 'webapp/installer/', '#install', 'source.tar.gz']) assert.ok(foot.includes(`href="${href}"`), href);
+  assert.match(foot, /GRIND MACHINE/);
+  assert.match(foot, /Hortator/);
+  for (const href of ['#play', '#manual', '#install', 'source.tar.gz']) assert.ok(foot.includes(`href="${href}"`), href);
   for (const credit of ['Felucca', 'Leo Kuroshita', 'DEADACTIVE', 'Terminus', 'CC0', 'GPL-3.0', 'not affiliated',
                         'Mutable Instruments', 'Emilie Gillet', 'DaisySP', 'Electrosmith', 'Joe Landers', 'Gearmulator',
                         'Elektron', 'jl-uboot-tool', 'Fukiai'])
@@ -249,7 +260,7 @@ test('make_site: the front page is the landing page with the simulator beside it
   execFileSync(py, ['-c', 'import sys; sys.path.insert(0, "web"); import make_site; make_site.main(*sys.argv[1:])',
     'build/sim/package.fwsc', 'drum-0.0.0+test', out], { stdio: 'pipe' });
   const front = readFileSync(`${out}/index.html`, 'utf8');
-  assert.match(front, /HORTATOR/, 'the landing page, not the old redirect');
+  assert.match(front, /id="device"/, 'the simulator landing page');
   assert.match(front, /app\.js\?v=[0-9a-f]+/, 'the stamped build');
   for (const f of ['fm1sim.wasm', 'app.js', 'worklet.js', 'reel.bin.gz', 'reel.json', 'version.json', 'source.tar.gz'])
     assert.ok(existsSync(`${out}/${f}`), f);
@@ -389,7 +400,7 @@ test('the engine count is the firmware\'s, in the hero and the voices chapter: 4
     assert.match(v, new RegExp(`\\b${n}\\b[^.;:]*${what}|${what}[^.;:]*\\b${n}\\b`), `${n} ${what}`);
   assert.ok(v.indexOf('MD') < v.indexOf('MODERN') && v.indexOf('MODERN') < v.indexOf('CLASSIC'), 'told MD, MODERN, CLASSIC');
   assert.doesNotMatch(LANDING, /Twenty-three|23 drum models/i, 'the old count is gone');
-  const claim = 'Machinedrum is a trademark of Elektron; Hortator is not affiliated.';
+  const claim = 'Machinedrum is a trademark of Elektron. GRIND MACHINE is not affiliated with Elektron or M-VAVE.';
   assert.equal(words(LANDING).split(claim).length, 2, 'the trademark line, once');
   assert.doesNotMatch(LANDING, /id="f-md"|data-piece="md"/, 'no Machinedrum chapter');
 });
@@ -430,7 +441,7 @@ test('the first-visit demos (tests/sim_demo.c) lead with the MD bank; none plays
 
 test('the hero shows the install count beside the install button: hidden until the count arrives, out of the flow', () => {
   const hero = LANDING.slice(LANDING.indexOf('id="hero-copy"'), LANDING.indexOf('id="scroll-cue"'));
-  assert.match(hero, /<span class="cta-slot"><a class="cta ghost" href="webapp\/installer\/">[^<]*<\/a><span class="install-count" id="install-count" hidden><\/span><\/span>/);
+  assert.match(hero, /<span class="cta-slot"><a class="cta ghost" href="#install">[^<]*<\/a><span class="install-count" id="install-count" hidden><\/span><\/span>/);
   const css = readFileSync('web/sim/sim.css', 'utf8');
   assert.match(css, /\.cta-slot\s*{[^}]*position: relative/);
   assert.match(css, /\.install-count\s*{[^}]*position: absolute/, 'no layout shift when it appears');

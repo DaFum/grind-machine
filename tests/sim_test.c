@@ -219,6 +219,9 @@ static void test_demos_and_flash(void)
 {
     uint32_t k, on = 0, i;
     sim_init(1);
+#if GRIND_NATIVE
+    check("demos: slot D can be loaded without a discard confirmation", !slot_dirty(3));
+#endif
     for (k = 0; k < 4u; k++)
         on += (uint32_t)project_used(k);
     check("demos: four used project slots", on == 4u);
@@ -257,6 +260,16 @@ static void test_demos_and_flash(void)
     power_cycle(image);
     run(FS);
     check("hostile flash: boots and runs", fb_lit() > 500u);
+#if GRIND_NATIVE
+    sim_init(1);
+    lastp.slot = 3;
+    settings_save();
+    memcpy(image, sim_flash(), SIM_FLASH_SIZE);
+    power_cycle(image);
+    check("demos: slot D contains the MATH role kit and its 28-step 7/4 pattern",
+          strcmp(chain.name, "MATH 7/4") == 0 && trk[2].model == DM_CHTRX && trk[0].p[P_SLEN] == 28 &&
+          trk[0].step[0].acc && trk[0].step[12].acc && trk[0].step[20].acc);
+#endif
 }
 
 /* the firmware's source list (felucca.c's #include "X.c") against the simulator's (sim_host.h): a source the
