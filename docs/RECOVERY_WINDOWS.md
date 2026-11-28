@@ -46,8 +46,9 @@ writes only what changes and verifies every write. How it gets the unit into dow
 - with Felucca, SLOOP or Snoop37 running: hold **OCT−** and **OCT+** for 5 s;
 - with its own m-bootloader installed: hold **REC** while switching on.
 
-The apps are not signed, so Windows and Defender warn on the first start, and its licence is listed as "other"
-rather than an established open-source licence. I have not run it. The same goes for
+The apps are not signed, so Windows and Defender warn on the first start. Its README gives the licence as MIT, with
+some bundled files under their own licences (listed in its `data/NOTICE.md` and `assets/README.md`). I have not run it.
+The same goes for
 [Slipway](https://github.com/Discodave-Glitch/slipway), a Windows app with a rescue flow for a black-screen FM-1.
 
 The rest of this guide describes the route with the tool from this repository (libusb instead of a disk).
