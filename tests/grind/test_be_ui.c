@@ -231,6 +231,20 @@ static void mutation_says_why_it_did_nothing(void)
     ok = gm_runtime_commits() == commits && track_sig(2) == before && gm_last_result == GM_UNSUPPORTED;
     ok &= str_eq(ui.msg, "TRACK DIFFERS");
     check("MUT on a track the build cannot take says TRACK DIFFERS", ok);
+
+    ui_host_init();                                               /* a whole-pattern turn with a track on a triplet (16T: id 5) */
+    memset(&gmrt, 0, sizeof gmrt);
+    drum_boot_init();
+    assert(gm_factory_pattern(1, &p) == GM_OK && gm_native_publish(&p) == GM_OK);
+    trk[0].p[P_SDIV] = 5;                                         /* the portable core knows 1/8 1/16 1/32 only */
+    before = track_sig(0);
+    commits = gm_runtime_commits();
+    gm_v[GU_AGGR] = 90;
+    gm_ui_changed(GU_AGGR);
+    frames(6);
+    ok = gm_runtime_commits() == commits && track_sig(0) == before && gm_last_result == GM_UNSUPPORTED;
+    ok &= str_eq(ui.msg, "TRACK DIFFERS");
+    check("a whole-pattern change refused for a triplet track says TRACK DIFFERS, not GRIND ?", ok);
 }
 
 static void mutation_follows_the_panel_style(void)
