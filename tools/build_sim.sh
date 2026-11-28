@@ -45,7 +45,7 @@ if [ -n "$REF" ]; then
     mkdir -p "$ROOT"
     git archive "$REF" | tar -x -C "$ROOT"
     cp tests/sim_* "$ROOT/tests/"
-    cp web/index_pkg.html "$ROOT/web/"                  # the restyled installer (docs/SIMULATOR.md)
+    cp web/index_pkg.html web/make_site.py "$ROOT/web/"  # use this simulator's site assembly with the ref's editor
     mkdir -p "$ROOT/web/sim" "$ROOT/tools" "$ROOT/docs"
     cp web/sim/* "$ROOT/web/sim/"
     cp tools/build_sim.sh "$ROOT/tools/"
@@ -191,16 +191,16 @@ if [ "$PREVIEW" = 1 ]; then
         LABEL=$(basename "$PACKAGE" .fwsc | sed -nE 's/^felucca-((drum|hortator)-[0-9.]+)-([0-9a-f]+(-dirty)?)$/\1+\3/p')
         LABEL=${LABEL:-drum-$VERSION}
         echo "build_sim: preview with the firmware package $(basename "$PACKAGE") ($LABEL)"
-        "$PY" - "$ROOT/web" "$OUT/package.fwsc" "$LABEL" "$P" <<'PY'
+        "$PY" - "$ROOT/web" "$OUT/package.fwsc" "$LABEL" "$P" "$OUT" <<'PY'
 import sys
 sys.path.insert(0, sys.argv[1])
 import make_site                                     # the site exactly as web/make_site.py makes it
-make_site.main(sys.argv[2], sys.argv[3], sys.argv[4])
+make_site.main(*sys.argv[2:5], sim_dir=sys.argv[5])
 PY
     else
         cp "$OUT/webapp/installer/index.html" "$P/webapp/installer/"
+        for f in $PAGE fm1sim.wasm source.tar.gz reel.bin.gz reel.json features.bin.gz features.json terminus.woff terminus-license.txt version.json lab_ids.json; do cp "$OUT/$f" "$P/"; done   # the landing page at /
     fi
-    for f in $PAGE fm1sim.wasm source.tar.gz reel.bin.gz reel.json features.bin.gz features.json terminus.woff terminus-license.txt version.json lab_ids.json; do cp "$OUT/$f" "$P/"; done   # the landing page at /
     echo "build_sim: preview $P (cd $P && python3 -m http.server 8001)"
 fi
 echo "build_sim: $OUT ready, firmware DRUM-$VERSION (cd $OUT && python3 -m http.server 8001)"

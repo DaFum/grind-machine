@@ -58,12 +58,20 @@ try {
   assert.ok(installer.ok(), 'the preview includes an installer');
   const installerHtml = await installer.text();
   const editorHref = installerHtml.match(/<a href="([^"]+)">Open the USB web editor<\/a>/)?.[1];
+  const standalone = installerHtml.includes('preview-has-no-package.fwsc');
+  const publishedEditor = 'https://dafum.github.io/grind-machine/webapp/editor/';
+  const landingHref = standalone ? publishedEditor : 'webapp/editor/';
+  const navEditor = page.locator('.hero-nav').getByRole('link', { name: 'Editor', exact: true });
+  const footerEditor = page.locator('.foot-nav').getByRole('link', { name: /USB editor for the FM-1$/ });
+  assert.equal(await navEditor.getAttribute('href'), landingHref, 'landing navigation editor destination');
+  assert.equal(await footerEditor.getAttribute('href'), landingHref, 'landing footer editor destination');
   let editorUrl = `${base}/editor-source/editor.html`;
-  if (installerHtml.includes('preview-has-no-package.fwsc')) {
-    assert.equal(editorHref, 'https://dafum.github.io/grind-machine/webapp/editor/');
+  if (standalone) {
+    assert.equal(editorHref, publishedEditor);
   } else {
     assert.equal(editorHref, '../editor/');
-    editorUrl = new URL(editorHref, installer.url()).href;
+    editorUrl = new URL(landingHref, page.url()).href;
+    assert.equal(new URL(editorHref, installer.url()).href, editorUrl);
     assert.ok((await page.request.get(editorUrl)).ok(), 'the packaged preview serves its bundled editor');
   }
   const power = page.getByRole('switch', { name: 'Power' });
