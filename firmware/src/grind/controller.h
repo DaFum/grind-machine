@@ -11,7 +11,8 @@
 
 typedef enum { GM_BOUNDARY_STEP, GM_BOUNDARY_BAR, GM_BOUNDARY_PATTERN } gm_boundary;
 typedef enum {
-    GM_REQUEST_MORPH, GM_REQUEST_STYLE, GM_REQUEST_MUTATE, GM_REQUEST_UNDO, GM_REQUEST_EDIT
+    GM_REQUEST_MORPH, GM_REQUEST_STYLE, GM_REQUEST_MUTATE, GM_REQUEST_UNDO, GM_REQUEST_EDIT,
+    GM_REQUEST_BE_LAYER      /* BRUTAL EVOLUTION: one track, named layers, a fixed base (appended: no id moves) */
 } gm_request_kind;
 
 typedef struct {

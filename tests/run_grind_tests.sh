@@ -92,6 +92,7 @@ case "${1:-all}" in
     cue) run_native cue ;;
     ui) run_native ui ;;
     vary) run_native vary ;;
+    be_runtime) run_native be_runtime ;;
     master_fx) run_native master_fx ;;
     persist) run_native persist ;;
     menu) run_native menu ;;
@@ -131,6 +132,7 @@ case "${1:-all}" in
         run_native cue
         run_native ui
         run_native vary
+        run_native be_runtime
         run_native master_fx
         run_native persist
         run_native menu

@@ -10,6 +10,13 @@
 #ifndef GRIND_RUNTIME_C
 #define GRIND_RUNTIME_C
 
+/* BRUTAL EVOLUTION hooks (be_runtime.c, included at the end of this file) */
+static gm_result gm_runtime_base(void);
+static void be_reset(void);
+static void be_commit_hook(void);
+static void be_undo_hook(void);
+static gm_result be_build(const gm_request *r);
+
 /* What the ISR copies: the native steps and the timing bytes of every track. */
 typedef struct {
     step_t st[NTRK][NSTEP];
@@ -40,6 +47,7 @@ static void gm_runtime_reset(void)
     if (gm_factory_config(1, &c) != GM_OK)             /* (style ids start at 1; 0 is none and left c unset) */
         memset(&c, 0, sizeof c);
     gm_ctl_init(&gmrt.ctl, &c);
+    be_reset();
     cue.q_gm = 0;
 }
 static uint32_t gm_runtime_commits(void) { return gmrt.ctl.commits; }
@@ -65,6 +73,7 @@ static void gm_context_isr(void)
 {
     memset(gmrt.lock, 0, sizeof gmrt.lock);
     gmrt.undo_ok = 0;
+    be_reset();                                       /* (the recipes belong to the pattern that is gone) */
     gm_touch_isr();
 }
 
@@ -100,6 +109,7 @@ static int gm_runtime_commit(void)
         trk[k].p[P_SSWING] = gmrt.u.n.swing[k];
         trk[k].p[P_SRC] = gmrt.u.n.src[k];
     }
+    be_commit_hook();
     gmrt.undo_ok = 1;
     gmrt.undo_was_undo = 0;
     gm_ctl_commit(&gmrt.ctl, rev);
@@ -129,6 +139,7 @@ static int gm_runtime_undo(void)
         t8 = (uint8_t)trk[k].p[P_SSWING]; trk[k].p[P_SSWING] = gmrt.undo.swing[k]; gmrt.undo.swing[k] = t8;
         t8 = (uint8_t)trk[k].p[P_SRC]; trk[k].p[P_SRC] = gmrt.undo.src[k]; gmrt.undo.src[k] = t8;
     }
+    be_undo_hook();
     gmrt.undo_was_undo ^= 1u;
     gm_touch_isr();                                   /* the live pattern is another one: a revision (the browser's cached preview, a stage) */
     fm1_irq_on();
@@ -213,7 +224,7 @@ static gm_result gm_runtime_submit(const gm_config *c, gm_boundary at, gm_reques
  * are not kept), the generator. Main loop only, and only while no stage is in use (the base shares the stage's bytes):
  * the result is in gmrt.out. The preview of the style browser and a submitted request are made by this one routine, so
  * what is shown is what would be published. */
-static gm_result gm_runtime_make(const gm_config *cfg)
+static gm_result gm_runtime_base(void)
 {
     gm_result res = gm_native_export(&gmrt.u.base);
     uint32_t k;
@@ -225,7 +236,12 @@ static gm_result gm_runtime_make(const gm_config *cfg)
         for (s = gmrt.u.base.timing[k].length; s < NSTEP; s++)
             gmrt.u.base.lock[(k * NSTEP + s) >> 3] &= (uint8_t)~(1u << ((k * NSTEP + s) & 7u));
     }
-    return gm_generate(cfg, &gmrt.u.base, &gmrt.out);
+    return GM_OK;
+}
+static gm_result gm_runtime_make(const gm_config *cfg)
+{
+    gm_result res = gm_runtime_base();
+    return res == GM_OK ? gm_generate(cfg, &gmrt.u.base, &gmrt.out) : res;
 }
 
 /* Main loop, every frame: take the pending request, make the candidate outside the IRQ, publish it. */
@@ -244,6 +260,9 @@ static void gm_runtime_poll(void)
     fm1_irq_on();
     if (res != GM_OK)
         return;
+    if (r.kind == GM_REQUEST_BE_LAYER) {
+        res = be_build(&r);                               /* (fills the native stage itself: one track's fields, the rest as it is) */
+    } else {
     res = gm_runtime_make(&r.config);
     if (res == GM_OK)
         res = gm_native_check(&gmrt.out);
@@ -259,6 +278,7 @@ static void gm_runtime_poll(void)
             gmrt.u.n.swing[k] = gmrt.out.timing[k].swing;
             gmrt.u.n.src[k] = gmrt.out.timing[k].source;
         }
+    }
     }
     fm1_irq_off();
     res = gm_ctl_finish(&gmrt.ctl, r.revision, res);
@@ -276,5 +296,7 @@ static void gm_runtime_poll(void)
     }
     fm1_irq_on();
 }
+
+#include "be_runtime.c"
 
 #endif
