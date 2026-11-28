@@ -185,7 +185,7 @@ static void mutation_works_straight_after_boot(void)
     drum_boot_init();
     assert(gm_factory_pattern(1, &p) == GM_OK && gm_native_publish(&p) == GM_OK);
     before = track_sig(2);
-    ok &= be_submit(2, BE_TIME) == GM_OK;                         /* the config MUT sends is a valid one, not all zeros */
+    ok &= be_submit_cfg(2, BE_TIME, &gmrt.ctl.active_config) == GM_OK;                         /* the config MUT sends is a valid one, not all zeros */
     gm_runtime_poll();
     ok &= gm_runtime_commits() == 1u && track_sig(2) != before;
     check("MUT works right after power-on, before any other GRIND request", ok);
@@ -214,25 +214,78 @@ static void mutation_follows_the_panel_style(void)
 
 static void mutation_after_undone_style(void)
 {
-    uint32_t ok = 1, before, commits;
+    uint32_t ok = 1, before, commits, len_a;
     fresh();
     song.sel = 0;
+    gm_v[GU_STYLE] = 3;                                           /* a style of its own: its config is now the live pattern's */
+    gm_ui_changed(GU_STYLE);
+    frames(3);
+    len_a = (uint32_t)trk[0].p[P_SLEN];
     gm_v[GU_STYLE] = (int16_t)GM_ALGORITHM_COUNT;                 /* MATH: 7/4 over 28 steps */
     gm_ui_changed(GU_STYLE);
     frames(3);
-    ok &= gm_runtime_commits() == 1u && trk[0].p[P_SLEN] == 28;
+    ok &= gm_runtime_commits() == 2u && trk[0].p[P_SLEN] == 28;
     gm_v[GU_UNDO] = 1;
-    gm_ui_changed(GU_UNDO);                                       /* the style change undone: style 1's 16 steps are live again */
+    gm_ui_changed(GU_UNDO);                                       /* the second style undone: the first one's pattern is live again */
     frames(2);
-    ok &= trk[0].p[P_SLEN] == 16 && gm_v[GU_STYLE] == 0;          /* the panel shows the style that is live */
+    ok &= (uint32_t)trk[0].p[P_SLEN] == len_a && gm_v[GU_STYLE] == 3;   /* the panel shows the style that is live */
     open_locks();
     frames(2);
     before = track_sig(0);
     commits = gm_runtime_commits();
     turn(EN_K4, 1);
     frames(4);
-    ok &= gm_runtime_commits() == commits + 1u && track_sig(0) != before && trk[0].p[P_SLEN] == 16;
+    ok &= gm_runtime_commits() == commits + 1u && track_sig(0) != before && (uint32_t)trk[0].p[P_SLEN] == len_a;
     check("MUT after an undone STYLE change mutates on the restored grid", ok);
+}
+
+static void undo_to_an_unknown_config_keeps_the_panel(void)
+{
+    gm_pattern p;
+    gm_config c;
+    uint32_t ok = 1, before;
+    ui_host_init();
+    memset(&gmrt, 0, sizeof gmrt);
+    drum_boot_init();                                             /* power-on: the controller holds style 1's config, which made nothing */
+    gm_v[GU_STYLE] = (int16_t)GM_ALGORITHM_COUNT;                 /* the restored panel style (MATH) and a project on its grid */
+    assert(gm_ui_style_config((uint32_t)gm_v[GU_STYLE], &c) == GM_OK && gm_generate(&c, NULL, &p) == GM_OK &&
+           gm_native_publish(&p) == GM_OK);
+    gm_v[GU_AGGR] = 80;
+    gm_ui_changed(GU_AGGR);                                       /* a MORPH commits: the config is known from here */
+    frames(3);
+    ok &= gm_runtime_commits() == 1u;
+    gm_save_t = 0;
+    gm_v[GU_UNDO] = 1;
+    gm_ui_changed(GU_UNDO);                                       /* back to the loaded pattern, whose config nobody knows */
+    ok &= gm_v[GU_STYLE] == (int16_t)GM_ALGORITHM_COUNT && gm_save_t == 0;   /* the panel and the saved style stay */
+    song.sel = 0;
+    open_locks();
+    frames(2);
+    before = track_sig(0);
+    turn(EN_K4, 1);
+    frames(4);
+    ok &= gm_runtime_commits() == 2u && track_sig(0) != before;   /* MUT still follows the panel: the loaded 28-step grid */
+    check("UNDO to a pattern of unknown origin leaves the panel and the saved style alone; MUT follows the panel", ok);
+}
+
+static void live_config_beats_an_uncommitted_panel(void)
+{
+    uint32_t ok = 1, before, commits;
+    fresh();
+    song.sel = 0;
+    gm_v[GU_STYLE] = 3;
+    gm_ui_changed(GU_STYLE);
+    frames(3);
+    gm_v[GU_STYLE] = (int16_t)GM_ALGORITHM_COUNT;                 /* a panel style that was never applied (a rejected turn) */
+    open_locks();
+    frames(2);
+    before = track_sig(0);
+    commits = gm_runtime_commits();
+    turn(EN_K4, 1);
+    frames(4);
+    ok &= gm_runtime_commits() == commits + 1u && track_sig(0) != before && trk[0].p[P_SLEN] != 28;   /* the live pattern's style made it */
+    ok &= gmrt.ctl.active_config.grid.num != 7u;
+    check("MUT uses the live pattern's config, not an uncommitted panel style", ok);
 }
 
 static void undo_restores_counter_and_saves_style(void)
@@ -260,6 +313,8 @@ int main(void)
     mutation_follows_the_panel_style();
     mutation_after_undone_style();
     undo_restores_counter_and_saves_style();
+    undo_to_an_unknown_config_keeps_the_panel();
+    live_config_beats_an_uncommitted_panel();
     mutation_works_straight_after_boot();
     navigation();
     locks_are_per_track();

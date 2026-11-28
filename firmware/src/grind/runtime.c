@@ -17,6 +17,7 @@
 /* BRUTAL EVOLUTION hooks (be_runtime.c, included at the end of this file) */
 static gm_result gm_runtime_base(void);
 static void be_reset(void);
+static void be_context_reset(void);
 static void be_commit_hook(void);
 static void be_undo_hook(void);
 static gm_result be_build(const gm_request *r);
@@ -88,7 +89,7 @@ static void gm_context_isr(void)
 {
     memset(gmrt.lock, 0, sizeof gmrt.lock);
     gmrt.undo_ok = 0;
-    be_reset();                                       /* (the recipes belong to the pattern that is gone) */
+    be_context_reset();                               /* (the recipes belong to the pattern that is gone; the layer locks stay) */
     gm_touch_isr();
 }
 

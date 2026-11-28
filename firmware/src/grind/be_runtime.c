@@ -12,7 +12,7 @@ static be_recipe be_undo[NTRK];       /* the recipes that belong to gmrt.undo (s
 static be_patch be_pend, be_stage;    /* the one request's scope (main loop writes both), and what its stage publishes */
 static gm_config be_undo_cfg;         /* the generator config that belongs to gmrt.undo (swapped with it) */
 static uint64_t be_events_seen;       /* the steps of the selected track the pending mutation already protects as events */
-static gm_config be_gen;              /* the style and controls the rhythm of the pending request is generated from */
+static uint8_t be_cfg_known, be_undo_known;   /* active_config (be_undo_cfg) made the live (undo) pattern; else it is only a boot or load default */
 
 static void be_reset(void)
 {
@@ -20,18 +20,36 @@ static void be_reset(void)
     for (k = 0; k < NTRK; k++)
         be_recipe_init(&be_act[k], gmrt.ctl.active_config.seed, (uint8_t)k);
     memcpy(be_undo, be_act, sizeof be_undo);
-    be_undo_cfg = be_gen = gmrt.ctl.active_config;
+    be_undo_cfg = gmrt.ctl.active_config;
+    be_cfg_known = be_undo_known = 0;
     memset(&be_pend, 0, sizeof be_pend);
     memset(&be_stage, 0, sizeof be_stage);
+}
+
+/* A project load or a cue's pattern switch: the recipes belong to the pattern that is gone, the layer locks are the
+ * player's setting and stay. */
+static void be_context_reset(void)
+{
+    uint8_t lk[NTRK];
+    uint32_t k;
+    for (k = 0; k < NTRK; k++)
+        lk[k] = be_act[k].locks;
+    be_reset();
+    for (k = 0; k < NTRK; k++)
+        be_act[k].locks = be_undo[k].locks = lk[k];
 }
 
 /* Main loop. The layers the track does not lock, from a fixed base: a candidate made from a changed pattern is dropped,
  * never rebased. GM_NO_CHANGE: every asked layer is locked. GM_UNSUPPORTED: only the timbre layer was asked (it is not
  * there yet), or a song runs. */
-static gm_result be_submit_cfg(uint8_t track, uint8_t layers, const gm_config *gen)
+static gm_result be_submit_cfg(uint8_t track, uint8_t layers, const gm_config *panel)
 {
     gm_request r;
     gm_result v;
+    const gm_config *gen;
+    fm1_irq_off();
+    gen = be_cfg_known ? &gmrt.ctl.active_config : panel;   /* the config of the live pattern; the panel's only when none is known */
+    fm1_irq_on();
     if (track >= NTRK || (layers & ~BE_ALL) || gm_validate_config(gen) != GM_OK)
         return GM_INVALID;
     layers &= (uint8_t)~be_act[track].locks;
@@ -49,11 +67,10 @@ static gm_result be_submit_cfg(uint8_t track, uint8_t layers, const gm_config *g
     r.follow_live = 0;
     fm1_irq_off();
     r.base_revision = gmrt.ctl.native_revision;
-    r.config = gmrt.ctl.active_config;                    /* (a commit leaves the legacy config as it is) */
+    r.config = *gen;                                      /* (the commit records the config that made these bytes) */
     v = gm_ctl_submit(&gmrt.ctl, &r);
     if (v == GM_OK) {
         memset(&be_pend, 0, sizeof be_pend);
-        be_gen = *gen;
         be_pend.request = r.revision;
         be_pend.base_revision = r.base_revision;
         be_pend.track = track;
@@ -67,12 +84,6 @@ static gm_result be_submit_cfg(uint8_t track, uint8_t layers, const gm_config *g
     }
     fm1_irq_on();
     return v;
-}
-
-/* The panel's style and controls drive the rhythm (as the old MUT knob does); the live config stays what it was. */
-static gm_result be_submit(uint8_t track, uint8_t layers)
-{
-    return be_submit_cfg(track, layers, &gmrt.ctl.active_config);
 }
 
 /* The portable base of ONE track: its own playable steps, timing and KEEP cells. The other tracks are inert filler (a
@@ -122,7 +133,7 @@ static uint64_t be_event_mask(unsigned tr, uint32_t len)
 static gm_result be_build(const gm_request *r)
 {
     be_patch p = be_pend;
-    gm_config cfg = be_gen;
+    gm_config cfg = r->config;
     gm_cell merged[GM_STEPS];
     gm_rule_masks rules;
     uint64_t paired = 0, events;
@@ -212,6 +223,8 @@ static void be_commit_hook(void)
 {
     memcpy(be_undo, be_act, sizeof be_undo);
     be_undo_cfg = gmrt.ctl.active_config;                 /* (the commit that follows replaces it) */
+    be_undo_known = be_cfg_known;
+    be_cfg_known = 1;
     if (gmrt.ctl.stage_req.kind == GM_REQUEST_BE_LAYER && be_stage.request == gmrt.ctl.stage_req.revision &&
         be_stage.track < NTRK) {
         uint8_t locks = be_act[be_stage.track].locks;     /* (a lock set while the candidate was made is the player's, not the patch's) */
@@ -225,9 +238,12 @@ static void be_undo_hook(void)
 {
     be_recipe tmp[NTRK];
     gm_config cfg = gmrt.ctl.active_config;
+    uint8_t known = be_cfg_known;
     uint32_t k;
     gmrt.ctl.active_config = be_undo_cfg;                 /* the generator config goes with the pattern it made */
     be_undo_cfg = cfg;
+    be_cfg_known = be_undo_known;
+    be_undo_known = known;
     memcpy(tmp, be_act, sizeof tmp);
     memcpy(be_act, be_undo, sizeof tmp);
     memcpy(be_undo, tmp, sizeof tmp);
@@ -237,15 +253,25 @@ static void be_undo_hook(void)
     }
 }
 
-/* A request that carries one of these layers of this track and is not live yet (pending, being made, or waiting for the
- * END) must not publish any more: it is dropped, the player asks again. IRQ off. */
+/* The one rule for a candidate that is not live yet: is there a BE request (pending, being made, or waiting for the
+ * END) for this track that carries one of these layers? Everything that makes such a candidate wrong asks this under the
+ * IRQ guard of the change (a layer lock, a new event) and drops it with be_drop_pending. Native edits, KEEP changes,
+ * project switches, undo and STOP are caught by the controller's revision and gm_runtime_stop instead. */
+static int be_candidate_valid(uint8_t track, uint8_t layers)
+{
+    return be_pend.track == track && (be_pend.layers & layers) &&
+           ((gmrt.ctl.has_pending && gmrt.ctl.pending.kind == GM_REQUEST_BE_LAYER && gmrt.ctl.pending.revision == be_pend.request) ||
+            ((gmrt.ctl.stage_state == GM_STAGE_WRITING || gmrt.ctl.stage_state == GM_STAGE_READY) &&
+             gmrt.ctl.stage_req.kind == GM_REQUEST_BE_LAYER && gmrt.ctl.stage_req.revision == be_pend.request));
+}
+
+/* A change made the candidate wrong: it is dropped and the player is told (NOT APPLIED); they ask again. IRQ off. */
 static void be_drop_pending(uint8_t track, uint8_t layers)
 {
-    if (be_pend.track == track && (be_pend.layers & layers) &&
-        ((gmrt.ctl.has_pending && gmrt.ctl.pending.kind == GM_REQUEST_BE_LAYER && gmrt.ctl.pending.revision == be_pend.request) ||
-         ((gmrt.ctl.stage_state == GM_STAGE_WRITING || gmrt.ctl.stage_state == GM_STAGE_READY) &&
-          gmrt.ctl.stage_req.kind == GM_REQUEST_BE_LAYER && gmrt.ctl.stage_req.revision == be_pend.request)))
+    if (be_candidate_valid(track, layers)) {
         gm_runtime_stop();
+        gmrt.ctl.status = GM_STALE;
+    }
 }
 
 /* A parameter lock or motion event was written to step s of a track (IRQ off). Only the FIRST event of a step changes

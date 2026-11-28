@@ -136,6 +136,8 @@ static int gm_ui_follow_config(const gm_config *was)   /* 1: the panel's style c
     const gm_config *now = &gmrt.ctl.active_config;
     gm_config f;
     uint32_t i;
+    if (!be_cfg_known)                                 /* a boot or load default is no pattern's config: the panel stays */
+        return 0;
     if (now->algorithm == was->algorithm && now->seed == was->seed && now->grid.num == was->grid.num &&
         now->grid.den == was->grid.den && now->grid.division == was->grid.division && now->aggression == was->aggression &&
         now->density == was->density && now->chaos == was->chaos && now->humanize == was->humanize)
